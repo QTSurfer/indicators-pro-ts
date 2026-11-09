@@ -17,8 +17,9 @@ function parse(line: string): { method: string; args: (string | number)[] } {
   return { method: method!, args: rest.map((token) => (token.startsWith('"') ? token.slice(1, -1) : Number(token))) };
 }
 
-// JavaScript writes a whole double without its ".0", and Java does not: the same number is the same metadata
-const normalize = (value: string): string => (/^-?\d+(\.\d+)?$/.test(value) ? String(Number(value)) : value);
+// JavaScript writes a whole double without its ".0" and a small one as 0.0001, where Java writes 1.0 and 1.0E-4: the
+// same number is the same metadata
+const normalize = (value: string): string => (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(value) ? String(Number(value)) : value);
 
 function registeredBy(line: string): Record<string, { hint: string; meta: Record<string, string> }> {
   const group = new InstrumentGroupRTIndicator(new InstrumentMapKlineSourceRTIndicator("BTC/USDT"));
