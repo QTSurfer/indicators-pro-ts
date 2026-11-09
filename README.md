@@ -1,0 +1,95 @@
+# @qtsurfer/indicators-pro
+
+<p>
+  <a href="LICENSING.md"><img src="https://img.shields.io/badge/License-AGPL%20v3%20%7C%20commercial-blue.svg" alt="License"></a>
+</p>
+
+The pro real-time streaming indicators of [QTSurfer](https://qtsurfer.com) for TypeScript: the same indicators the
+Java engine runs on the server, with the same algorithms, ids and outputs, to run in
+the browser or in Node.js. They build on [`@qtsurfer/indicators`](https://github.com/QTSurfer/engine-ts) and are used
+through the same group builder.
+
+## Install
+
+```bash
+npm install @qtsurfer/indicators-pro @qtsurfer/indicators @qtsurfer/core
+```
+
+## Use
+
+```ts
+import { InstrumentGroupRTIndicator, InstrumentMapKlineSourceRTIndicator } from "@qtsurfer/indicators";
+import { Pro } from "@qtsurfer/indicators-pro";
+
+const map = new InstrumentMapKlineSourceRTIndicator("BTC/USDT");
+const group = new InstrumentGroupRTIndicator(map);
+Pro.on(group).adx().ichimoku().vwap().yangZhang(20);
+
+map.updateFrom(kline);
+group.getIndicatorValue("adx14");            // 23.74…
+group.getIndicatorValue("ichi9_26_52Kijun"); // an output of an indicator that has several
+```
+
+`Pro.on(group)` has the ids, overloads and output suffixes of the Java engine's `Pro`, so a QTScript line
+`pro.adx()` means the same here and on the server. Indicators that read whole bars (high, low, volume)
+belong on a kline group: on a ticker those are the exchange's 24-hour statistics.
+
+## Ported
+
+29 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF,
+Ichimoku, MFI, OBV, SuperTrend, VWAP) and the twenty-two that came after it (Kurtosis, Skewness, Z-Score,
+Value at Risk, Autocorrelation, the Hurst exponent, the linear regression slope, the simple linear regression,
+the rolling percentile, the Calmar, Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index,
+the EWMA and realized volatilities, and the four OHLC volatility estimators). ATR is not
+here: it is a free indicator of `@qtsurfer/indicators`. Each is compared with the Java engine, value by value, on a
+seeded dataset and on the same one with values that are not finite, and on short synthetic series that reach the
+guards the dataset does not (see below).
+
+[`indicators.md`](indicators.md) lists them: class, `Pro` call, default id, outputs and whether the indicator reads
+whole bars. A test fails when it differs from what the facade registers.
+
+## Parity with Java
+
+`tests/fixtures/reference.json` is written by the Java engine (`tools/java-oracle/Oracle.java`), never by
+hand, from a checkout of the Java engine:
+
+```bash
+QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle
+```
+
+The arithmetic of `+ - * /` and `sqrt` is exact in every JavaScript engine, so those series are equal to
+the last bit. That holds the maximum drawdown and the Ulcer index to the last bit, as every other indicator that takes
+no logarithm. The indicators that take logarithms (the four OHLC volatility estimators, the EWMA and realized
+volatilities, Autocorrelation, the Hurst exponent, Value at Risk, and the Calmar, Omega, Sharpe, Sortino and tail
+ratios) are held to a relative 1e-12, because engines do not all round a logarithm the way Java does. Measured on the
+reference dataset, the OHLC estimators are equal to the last bit in Node.js (V8) and Bun (JavaScriptCore) too. The
+others work on log returns, and V8 rounds 3 of the 599 returns of the clean prices one bit away from Java's
+(JavaScriptCore, 1 of 599). Value at Risk, the realized volatility and the Calmar, Sharpe and Sortino ratios keep
+running sums, which enlarge that bit: they are within 4e-13 of Java's in V8 and 7e-15 in JavaScriptCore, as are
+Autocorrelation and the Hurst exponent. The EWMA volatility, the Omega ratio and the tail ratio are within 1e-15 in both.
+
+`tests/edges.test.ts` runs every price-fed indicator on short synthetic series: forty identical prices, a rising and
+a falling ramp, a zig-zag, five values (fewer than the window), a price that collapses to 1e-8 and comes back, the
+smallest positive price, and a zero, a leading zero and a negative price. They reach the guards of the indicators
+that the dataset never does. The values are equal to Java's to the last bit, except those of the Hurst exponent and
+the tail ratio on the collapse, which are within 3e-16 in V8.
+
+## Develop
+
+```bash
+pnpm install
+pnpm check && pnpm build && pnpm test
+```
+
+Changes to the package come with a changeset (`pnpm changeset`); [CONTRIBUTING.md](CONTRIBUTING.md) has the rest.
+
+## License
+
+Copyright (C) 2026 Wualabs LTD. Dual-licensed: the [GNU AGPL v3](LICENSE) (only) with the
+[QTSurfer Strategy Exception](STRATEGY-EXCEPTION.md), so the strategies you write with the indicators stay under
+terms of your choice, or a commercial licence from Wualabs. [LICENSING.md](LICENSING.md) says what each one
+allows. Contributions need the [Wualabs CLA](CLA.md) ([CONTRIBUTING.md](CONTRIBUTING.md)).
+
+## Security
+
+To report a vulnerability privately, see [SECURITY.md](SECURITY.md).

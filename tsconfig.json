@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "$core/*": ["src/core/*"],
+      "$pro/*": ["src/pro/*"],
+      "$statistics/*": ["src/statistics/*"],
+      "$trend/*": ["src/trend/*"],
+      "$volume/*": ["src/volume/*"]
+    }
+  },
+  "include": ["src", "tests"]
+}

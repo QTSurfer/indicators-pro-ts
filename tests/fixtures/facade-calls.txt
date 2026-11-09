@@ -1,0 +1,97 @@
+# One call of Pro.on(group) per line: the method, then its arguments. A name is in double quotes, a whole number
+# is an integer, and a number with a decimal point is a double. The Java engine's Pro runs each call on an empty
+# group (tools/java-oracle) and tests/facade.test.ts runs the same call here: they must register the same names,
+# with the same display hint and metadata. Add the line of every factory and overload you add.
+adx
+adx 7
+adx "trend" 21
+superTrend
+superTrend "st"
+superTrend 14 2.0
+superTrend 10 2.5
+superTrend "mine" 7 1.5
+ichimoku
+ichimoku "cloud"
+ichimoku 7 22 44
+ichimoku "c" 7 22 44
+obv
+obv "o"
+vwap
+vwap "v"
+mfi
+mfi 7
+mfi "m" 21
+cmf
+cmf 10
+cmf "c" 30
+kurtosis 20
+kurtosis "k" 8
+autocorrelation 20
+autocorrelation "a" 8
+hurstExponent 20
+hurstExponent "h" 9
+linearRegressionSlope 20
+linearRegressionSlope "s" 10
+rollingPercentile 20 0.95
+rollingPercentile 20 1.0
+rollingPercentile 10 0.5
+rollingPercentile "p" 11 0.25
+simpleLinearRegression 20
+simpleLinearRegression "r" 12
+skewness 20
+skewness "k" 13
+valueAtRisk 20
+valueAtRisk "v" 14
+valueAtRisk "v99" 15 0.99
+valueAtRisk "v99a" 16 0.99 252.0
+zScore 20
+zScore "z" 16
+parkinson 20
+parkinson "p" 10
+parkinson "p" 10 15.874507866387544
+garmanKlass 20
+garmanKlass "g" 10
+garmanKlass "g" 10 15.874507866387544
+rogersSatchell 20
+rogersSatchell "r" 10
+rogersSatchell "r" 10 15.874507866387544
+yangZhang 20
+yangZhang "y" 10
+yangZhang "y" 10 15.874507866387544
+calmarRatio 20
+calmarRatio "c" 10
+calmarRatio "c" 10 365.0
+maxDrawdown
+maxDrawdown "dd"
+omegaRatio 20
+omegaRatio "o" 11
+omegaRatio "o" 11 0.001
+sharpeRatio 20
+sharpeRatio "s" 12
+sharpeRatio "s" 12 0.0001
+sharpeRatio "s" 12 0.0001 15.874507866387544
+sortinoRatio 20
+sortinoRatio "s" 13
+sortinoRatio "s" 13 0.001
+sortinoRatio "s" 13 0.001 15.874507866387544
+tailRatio 20
+tailRatio "t" 14
+tailRatio "t" 14 0.9 0.1
+ulcerIndex 20
+ulcerIndex "u" 15
+ewmaVolatility
+ewmaVolatility 0.97
+ewmaVolatility "slow"
+ewmaVolatility "fast" 0.9
+ewmaVolatility "annual" 0.94 252.0
+realizedVolatility 20
+realizedVolatility "r" 16
+realizedVolatility "r" 16 365.0
+# the limits of the classes come through the factory
+autocorrelation 3
+skewness 2
+rollingPercentile 20 1.5
+valueAtRisk "v" 20 1.0
+calmarRatio 1
+tailRatio "t" 20 1.2 0.05
+ulcerIndex 0

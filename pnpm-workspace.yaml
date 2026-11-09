@@ -1,0 +1,4 @@
+# Our own packages are trusted: pnpm 12 may install them within the release-age window of its policy.
+minimumReleaseAgeExclude:
+  - '@qtsurfer/core'
+  - '@qtsurfer/indicators'

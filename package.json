@@ -1,0 +1,72 @@
+{
+  "name": "@qtsurfer/indicators-pro",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "QTSurfer pro real-time streaming indicators",
+  "license": "AGPL-3.0-only OR LicenseRef-Wualabs-Commercial",
+  "author": "QTSurfer (https://qtsurfer.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QTSurfer/indicators-pro-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/QTSurfer/indicators-pro-ts/issues"
+  },
+  "homepage": "https://github.com/QTSurfer/indicators-pro-ts#readme",
+  "keywords": [
+    "qtsurfer",
+    "trading",
+    "technical-analysis",
+    "indicators",
+    "streaming",
+    "real-time",
+    "adx",
+    "ichimoku",
+    "supertrend",
+    "vwap",
+    "typescript"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "test": "node scripts/check-license-files.mjs && vitest run",
+    "check": "tsc --noEmit",
+    "check:license": "node scripts/check-license-files.mjs",
+    "oracle": "node tools/java-oracle/regenerate.mjs",
+    "release": "changeset publish"
+  },
+  "files": [
+    "dist",
+    "LICENSING.md",
+    "STRATEGY-EXCEPTION.md"
+  ],
+  "peerDependencies": {
+    "@qtsurfer/core": "^0.14.0",
+    "@qtsurfer/indicators": "^0.14.0"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/cli": "^2.31.0",
+    "@qtsurfer/core": "^0.14.0",
+    "@qtsurfer/indicators": "^0.14.0",
+    "@types/node": "^22.20.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
