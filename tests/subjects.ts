@@ -5,10 +5,18 @@ import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
 import { FramaRTIndicator } from "$averages/FramaRTIndicator";
 import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
 import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { AdaptiveFisherTransformRTIndicator } from "$momentum/AdaptiveFisherTransformRTIndicator";
+import { ChandeForecastOscillatorRTIndicator } from "$momentum/ChandeForecastOscillatorRTIndicator";
 import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
+import { ConnorsRsiRTIndicator } from "$momentum/ConnorsRsiRTIndicator";
+import { CoppockCurveRTIndicator } from "$momentum/CoppockCurveRTIndicator";
 import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOscillatorRTIndicator";
+import { FisherTransformRTIndicator } from "$momentum/FisherTransformRTIndicator";
+import { KnowSureThingRTIndicator } from "$momentum/KnowSureThingRTIndicator";
 import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
 import { RocRTIndicator } from "$momentum/RocRTIndicator";
+import { TrixRTIndicator } from "$momentum/TrixRTIndicator";
+import { TrueStrengthIndexRTIndicator } from "$momentum/TrueStrengthIndexRTIndicator";
 import { AutocorrelationRTIndicator } from "$statistics/AutocorrelationRTIndicator";
 import { HurstExponentRTIndicator } from "$statistics/HurstExponentRTIndicator";
 import { KurtosisRTIndicator } from "$statistics/KurtosisRTIndicator";
@@ -255,6 +263,54 @@ export const subjects: Subject[] = [
   subject("detrendedPriceOscillator7", "DPO(7), an odd number of periods", false, 0, (p) =>
     series(new DetrendedPriceOscillatorRTIndicator(7), p, { ready }),
   ),
+  subject("chandeForecastOscillatorDefault", "Chande forecast oscillator() with the default periods", false, 0, (p) =>
+    series(new ChandeForecastOscillatorRTIndicator(), p, { lsmaValue: (i) => i.getLsmaValue(), ready }),
+  ),
+  subject("chandeForecastOscillator5", "Chande forecast oscillator(5)", false, 0, (p) =>
+    series(new ChandeForecastOscillatorRTIndicator(5), p, { lsmaValue: (i) => i.getLsmaValue(), ready }),
+  ),
+  subject("connorsRsiDefault", "Connors RSI() with the default periods", false, 0, (p) => series(new ConnorsRsiRTIndicator(), p, { ready })),
+  subject("connorsRsi5_3_20", "Connors RSI(5, 3, 20)", false, 0, (p) => series(new ConnorsRsiRTIndicator(5, 3, 20), p, { ready })),
+  subject("connorsRsi2_4_8", "Connors RSI(2, 4, 8)", false, 0, (p) => series(new ConnorsRsiRTIndicator(2, 4, 8), p, { ready })),
+  subject("coppockCurveDefault", "Coppock curve() with the default periods", false, 0, (p) => series(new CoppockCurveRTIndicator(), p, { ready })),
+  subject("coppockCurve8_5_4", "Coppock curve(8, 5, 4)", false, 0, (p) => series(new CoppockCurveRTIndicator(8, 5, 4), p, { ready })),
+  subject("fisherTransformDefault", "Fisher transform() with the default periods", false, LOG_TOLERANCE, (p) =>
+    series(new FisherTransformRTIndicator(), p, { ready }),
+  ),
+  subject("fisherTransform5", "Fisher transform(5)", false, LOG_TOLERANCE, (p) => series(new FisherTransformRTIndicator(5), p, { ready })),
+  subject("adaptiveFisherTransformDefault", "Adaptive Fisher transform() with the default periods", false, LOG_TOLERANCE, (p) =>
+    series(new AdaptiveFisherTransformRTIndicator(), p, {
+      efficiencyRatio: (i) => i.getEfficiencyRatio(),
+      adaptivePeriod: (i) => i.getAdaptivePeriod(),
+      ready,
+    }),
+  ),
+  subject("adaptiveFisherTransform5_3_9", "Adaptive Fisher transform(5, 3, 9)", false, LOG_TOLERANCE, (p) =>
+    series(new AdaptiveFisherTransformRTIndicator(5, 3, 9), p, {
+      efficiencyRatio: (i) => i.getEfficiencyRatio(),
+      adaptivePeriod: (i) => i.getAdaptivePeriod(),
+      ready,
+    }),
+  ),
+  subject("adaptiveFisherTransform3_0_6", "Adaptive Fisher transform(3, 0, 6), a minimum period of 0", false, LOG_TOLERANCE, (p) =>
+    series(new AdaptiveFisherTransformRTIndicator(3, 0, 6), p, {
+      efficiencyRatio: (i) => i.getEfficiencyRatio(),
+      adaptivePeriod: (i) => i.getAdaptivePeriod(),
+      ready,
+    }),
+  ),
+  subject("knowSureThingDefault", "Know sure thing() with the default periods and weights", false, 0, (p) =>
+    series(new KnowSureThingRTIndicator(), p, { signal: (i) => i.getSignal(), ready }),
+  ),
+  subject("knowSureThing3Weighted", "Know sure thing of three rates of change, with weights of 1.5, 2.5 and 0.5", false, 0, (p) =>
+    series(new KnowSureThingRTIndicator([3, 5, 7], [2, 3, 4], [1.5, 2.5, 0.5], 4), p, { signal: (i) => i.getSignal(), ready }),
+  ),
+  subject("trixDefault", "TRIX() with the default periods", false, 0, (p) => series(new TrixRTIndicator(), p, { ready })),
+  subject("trix5", "TRIX(5)", false, 0, (p) => series(new TrixRTIndicator(5), p, { ready })),
+  subject("trueStrengthIndexDefault", "True strength index() with the default periods", false, 0, (p) =>
+    series(new TrueStrengthIndexRTIndicator(), p, { ready }),
+  ),
+  subject("trueStrengthIndex5_3", "True strength index(5, 3)", false, 0, (p) => series(new TrueStrengthIndexRTIndicator(5, 3), p, { ready })),
 ];
 
 /** Runs a subject on the prices and compares each of its outputs with Java's. */

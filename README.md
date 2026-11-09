@@ -38,16 +38,17 @@ belong on a kline group: on a ticker those are the exchange's 24-hour statistics
 
 ## Ported
 
-39 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF,
-Ichimoku, MFI, OBV, SuperTrend, VWAP) and the thirty-two that came after it (Kurtosis, Skewness, Z-Score,
+47 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF,
+Ichimoku, MFI, OBV, SuperTrend, VWAP) and the forty that came after it (Kurtosis, Skewness, Z-Score,
 Value at Risk, Autocorrelation, the Hurst exponent, the linear regression slope, the simple linear regression,
 the rolling percentile, the Calmar, Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index,
 the EWMA and realized volatilities, the four OHLC volatility estimators, the ALMA, DEMA, FRAMA, least squares and
-McGinley Dynamic moving averages, the envelopes, Momentum, ROC, the Chande momentum oscillator and the detrended price
-oscillator). The ten averages and momentum indicators have no `Pro` call yet: add them with
-`group.add(name, new Class(…))`. ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is compared
-with the Java engine, value by value, on a seeded dataset and on the same one with values that are not finite, and on
-short synthetic series that reach the guards the dataset does not (see below).
+McGinley Dynamic moving averages, the envelopes, Momentum, ROC, the Chande momentum and forecast oscillators, the
+detrended price oscillator, Connors RSI, the Coppock curve, the Fisher and adaptive Fisher transforms, Know sure
+thing, TRIX and the true strength index). The eighteen averages and momentum indicators have no `Pro` call yet: add
+them with `group.add(name, new Class(…))`. ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is
+compared with the Java engine, value by value, on a seeded dataset and on the same one with values that are not finite,
+and on short synthetic series that reach the guards the dataset does not (see below).
 
 [`indicators.md`](indicators.md) lists them: class, `Pro` call, default id, outputs and whether the indicator reads
 whole bars. A test fails when it differs from what the facade registers.
@@ -69,23 +70,28 @@ figures below say for the machine they were measured on. The series that take no
 The arithmetic of `+ - * /` and `sqrt` is exact in every JavaScript engine, so those series are equal to
 the last bit. That holds the maximum drawdown and the Ulcer index to the last bit, as every other indicator that takes
 no logarithm or exponential (among them the DEMA, the envelopes, the least squares and McGinley Dynamic averages,
-Momentum, ROC, the Chande momentum oscillator and the detrended price oscillator). The indicators that take logarithms
-or an exponential (the four OHLC volatility estimators, the EWMA and realized volatilities, Autocorrelation, the Hurst
-exponent, Value at Risk, the Calmar, Omega, Sharpe, Sortino and tail ratios, ALMA and FRAMA) are held to a relative
-1e-12, because engines do not all round a logarithm the way Java does. Measured on the reference dataset, the OHLC
-estimators and ALMA are equal to the last bit in Node.js (V8) and Bun (JavaScriptCore) too. FRAMA is within 5e-15 of
-Java's in V8 (its alpha, which magnifies the error of the logarithms, is the furthest) and within 3e-16 in
-JavaScriptCore. The others work on log returns, and V8 rounds 3 of the 599 returns of the clean prices one bit away from
-Java's (JavaScriptCore, 1 of 599). Value at Risk, the realized volatility and the Calmar, Sharpe and Sortino ratios keep
-running sums, which enlarge that bit: they are within 4e-13 of Java's in V8 and 7e-15 in JavaScriptCore, as are
-Autocorrelation and the Hurst exponent. The EWMA volatility, the Omega ratio and the tail ratio are within 1e-15 in both.
+Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the Coppock
+curve, Know sure thing, TRIX and the true strength index). The indicators that take logarithms or an exponential (the
+four OHLC volatility estimators, the EWMA and realized volatilities, Autocorrelation, the Hurst exponent, Value at
+Risk, the Calmar, Omega, Sharpe, Sortino and tail ratios, ALMA, FRAMA and the Fisher and adaptive Fisher transforms)
+are held to a relative 1e-12, because engines do not all round a logarithm the way Java does. Measured on the
+reference dataset, the OHLC estimators and ALMA are equal to the last bit in Node.js (V8) and Bun (JavaScriptCore)
+too. FRAMA is within 5e-15 of Java's in V8 (its alpha, which magnifies the error of the logarithms, is the furthest)
+and within 3e-16 in JavaScriptCore. The Fisher transform is within 3e-16 in V8 and equal in JavaScriptCore but for one
+value, 1e-16 away; the adaptive Fisher transform is within 3e-14 in V8 (it adds half of its previous value to a
+logarithm, and the two can nearly cancel) and equal in JavaScriptCore. The others work on log returns, and V8 rounds 3
+of the 599 returns of the clean prices one bit away from Java's (JavaScriptCore, 1 of 599). Value at Risk, the realized
+volatility and the Calmar, Sharpe and Sortino ratios keep running sums, which enlarge that bit: they are within 4e-13 of
+Java's in V8 and 7e-15 in JavaScriptCore, as are Autocorrelation and the Hurst exponent. The EWMA volatility, the Omega
+ratio and the tail ratio are within 1e-15 in both.
 
 `tests/edges.test.ts` runs every price-fed indicator on short synthetic series: forty identical prices, a rising and
 a falling ramp, a zig-zag, five values (fewer than the window), a price that collapses to 1e-8 and comes back, the
 smallest positive price, and a zero, a leading zero and a negative price. They reach the guards of the indicators
 that the dataset never does. The values are equal to Java's to the last bit, except those of the Hurst exponent and
-the tail ratio on the collapse, which are within 3e-16 in V8, and those of FRAMA, which are within 5e-15 in V8 and equal
-in JavaScriptCore.
+the tail ratio on the collapse, which are within 3e-16 in V8, those of FRAMA, which are within 5e-15 in V8 and equal
+in JavaScriptCore, and those of the Fisher and adaptive Fisher transforms, which are within 3e-16 and 3e-15 in V8 and
+equal in JavaScriptCore.
 
 ## Develop
 

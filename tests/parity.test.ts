@@ -28,8 +28,8 @@ import { expectSubject, subjects } from "./subjects";
 // Each ported indicator against the Java engine's values on the same data: the arithmetic of + - * /
 // and sqrt is exact everywhere, so those series are equal to the last bit. The indicators that take
 // logarithms or an exponential (the volatility estimators, Autocorrelation, Hurst, Value at Risk, ALMA, FRAMA,
-// and every ratio that works on log returns) are held to a relative 1e-12: JavaScript engines do not all round a
-// logarithm the way Java's does. See compare.ts.
+// the Fisher transforms, and every ratio that works on log returns) are held to a relative 1e-12: JavaScript engines
+// do not all round a logarithm the way Java's does. See compare.ts.
 
 describe.each(["clean", "corrupt"] as const)("the %s scenario", (scenario) => {
   const inputs = inputsOf(scenario);

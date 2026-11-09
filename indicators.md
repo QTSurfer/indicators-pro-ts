@@ -27,7 +27,7 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 | Risk and performance ratios | 7 |
 | Volatility estimators | 6 |
 | Averages | 6 |
-| Momentum | 4 |
+| Momentum | 12 |
 
 ## Trend
 
@@ -112,7 +112,15 @@ None has a `Pro` call yet: add them with `group.add(name, new Class(…))`. Each
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
+| Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | — | | | | Fisher transform whose window follows the efficiency ratio; also the ratio and the window; 10, 5 and 20 periods by default |
+| Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | — | | | | percentage deviation of the price from its least squares average; also that average; 14 periods by default |
 | Chande momentum oscillator | `CmoRTIndicator` | — | | | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
+| Connors RSI | `ConnorsRsiRTIndicator` | — | | | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
+| Coppock curve | `CoppockCurveRTIndicator` | — | | | | weighted moving average of the sum of two rates of change; 14, 11 and 10 periods by default |
 | Detrended price oscillator | `DetrendedPriceOscillatorRTIndicator` | — | | | | a past price less the simple moving average of the window; 20 periods by default |
+| Fisher transform | `FisherTransformRTIndicator` | — | | | | the price turned into a Gaussian-like variable for sharper turning points; 10 periods by default |
+| Know sure thing | `KnowSureThingRTIndicator` | — | | | | weighted sum of four smoothed rates of change; also the signal, an average of the KST; Pring's periods and weights by default |
 | Momentum | `MomentumRTIndicator` | — | | | | the price less the price n ticks ago; 10 periods by default |
 | Rate of change | `RocRTIndicator` | — | | | | change of the price over n ticks, in percent; 12 periods by default |
+| TRIX | `TrixRTIndicator` | — | | | | rate of change of a triple EMA, in percent; 15 periods by default |
+| True strength index | `TrueStrengthIndexRTIndicator` | — | | | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |

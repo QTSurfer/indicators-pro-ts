@@ -8,10 +8,18 @@ import com.wualabs.qtsurfer.engine.indicators.averages.pro.FramaRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.averages.pro.LeastSquaresMovingAverageRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.helpers.group.InstrumentGroupRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AdaptiveFisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ChandeForecastOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ConnorsRsiRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CoppockCurveRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.FisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.KnowSureThingRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.MomentumRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrueStrengthIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.pro.Pro;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.AutocorrelationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.HurstExponentRTIndicator;
@@ -607,6 +615,84 @@ public class Oracle {
     }));
     list.add(new Subject("detrendedPriceOscillator7", false, () -> {
       var i = new DetrendedPriceOscillatorRTIndicator(7);
+      return run(p, i::update, ready(i));
+    }));
+
+    list.add(new Subject("chandeForecastOscillatorDefault", false, () -> {
+      var i = new ChandeForecastOscillatorRTIndicator();
+      return run(p, i::update, read("lsmaValue", i::getLsmaValue), ready(i));
+    }));
+    list.add(new Subject("chandeForecastOscillator5", false, () -> {
+      var i = new ChandeForecastOscillatorRTIndicator(5);
+      return run(p, i::update, read("lsmaValue", i::getLsmaValue), ready(i));
+    }));
+    list.add(new Subject("connorsRsiDefault", false, () -> {
+      var i = new ConnorsRsiRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("connorsRsi5_3_20", false, () -> {
+      var i = new ConnorsRsiRTIndicator(5, 3, 20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("connorsRsi2_4_8", false, () -> {
+      var i = new ConnorsRsiRTIndicator(2, 4, 8);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("coppockCurveDefault", false, () -> {
+      var i = new CoppockCurveRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("coppockCurve8_5_4", false, () -> {
+      var i = new CoppockCurveRTIndicator(8, 5, 4);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("fisherTransformDefault", false, () -> {
+      var i = new FisherTransformRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("fisherTransform5", false, () -> {
+      var i = new FisherTransformRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("adaptiveFisherTransformDefault", false, () -> {
+      var i = new AdaptiveFisherTransformRTIndicator();
+      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
+          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
+    }));
+    list.add(new Subject("adaptiveFisherTransform5_3_9", false, () -> {
+      var i = new AdaptiveFisherTransformRTIndicator(5, 3, 9);
+      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
+          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
+    }));
+    // a minimum period of 0: a trending window has an adaptive period of 0, which looks at no value at all
+    list.add(new Subject("adaptiveFisherTransform3_0_6", false, () -> {
+      var i = new AdaptiveFisherTransformRTIndicator(3, 0, 6);
+      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
+          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
+    }));
+    list.add(new Subject("knowSureThingDefault", false, () -> {
+      var i = new KnowSureThingRTIndicator();
+      return run(p, i::update, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new Subject("knowSureThing3Weighted", false, () -> {
+      var i = new KnowSureThingRTIndicator(
+          new int[] {3, 5, 7}, new int[] {2, 3, 4}, new double[] {1.5, 2.5, 0.5}, 4);
+      return run(p, i::update, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new Subject("trixDefault", false, () -> {
+      var i = new TrixRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trix5", false, () -> {
+      var i = new TrixRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trueStrengthIndexDefault", false, () -> {
+      var i = new TrueStrengthIndexRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trueStrengthIndex5_3", false, () -> {
+      var i = new TrueStrengthIndexRTIndicator(5, 3);
       return run(p, i::update, ready(i));
     }));
     return list;
