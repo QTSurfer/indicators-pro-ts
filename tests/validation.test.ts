@@ -1,4 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { AlmaRTIndicator } from "$averages/AlmaRTIndicator";
+import { DemaRTIndicator } from "$averages/DemaRTIndicator";
+import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
+import { FramaRTIndicator } from "$averages/FramaRTIndicator";
+import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
+import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
+import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOscillatorRTIndicator";
+import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
+import { RocRTIndicator } from "$momentum/RocRTIndicator";
 import { CalmarRatioRTIndicator } from "$statistics/ratios/CalmarRatioRTIndicator";
 import { MaxDrawdownRTIndicator } from "$statistics/ratios/MaxDrawdownRTIndicator";
 import { OmegaRatioRTIndicator } from "$statistics/ratios/OmegaRatioRTIndicator";
@@ -54,6 +64,75 @@ describe("the guards of the constructors", () => {
   });
 });
 
+describe("the guards of the averages and the momentum indicators", () => {
+  it.each([
+    ["ALMA", (periods: number) => new AlmaRTIndicator(periods), 0],
+    ["DPO", (periods: number) => new DetrendedPriceOscillatorRTIndicator(periods), 0],
+    ["Momentum", (periods: number) => new MomentumRTIndicator(periods), 1],
+    ["ROC", (periods: number) => new RocRTIndicator(periods), 1],
+  ] as const)("%s builds a window of its periods, and the window refuses fewer than one value", (_, make, extra) => {
+    for (const periods of [-extra, -extra - 3]) {
+      expect(() => make(periods), `${periods}`).toThrow(new RangeError(`Invalid ${periods + extra} windowSize`));
+    }
+    expect(() => make(1 - extra)).not.toThrow();
+  });
+
+  it("FRAMA adds one to an odd number of periods, as Java does, and to a negative one too", () => {
+    expect(new FramaRTIndicator().periods).toBe(20);
+    expect(new FramaRTIndicator(7).periods).toBe(8);
+    expect(new FramaRTIndicator(8).periods).toBe(8);
+    expect(new FramaRTIndicator(1).periods).toBe(2);
+    expect(() => new FramaRTIndicator(-1)).toThrow(new RangeError("Invalid 0 windowSize"));
+    expect(() => new FramaRTIndicator(-3)).toThrow(new RangeError("Invalid -2 windowSize"));
+    expect(() => new FramaRTIndicator(-4)).toThrow(new RangeError("Invalid -4 windowSize"));
+  });
+
+  it("LSMA takes the guards of the regression it wraps", () => {
+    expect(() => new LeastSquaresMovingAverageRTIndicator(1)).toThrow(new RangeError("periods must be >= 2, got 1"));
+    expect(() => new LeastSquaresMovingAverageRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
+    expect(() => new LeastSquaresMovingAverageRTIndicator(2)).not.toThrow();
+  });
+
+  it("CMO refuses a negative number of periods", () => {
+    expect(() => new CmoRTIndicator(-1)).toThrow(RangeError);
+    expect(() => new CmoRTIndicator(1)).not.toThrow();
+  });
+
+  it("the periods are what the constructor was given, and the default of each class is Java's", () => {
+    expect([new AlmaRTIndicator(9).periods, new AlmaRTIndicator(9, 0.5, 4.0).periods]).toEqual([9, 9]);
+    expect(new LeastSquaresMovingAverageRTIndicator().periods).toBe(25);
+    expect(new LeastSquaresMovingAverageRTIndicator(7).periods).toBe(7);
+    expect(new McGinleyDynamicRTIndicator().periods).toBe(14);
+    expect(new McGinleyDynamicRTIndicator(5).periods).toBe(5);
+    expect(new MomentumRTIndicator().periods).toBe(10);
+    expect(new MomentumRTIndicator(3).periods).toBe(3);
+    expect(new RocRTIndicator().periods).toBe(12);
+    expect(new RocRTIndicator(3).periods).toBe(3);
+    expect(new CmoRTIndicator().periods).toBe(14);
+    expect(new CmoRTIndicator(5).periods).toBe(5);
+    expect(new DetrendedPriceOscillatorRTIndicator().periods).toBe(20);
+    expect(new DetrendedPriceOscillatorRTIndicator(7).periods).toBe(7);
+  });
+
+  it("Envelopes is 20 periods and 2.5 percent when built with no argument", () => {
+    const byDefault = new EnvelopesRTIndicator();
+    const explicit = new EnvelopesRTIndicator(20, 2.5);
+    for (const price of reference.inputs.price.slice(0, 60)) {
+      expect(byDefault.update(price)).toBe(explicit.update(price));
+      expect(byDefault.getUpper()).toBe(explicit.getUpper());
+      expect(byDefault.getLower()).toBe(explicit.getLower());
+    }
+  });
+
+  it("Envelopes puts its bands at the percentage of the middle line", () => {
+    const envelopes = new EnvelopesRTIndicator(5, 10);
+    for (const price of [100, 100, 100]) envelopes.update(price);
+    expect(envelopes.getValue()).toBe(100);
+    expect(envelopes.getUpper()).toBeCloseTo(110, 12);
+    expect(envelopes.getLower()).toBeCloseTo(90, 12);
+  });
+});
+
 describe("the guards of the options", () => {
   it("Tail takes percentiles in (0, 1) and does not check which one is the larger", () => {
     const tail = new TailRatioRTIndicator(20);
@@ -94,6 +173,16 @@ describe("reset()", () => {
     ["Ulcer", () => new UlcerIndexRTIndicator(20)],
     ["Ewma", () => new EwmaVolatilityRTIndicator()],
     ["Realized", () => new RealizedVolatilityRTIndicator(20)],
+    ["ALMA", () => new AlmaRTIndicator(20)],
+    ["DEMA", () => new DemaRTIndicator(20)],
+    ["Envelopes", () => new EnvelopesRTIndicator()],
+    ["FRAMA", () => new FramaRTIndicator()],
+    ["LSMA", () => new LeastSquaresMovingAverageRTIndicator()],
+    ["McGinley Dynamic", () => new McGinleyDynamicRTIndicator()],
+    ["Momentum", () => new MomentumRTIndicator()],
+    ["ROC", () => new RocRTIndicator()],
+    ["CMO", () => new CmoRTIndicator()],
+    ["DPO", () => new DetrendedPriceOscillatorRTIndicator()],
   ] as const)("%s starts again as a new one after it", (_, make) => {
     const used = make();
     for (const price of prices) used.update(price);
@@ -105,5 +194,28 @@ describe("reset()", () => {
       expect(used.update(price)).toBe(fresh.update(price));
       expect(used.isReady()).toBe(fresh.isReady());
     }
+  });
+});
+
+describe("reset() of the indicators with more than one output", () => {
+  const prices = reference.inputs.price.slice(0, 120);
+
+  it("Envelopes clears its bands", () => {
+    const envelopes = new EnvelopesRTIndicator();
+    for (const price of prices) envelopes.update(price);
+    expect(envelopes.getUpper()).not.toBe(0);
+    envelopes.reset();
+    expect(envelopes.getUpper()).toBe(0);
+    expect(envelopes.getLower()).toBe(0);
+  });
+
+  it("FRAMA clears its fractal dimension and its alpha", () => {
+    const frama = new FramaRTIndicator();
+    for (const price of prices) frama.update(price);
+    expect(frama.getAlpha()).not.toBe(0);
+    expect(frama.getFractalDimension()).not.toBe(0);
+    frama.reset();
+    expect(frama.getAlpha()).toBe(0);
+    expect(frama.getFractalDimension()).toBe(0);
   });
 });

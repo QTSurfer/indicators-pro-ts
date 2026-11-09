@@ -1,4 +1,14 @@
 import { expect } from "vitest";
+import { AlmaRTIndicator } from "$averages/AlmaRTIndicator";
+import { DemaRTIndicator } from "$averages/DemaRTIndicator";
+import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
+import { FramaRTIndicator } from "$averages/FramaRTIndicator";
+import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
+import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
+import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOscillatorRTIndicator";
+import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
+import { RocRTIndicator } from "$momentum/RocRTIndicator";
 import { AutocorrelationRTIndicator } from "$statistics/AutocorrelationRTIndicator";
 import { HurstExponentRTIndicator } from "$statistics/HurstExponentRTIndicator";
 import { KurtosisRTIndicator } from "$statistics/KurtosisRTIndicator";
@@ -192,6 +202,58 @@ export const subjects: Subject[] = [
       realizedVariance: (i) => i.getRealizedVariance(),
       ready,
     }),
+  ),
+  subject("alma20", "ALMA(20)", false, LOG_TOLERANCE, (p) => series(new AlmaRTIndicator(20), p, { ready })),
+  subject("alma20Offset05", "ALMA(20) with an offset factor of 0.5", false, LOG_TOLERANCE, (p) =>
+    series(new AlmaRTIndicator(20, 0.5, 6.0), p, { ready }),
+  ),
+  subject("alma20Sigma3", "ALMA(20) with a sigma factor of 3", false, LOG_TOLERANCE, (p) =>
+    series(new AlmaRTIndicator(20, 0.85, 3.0), p, { ready }),
+  ),
+  subject("dema20", "DEMA(20)", false, 0, (p) => series(new DemaRTIndicator(20), p, { ready })),
+  subject("envelopesDefault", "Envelopes() with the default periods and percentage", false, 0, (p) =>
+    series(new EnvelopesRTIndicator(), p, { upper: (i) => i.getUpper(), lower: (i) => i.getLower(), ready }),
+  ),
+  subject("envelopes20Percentage5", "Envelopes(20, 5)", false, 0, (p) =>
+    series(new EnvelopesRTIndicator(20, 5.0), p, { upper: (i) => i.getUpper(), lower: (i) => i.getLower(), ready }),
+  ),
+  subject("framaDefault", "FRAMA() with the default periods", false, LOG_TOLERANCE, (p) =>
+    series(new FramaRTIndicator(), p, {
+      fractalDimension: (i) => i.getFractalDimension(),
+      alpha: (i) => i.getAlpha(),
+      periods: (i) => i.periods,
+      ready,
+    }),
+  ),
+  subject("frama7", "FRAMA(7), an odd number of periods", false, LOG_TOLERANCE, (p) =>
+    series(new FramaRTIndicator(7), p, {
+      fractalDimension: (i) => i.getFractalDimension(),
+      alpha: (i) => i.getAlpha(),
+      periods: (i) => i.periods,
+      ready,
+    }),
+  ),
+  subject("leastSquaresMovingAverageDefault", "LSMA() with the default periods", false, 0, (p) =>
+    series(new LeastSquaresMovingAverageRTIndicator(), p, { ready }),
+  ),
+  subject("leastSquaresMovingAverage10", "LSMA(10)", false, 0, (p) =>
+    series(new LeastSquaresMovingAverageRTIndicator(10), p, { ready }),
+  ),
+  subject("mcGinleyDynamicDefault", "McGinley Dynamic() with the default periods", false, 0, (p) =>
+    series(new McGinleyDynamicRTIndicator(), p, { ready }),
+  ),
+  subject("mcGinleyDynamic5", "McGinley Dynamic(5)", false, 0, (p) => series(new McGinleyDynamicRTIndicator(5), p, { ready })),
+  subject("momentumDefault", "Momentum() with the default periods", false, 0, (p) => series(new MomentumRTIndicator(), p, { ready })),
+  subject("momentum3", "Momentum(3)", false, 0, (p) => series(new MomentumRTIndicator(3), p, { ready })),
+  subject("rocDefault", "ROC() with the default periods", false, 0, (p) => series(new RocRTIndicator(), p, { ready })),
+  subject("roc3", "ROC(3)", false, 0, (p) => series(new RocRTIndicator(3), p, { ready })),
+  subject("cmoDefault", "CMO() with the default periods", false, 0, (p) => series(new CmoRTIndicator(), p, { ready })),
+  subject("cmo5", "CMO(5)", false, 0, (p) => series(new CmoRTIndicator(5), p, { ready })),
+  subject("detrendedPriceOscillatorDefault", "DPO() with the default periods", false, 0, (p) =>
+    series(new DetrendedPriceOscillatorRTIndicator(), p, { ready }),
+  ),
+  subject("detrendedPriceOscillator7", "DPO(7), an odd number of periods", false, 0, (p) =>
+    series(new DetrendedPriceOscillatorRTIndicator(7), p, { ready }),
   ),
 ];
 

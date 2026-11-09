@@ -1,7 +1,17 @@
 import com.wualabs.qtsurfer.engine.core.KlineInterval;
 import com.wualabs.qtsurfer.engine.core.KlineSnapshot;
 import com.wualabs.qtsurfer.engine.core.instrument.Instrument;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.AlmaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.DemaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.EnvelopesRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.FramaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.LeastSquaresMovingAverageRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.helpers.group.InstrumentGroupRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.MomentumRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.pro.Pro;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.AutocorrelationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.HurstExponentRTIndicator;
@@ -333,8 +343,9 @@ public class Oracle {
 
   /**
    * Like {@link #array}, but a value that is not finite keeps its kind, as the string "NaN",
-   * "Infinity" or "-Infinity" (as the poisons are written): the series of the edge cases can hold
-   * all three, and the TypeScript side must tell them apart.
+   * "Infinity" or "-Infinity" (as the poisons are written): the series of the price-fed indicators
+   * (the edge cases, and the corrupt scenario) can hold all three, and the TypeScript side must tell
+   * them apart.
    */
   static String exactArray(double[] values) {
     StringJoiner j = new StringJoiner(",", "[", "]");
@@ -515,14 +526,99 @@ public class Oracle {
       return run(p, i::update, read("meanReturn", i::getMeanReturn),
           read("realizedVariance", i::getRealizedVariance), ready(i));
     }));
+
+    list.add(new Subject("alma20", false, () -> {
+      var i = new AlmaRTIndicator(20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("alma20Offset05", false, () -> {
+      var i = new AlmaRTIndicator(20, 0.5, 6.0);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("alma20Sigma3", false, () -> {
+      var i = new AlmaRTIndicator(20, 0.85, 3.0);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("dema20", false, () -> {
+      var i = new DemaRTIndicator(20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("envelopesDefault", false, () -> {
+      var i = new EnvelopesRTIndicator();
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("envelopes20Percentage5", false, () -> {
+      var i = new EnvelopesRTIndicator(20, 5.0);
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("framaDefault", false, () -> {
+      var i = new FramaRTIndicator();
+      return run(p, i::update, read("fractalDimension", i::getFractalDimension),
+          read("alpha", i::getAlpha), read("periods", i::getPeriods), ready(i));
+    }));
+    list.add(new Subject("frama7", false, () -> {
+      var i = new FramaRTIndicator(7);
+      return run(p, i::update, read("fractalDimension", i::getFractalDimension),
+          read("alpha", i::getAlpha), read("periods", i::getPeriods), ready(i));
+    }));
+    list.add(new Subject("leastSquaresMovingAverageDefault", false, () -> {
+      var i = new LeastSquaresMovingAverageRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("leastSquaresMovingAverage10", false, () -> {
+      var i = new LeastSquaresMovingAverageRTIndicator(10);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("mcGinleyDynamicDefault", false, () -> {
+      var i = new McGinleyDynamicRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("mcGinleyDynamic5", false, () -> {
+      var i = new McGinleyDynamicRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("momentumDefault", false, () -> {
+      var i = new MomentumRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("momentum3", false, () -> {
+      var i = new MomentumRTIndicator(3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("rocDefault", false, () -> {
+      var i = new RocRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("roc3", false, () -> {
+      var i = new RocRTIndicator(3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("cmoDefault", false, () -> {
+      var i = new CmoRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("cmo5", false, () -> {
+      var i = new CmoRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("detrendedPriceOscillatorDefault", false, () -> {
+      var i = new DetrendedPriceOscillatorRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("detrendedPriceOscillator7", false, () -> {
+      var i = new DetrendedPriceOscillatorRTIndicator(7);
+      return run(p, i::update, ready(i));
+    }));
     return list;
   }
 
   /**
    * The series of the price-fed indicators on {@code p}, one JSON line each, joined by commas. The
-   * scenarios write only the indicators that are not {@code earlier}, with {@link #array} (they must
-   * not throw); the edge cases write all of them, with the non-finite values told apart, and an
-   * indicator that throws is written as {@code {"throws": "<message>"}}.
+   * scenarios write only the indicators that are not {@code earlier} (they must not throw); the edge
+   * cases write all of them, and an indicator that throws is written as {@code {"throws":
+   * "<message>"}}. Both write a value that is not finite with {@link #exactArray}, as NaN, Infinity or
+   * -Infinity: an indicator that does not leave a non-finite price out can give any of the three on
+   * the corrupt scenario.
    */
   static String subjectLines(double[] p, boolean edge, String indent) {
     StringJoiner lines = new StringJoiner(",\n");
@@ -534,8 +630,7 @@ public class Oracle {
       try {
         StringJoiner outputs = new StringJoiner(", ", "{", "}");
         subject.run().get().forEach(
-            (name, series) ->
-                outputs.add("\"" + name + "\": " + (edge ? exactArray(series) : array(series))));
+            (name, series) -> outputs.add("\"" + name + "\": " + exactArray(series)));
         body = outputs.toString();
       } catch (RuntimeException e) {
         if (!edge) {

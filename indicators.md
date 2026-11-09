@@ -26,6 +26,8 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 | Statistics | 9 |
 | Risk and performance ratios | 7 |
 | Volatility estimators | 6 |
+| Averages | 6 |
+| Momentum | 4 |
 
 ## Trend
 
@@ -90,3 +92,27 @@ on every class.
 | Yang-Zhang volatility | `YangZhangVolatilityRTIndicator` | `yangZhang(20)` | `yz20` | | yes | open, high, low and close |
 | EWMA volatility | `EwmaVolatilityRTIndicator` | `ewmaVolatility()` | `ewma0.94` |  |  | exponentially weighted volatility of the log returns of the group's price; lambda 0.94 by default |
 | Realized volatility | `RealizedVolatilityRTIndicator` | `realizedVolatility(20)` | `rvol20` |  |  | standard deviation of the log returns of the group's price over a window |
+
+## Averages
+
+None has a `Pro` call yet: add them with `group.add(name, new Class(…))`. Each reads the group's price.
+
+| Indicator | Class | Call | Id | Outputs | Bars | Notes |
+|---|---|---|---|---|---|---|
+| Arnaud Legoux moving average | `AlmaRTIndicator` | — | | | | Gaussian-weighted average of the window; offset factor 0.85 and sigma factor 6 by default |
+| Double exponential moving average | `DemaRTIndicator` | — | | | | twice an EMA less the EMA of that EMA, for less lag |
+| Envelopes | `EnvelopesRTIndicator` | — | | | | an EMA with a band above and below at a fixed percentage; also the two bands; 20 periods and 2.5% by default |
+| Fractal adaptive moving average | `FramaRTIndicator` | — | | | | EMA whose smoothing follows the fractal dimension of the window; also the dimension and the alpha; an odd number of periods is made even |
+| Least squares moving average | `LeastSquaresMovingAverageRTIndicator` | — | | | | end point of the least-squares line through the window; 25 periods by default |
+| McGinley Dynamic | `McGinleyDynamicRTIndicator` | — | | | | self-adjusting moving average that follows the speed of the price; 14 periods by default |
+
+## Momentum
+
+None has a `Pro` call yet: add them with `group.add(name, new Class(…))`. Each reads the group's price.
+
+| Indicator | Class | Call | Id | Outputs | Bars | Notes |
+|---|---|---|---|---|---|---|
+| Chande momentum oscillator | `CmoRTIndicator` | — | | | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
+| Detrended price oscillator | `DetrendedPriceOscillatorRTIndicator` | — | | | | a past price less the simple moving average of the window; 20 periods by default |
+| Momentum | `MomentumRTIndicator` | — | | | | the price less the price n ticks ago; 10 periods by default |
+| Rate of change | `RocRTIndicator` | — | | | | change of the price over n ticks, in percent; 12 periods by default |

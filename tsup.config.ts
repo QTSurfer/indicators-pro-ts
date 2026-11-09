@@ -14,7 +14,9 @@ export default defineConfig({
     // getId() derives an indicator's type from its class name: the bundle must not rename classes
     options.keepNames = true;
     options.alias = {
+      $averages: `${src}/averages`,
       $core: `${src}/core`,
+      $momentum: `${src}/momentum`,
       $pro: `${src}/pro`,
       $statistics: `${src}/statistics`,
       $trend: `${src}/trend`,

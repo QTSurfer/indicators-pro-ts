@@ -28,13 +28,14 @@ edits it by hand.
 
 ## Layout and conventions
 
-- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `statistics`, `statistics/volatility`…). PascalCase
-  files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()` registers an indicator with
-  the id, the overloads and the output suffixes of the Java engine's `Pro`.
-- Import aliases `$core`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in `tsconfig.json`, `tsup.config.ts`
-  and `vitest.config.ts`.
+- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `statistics`, `statistics/volatility`, `averages`,
+  `momentum`…). PascalCase files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()`
+  registers an indicator with the id, the overloads and the output suffixes of the Java engine's `Pro`.
+- Import aliases `$averages`, `$core`, `$momentum`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in
+  `tsconfig.json`, `tsup.config.ts` and `vitest.config.ts`.
 - Zero runtime dependencies beyond `@qtsurfer/core` and `@qtsurfer/indicators`.
-- A value that is not finite is left out of an indicator, and the last value is kept.
+- The guard against a value that is not finite is the Java class's, ported as it is: most indicators leave the value out and
+  keep the last one, and a few do not guard it because the Java class does not (their doc comment says so).
 - A class that reads whole bars implements `RTIndicatorSource<Kline | Ticker>` and `requiresBarData()`.
 - `indicators.md` has one row per indicator class; `tests/IndicatorsDoc.test.ts` runs every call in it and fails when a
   row differs from what the facade registers.

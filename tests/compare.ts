@@ -4,7 +4,8 @@ import type { Encoded } from "./fixtures";
 /**
  * How a series is compared with Java's. The arithmetic of + - * / and sqrt is exact everywhere, so those
  * series are equal to the last bit (`Object.is`: even the sign of a zero). An indicator that takes
- * logarithms is held to a relative 1e-12: JavaScript engines do not all round a logarithm the way Java's does.
+ * logarithms or an exponential is held to a relative 1e-12: JavaScript engines do not all round a logarithm the way
+ * Java's does.
  */
 export const LOG_TOLERANCE = 1e-12;
 
