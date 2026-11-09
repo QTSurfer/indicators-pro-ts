@@ -57,6 +57,11 @@ hand, from a checkout of the Java engine:
 QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle
 ```
 
+The fixture was written on Apple silicon (arm64). A build of V8 for x86-64 can round a logarithm one bit differently:
+on x86-64 Linux with Node.js 22 the Parkinson volatility is one bit away from Java's at one bar of the reference
+dataset. That is why every series that takes a logarithm is held to a tolerance and not to equality, whatever the
+figures below say for the machine they were measured on. The series that take none are equal to the last bit on both.
+
 The arithmetic of `+ - * /` and `sqrt` is exact in every JavaScript engine, so those series are equal to
 the last bit. That holds the maximum drawdown and the Ulcer index to the last bit, as every other indicator that takes
 no logarithm. The indicators that take logarithms (the four OHLC volatility estimators, the EWMA and realized

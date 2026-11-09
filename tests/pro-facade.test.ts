@@ -29,6 +29,7 @@ import {
   YangZhangVolatilityRTIndicator,
   ZScoreRTIndicator,
 } from "../src";
+import { LOG_TOLERANCE, expectSeries } from "./compare";
 import { inputsOf, klines, reference } from "./fixtures";
 
 const INSTRUMENT = "BTC/USDT";
@@ -122,12 +123,19 @@ describe("a kline group of the facade's indicators", () => {
       st10_3: expected.superTrend.main, st10_3Upper: expected.superTrend.upper, st10_3Lower: expected.superTrend.lower,
       park20: expected.parkinson20, gk20: expected.garmanKlass20, rs20: expected.rogersSatchell20,
     } as Record<string, (number | null)[]>;
-    klines(inputsOf("clean")).forEach((bar, i) => {
+    const actual: Record<string, number[]> = Object.fromEntries(Object.keys(names).map((name) => [name, []]));
+    for (const bar of klines(inputsOf("clean"))) {
       map.updateFrom(bar);
-      for (const [name, series] of Object.entries(names)) {
-        expect(group.getIndicatorValue(name), `${name} at bar ${i}`).toBe(series[i]);
+      for (const name of Object.keys(names)) {
+        actual[name]!.push(group.getIndicatorValue(name));
       }
-    });
+    }
+    // The estimators take logarithms, which an x86-64 build of V8 can round one bit differently from the Java
+    // engine's; every other series is equal to the last bit
+    const takesLogarithms = new Set(["yz20", "park20", "gk20", "rs20"]);
+    for (const [name, series] of Object.entries(names)) {
+      expectSeries(actual[name]!, series, name, takesLogarithms.has(name) ? LOG_TOLERANCE : 0);
+    }
   });
 
   it("holds the bar readers on a bar with a price that is not finite, as the Java kline map does", () => {
