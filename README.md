@@ -1,6 +1,8 @@
 # @qtsurfer/indicators-pro
 
-<p>
+<p align="center">
+  <a href="https://github.com/QTSurfer/indicators-pro-ts/actions/workflows/ci.yaml"><img src="https://github.com/QTSurfer/indicators-pro-ts/actions/workflows/ci.yaml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@qtsurfer/indicators-pro"><img src="https://img.shields.io/npm/v/@qtsurfer/indicators-pro?label=%40qtsurfer%2Findicators-pro" alt="npm"></a>
   <a href="LICENSING.md"><img src="https://img.shields.io/badge/License-AGPL%20v3%20%7C%20commercial-blue.svg" alt="License"></a>
 </p>
 
