@@ -173,6 +173,62 @@ knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9
 knowSureThing "k2" [5,10] [5,5] [1,2] 5
 knowSureThing "k3" [8] [4] [1.5] 3
 knowSureThing "k4" [10,15] [10,10] [0.5,-1.0] 4
+aroon
+aroon 10
+aroon "a"
+aroon "a" 7
+chandeKrollStop
+chandeKrollStop 5 2.5 4 3
+chandeKrollStop 10 2.0 9 9
+chandeKrollStop 10 0.0 9 9
+chandeKrollStop "s"
+chandeKrollStop "s" 7 1.5 6 5
+chandelierExit
+chandelierExit 14 2.5
+chandelierExit 10 2.0
+chandelierExit 10 0.0
+chandelierExit 10 1.0E19
+chandelierExit "x"
+chandelierExit "x" 10 2.0
+donchianChannel
+donchianChannel 10
+donchianChannel "d"
+donchianChannel "d" 15
+efficiencyRatio
+efficiencyRatio 5
+efficiencyRatio "e"
+efficiencyRatio "e" 7
+parabolicSar
+parabolicSar 0.05 0.5
+parabolicSar 1.0 2.0
+parabolicSar 0.0001 0.2
+parabolicSar "p"
+parabolicSar "p" 0.03 0.3
+vortex
+vortex 7
+vortex "v"
+vortex "v" 10
+choppinessIndex
+choppinessIndex 7
+choppinessIndex "c"
+choppinessIndex "c" 10
+keltnerChannel
+keltnerChannel 10 5 2.0
+keltnerChannel 10 5 2.5
+keltnerChannel 10 5 0.0
+keltnerChannel "k"
+keltnerChannel "k" 15 7 1.0
+massIndex
+massIndex 10 4
+massIndex "m"
+massIndex "m" 12 5
+natr 14
+natr 3
+natr "n" 7
+relativeVolatilityIndex
+relativeVolatilityIndex 5 7
+relativeVolatilityIndex "r"
+relativeVolatilityIndex "r" 8 10
 # a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
 superTrend 10 0.0001
 superTrend 10 2.5E-5
@@ -224,3 +280,28 @@ knowSureThing "k" [] [] [] 9
 knowSureThing "k" [0,15] [10,10] [1,2] 9
 knowSureThing "k" [10,15] [0,10] [1,2] 9
 knowSureThing "k" [10,15] [10,10] [1,2] 0
+aroon 0
+aroon "a" 0
+chandeKrollStop 0 1.0 9 9
+chandeKrollStop 10 -1.0 9 9
+chandeKrollStop 10 1.0 0 9
+chandeKrollStop 10 1.0 9 0
+chandeKrollStop "s" 10 1.0 9 0
+chandelierExit 0 3.0
+chandelierExit 22 -1.0
+donchianChannel 0
+efficiencyRatio 0
+parabolicSar 0.0 0.2
+parabolicSar 0.02 0.0
+parabolicSar -0.02 0.2
+vortex 0
+choppinessIndex 0
+keltnerChannel 0 10 1.5
+keltnerChannel 20 0 1.5
+keltnerChannel 20 10 -1.0
+massIndex 0 9
+massIndex 25 0
+natr 0
+natr "n" 0
+relativeVolatilityIndex 1 14
+relativeVolatilityIndex 10 0

@@ -9,5 +9,4 @@ without values that are not finite and on synthetic series of prices and of bars
 `ChoppinessIndexRTIndicator`, `KeltnerChannelRTIndicator`, `MassIndexRTIndicator`, `NatrRTIndicator` and
 `RelativeVolatilityIndexRTIndicator`. All but the efficiency ratio and the relative volatility index read whole bars, so
 they belong on a kline group. A bar with a high, low or close that is not finite (whichever the class reads) is left out,
-and a constructor throws a `RangeError` with the Java message for a degenerate argument. They have no `Pro` call yet:
-register them with `group.add(name, new Class(…))`.
+and a constructor throws a `RangeError` with the Java message for a degenerate argument.

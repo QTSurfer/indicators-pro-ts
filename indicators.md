@@ -8,7 +8,7 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 
 - **Class** — the class exported by `@qtsurfer/indicators-pro`.
 - **Call** — the call of `Pro.on(group)` that registers it with the default id. The statistics, the volatility
-  estimators, ALMA and DEMA have no default period: the call shows 20. `—` when the class is ported and the Java engine
+  estimators, ALMA, DEMA and NATR have no default period: the call shows 20. `—` when the class is ported and the Java engine
   has no `Pro` factory for it yet: it is added with `group.add(name, new Class(…))`, and the Id and Outputs columns are
   empty (the Bars column still says whether the class reads whole bars).
 - **Id** — the name it registers under; the id of every output is this name plus the suffix.
@@ -33,22 +33,22 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 
 ## Trend
 
-Aroon, Chande Kroll stop, Chandelier exit, Donchian channel, Efficiency ratio, Parabolic SAR and Vortex have no `Pro`
-call yet: register them with `group.add(name, new Class(…))`. Efficiency ratio reads the group's price; the others read
-whole bars.
+Efficiency ratio reads the group's price; the others read whole bars. Each call also takes the parameters of the class,
+with or without a name (`aroon(10)`, `aroon("a", 10)`), and builds the id from them; a whole multiplier, step or
+maximum has no decimal part in the id (`chand22_3`, `psar1_2`).
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
 | ADX | `AdxRTIndicator` | `adx()` | `adx14` | `PlusDI`, `MinusDI` | yes | the main output is the ADX |
-| Aroon | `AroonRTIndicator` | — | | | yes | how many bars ago the highest high and the lowest low of the window were; the value is the oscillator (Aroon Up less Aroon Down, from -100 to 100); the class also gives the two lines; 25 periods by default |
-| Chande Kroll stop | `ChandeKrollStopRTIndicator` | — | | | yes | stop built on the ATR and the extremes of the close; the value is the stop of a long position, the class also gives the one of a short position; 10 ATR periods, a multiplier of 1, and 9 and 9 periods by default |
-| Chandelier exit | `ChandelierExitRTIndicator` | — | | | yes | trailing stop an ATR multiple from the highest high; the value is the long exit, the class also gives the short exit; 22 periods and a multiplier of 3 by default |
-| Donchian channel | `DonchianChannelRTIndicator` | — | | | yes | highest high and lowest low of the window; the value is the middle line, the class also gives the two boundaries; 20 periods by default |
-| Efficiency ratio | `EfficiencyRatioRTIndicator` | — | | | | how much of the movement of the group's price over the window was in one direction, from 0 to 1; the class also gives the direction and the volatility; 10 periods by default |
+| Aroon | `AroonRTIndicator` | `aroon()` | `aroon25` | `Up`, `Down` | yes | how many bars ago the highest high and the lowest low of the window were; the main output is the oscillator (Aroon Up less Aroon Down, from -100 to 100), `Up` and `Down` are the two lines, from 0 to 100; 25 periods by default |
+| Chande Kroll stop | `ChandeKrollStopRTIndicator` | `chandeKrollStop()` | `cks10_1_9_9` | `StopShort` | yes | stop built on the ATR and the extremes of the close; the main output is the stop of a long position, `StopShort` the one of a short position; 10 ATR periods, a multiplier of 1, and 9 and 9 periods by default |
+| Chandelier exit | `ChandelierExitRTIndicator` | `chandelierExit()` | `chand22_3` | `ShortExit` | yes | trailing stop an ATR multiple from the highest high; the main output is the long exit, `ShortExit` the short exit; 22 periods and a multiplier of 3 by default |
+| Donchian channel | `DonchianChannelRTIndicator` | `donchianChannel()` | `donch20` | `Upper`, `Lower` | yes | highest high and lowest low of the window; the main output is the middle line, `Upper` and `Lower` the two boundaries; 20 periods by default |
+| Efficiency ratio | `EfficiencyRatioRTIndicator` | `efficiencyRatio()` | `er10` | | | how much of the movement of the group's price over the window was in one direction, from 0 to 1; the class also gives the direction and the volatility, which are not outputs; 10 periods by default |
 | Ichimoku | `IchimokuRTIndicator` | `ichimoku()` | `ichi9_26_52` | `Kijun`, `SenkouA`, `SenkouB`, `Chikou` | yes | the main output is the Tenkan-sen |
-| Parabolic SAR | `ParabolicSarRTIndicator` | — | | | yes | Wilder's stop and reverse; the value is the SAR, the class also gives the direction of the trend; a step of 0.02 and a maximum of 0.2 by default |
+| Parabolic SAR | `ParabolicSarRTIndicator` | `parabolicSar()` | `psar0.02_0.2` | | yes | Wilder's stop and reverse; the value is the SAR, the class also gives the direction of the trend, which is not an output; a step of 0.02 and a maximum of 0.2 by default |
 | SuperTrend | `SuperTrendRTIndicator` | `superTrend()` | `st10_3` | `Upper`, `Lower` | yes | a whole multiplier has no decimal part in the id |
-| Vortex | `VortexRTIndicator` | — | | | yes | VI+ less VI-; the class also gives the two lines; 14 periods by default |
+| Vortex | `VortexRTIndicator` | `vortex()` | `vortex14` | `ViPlus`, `ViMinus` | yes | the main output is VI+ less VI-; `ViPlus` and `ViMinus` are the two lines; 14 periods by default |
 
 ## Volume
 
@@ -108,16 +108,17 @@ on every class.
 
 ## Volatility
 
-None has a `Pro` call yet: register them with `group.add(name, new Class(…))`. The relative volatility index reads the
-group's price; the others read whole bars. NATR has no default period.
+The relative volatility index reads the group's price; the others read whole bars. Each call also takes the parameters
+of the class, with or without a name (`keltnerChannel(10, 5, 2)`, `keltnerChannel("k", 10, 5, 2)`), and builds the id
+from them. NATR has no default period, so it takes one: `natr(14)` or `natr("n", 14)`.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
-| Choppiness index | `ChoppinessIndexRTIndicator` | — | | | yes | whether the market trends or ranges, from 0 to 100: 100 times the base 10 logarithm of the sum of the true ranges over the range of the window, over the logarithm of the periods; 14 periods by default |
-| Keltner channel | `KeltnerChannelRTIndicator` | — | | | yes | an EMA of the close, the main value, with a band above and below at an ATR multiple; the class also gives the bands; 20 EMA periods, 10 ATR periods and a multiplier of 1.5 by default |
-| Mass index | `MassIndexRTIndicator` | — | | | yes | sum of the ratio of an EMA of the high-low range to the EMA of that EMA; 25 and 9 periods by default |
-| NATR | `NatrRTIndicator` | — | | | yes | the ATR as a percentage of the close, to compare instruments |
-| Relative volatility index | `RelativeVolatilityIndexRTIndicator` | — | | | | the RSI applied to the standard deviation of the group's price, from 0 to 100; 10 and 14 periods by default |
+| Choppiness index | `ChoppinessIndexRTIndicator` | `choppinessIndex()` | `chop14` | | yes | whether the market trends or ranges, from 0 to 100: 100 times the base 10 logarithm of the sum of the true ranges over the range of the window, over the logarithm of the periods; 14 periods by default |
+| Keltner channel | `KeltnerChannelRTIndicator` | `keltnerChannel()` | `kc20_10_1.5` | `Upper`, `Lower` | yes | an EMA of the close, the main output, with a band above and below at an ATR multiple, the `Upper` and `Lower` outputs; 20 EMA periods, 10 ATR periods and a multiplier of 1.5 by default; a whole multiplier has no decimal part in the id |
+| Mass index | `MassIndexRTIndicator` | `massIndex()` | `mass25_9` | | yes | sum of the ratio of an EMA of the high-low range to the EMA of that EMA; 25 and 9 periods by default |
+| NATR | `NatrRTIndicator` | `natr(20)` | `natr20` | | yes | the ATR as a percentage of the close, to compare instruments |
+| Relative volatility index | `RelativeVolatilityIndexRTIndicator` | `relativeVolatilityIndex()` | `rvi10_14` | | | the RSI applied to the standard deviation of the group's price, from 0 to 100; 10 and 14 periods by default |
 
 ## Averages
 
