@@ -173,6 +173,13 @@ knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9
 knowSureThing "k2" [5,10] [5,5] [1,2] 5
 knowSureThing "k3" [8] [4] [1.5] 3
 knowSureThing "k4" [10,15] [10,10] [0.5,-1.0] 4
+# a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
+superTrend 10 0.0001
+superTrend 10 2.5E-5
+rollingPercentile 20 0.0001
+rollingPercentile 20 0.001
+ewmaVolatility 0.0001
+ewmaVolatility 0.99999
 # the limits of the classes come through the factory
 autocorrelation 3
 skewness 2

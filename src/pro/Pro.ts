@@ -139,7 +139,7 @@ export class Pro {
     if (typeof args[0] === "number") {
       const [atrPeriod, multiplier] = args as [number, number];
       // A whole multiplier has no decimal part in the id, as in the Java engine
-      return this.superTrend(`st${atrPeriod}_${multiplier}`, atrPeriod, multiplier);
+      return this.superTrend(`st${atrPeriod}_${numberName(multiplier)}`, atrPeriod, multiplier);
     }
     const [name, atrPeriod, multiplier] = args as [string, number, number];
     const superTrend = new SuperTrendRTIndicator(atrPeriod, multiplier);
@@ -289,7 +289,7 @@ export class Pro {
   rollingPercentile(...args: [number, number] | [string, number, number]): this {
     if (typeof args[0] === "number") {
       const [periods, percentile] = args as [number, number];
-      return this.rollingPercentile(`pctl${periods}_${percentile}`, periods, percentile);
+      return this.rollingPercentile(`pctl${periods}_${numberName(percentile)}`, periods, percentile);
     }
     const [name, periods, percentile] = args as [string, number, number];
     const rolling = new RollingPercentileRTIndicator(periods, percentile);
@@ -508,7 +508,7 @@ export class Pro {
       return this.ewmaVolatility(0.94);
     }
     if (typeof nameOrLambda === "number") {
-      return this.ewmaVolatility(`ewma${nameOrLambda}`, nameOrLambda);
+      return this.ewmaVolatility(`ewma${numberName(nameOrLambda)}`, nameOrLambda);
     }
     const ewma = new EwmaVolatilityRTIndicator(lambda).withAnnualizationFactor(annualizationFactor);
     this.target.add(nameOrLambda, ewma.withMeta("lambda", lambda));
