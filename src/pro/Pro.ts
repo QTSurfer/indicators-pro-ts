@@ -1,4 +1,23 @@
-import { DisplayHint, type InstrumentGroupRTIndicator, type RTIndicator } from "@qtsurfer/indicators";
+import { DisplayHint, type AbstractRTIndicator, type InstrumentGroupRTIndicator, type RTIndicator } from "@qtsurfer/indicators";
+import { javaDouble } from "$core/JavaNumber";
+import { AlmaRTIndicator } from "$averages/AlmaRTIndicator";
+import { DemaRTIndicator } from "$averages/DemaRTIndicator";
+import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
+import { FramaRTIndicator } from "$averages/FramaRTIndicator";
+import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
+import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { AdaptiveFisherTransformRTIndicator } from "$momentum/AdaptiveFisherTransformRTIndicator";
+import { ChandeForecastOscillatorRTIndicator } from "$momentum/ChandeForecastOscillatorRTIndicator";
+import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
+import { ConnorsRsiRTIndicator } from "$momentum/ConnorsRsiRTIndicator";
+import { CoppockCurveRTIndicator } from "$momentum/CoppockCurveRTIndicator";
+import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOscillatorRTIndicator";
+import { FisherTransformRTIndicator } from "$momentum/FisherTransformRTIndicator";
+import { KnowSureThingRTIndicator } from "$momentum/KnowSureThingRTIndicator";
+import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
+import { RocRTIndicator } from "$momentum/RocRTIndicator";
+import { TrixRTIndicator } from "$momentum/TrixRTIndicator";
+import { TrueStrengthIndexRTIndicator } from "$momentum/TrueStrengthIndexRTIndicator";
 import { AutocorrelationRTIndicator } from "$statistics/AutocorrelationRTIndicator";
 import { HurstExponentRTIndicator } from "$statistics/HurstExponentRTIndicator";
 import { KurtosisRTIndicator } from "$statistics/KurtosisRTIndicator";
@@ -41,10 +60,14 @@ import { ProOutput } from "./ProOutput";
  * The bar readers here read whole bars (high, low, volume): they belong on a kline group. On a
  * ticker those values are the exchange's 24-hour statistics and the output stops meaning what its
  * name says. The statistics (`kurtosis`, `autocorrelation`, `hurstExponent`, `linearRegressionSlope`,
- * `rollingPercentile`, `simpleLinearRegression`, `skewness`, `valueAtRisk` and `zScore`) and the risk
+ * `rollingPercentile`, `simpleLinearRegression`, `skewness`, `valueAtRisk` and `zScore`), the risk
  * ones (`calmarRatio`, `maxDrawdown`, `omegaRatio`, `sharpeRatio`, `sortinoRatio`, `tailRatio`,
- * `ulcerIndex`, `ewmaVolatility` and `realizedVolatility`) read the group's price, as the base
- * indicators do: they work on a ticker feed too.
+ * `ulcerIndex`, `ewmaVolatility` and `realizedVolatility`), and the averages and oscillators that
+ * follow them (`alma`, `dema`, `envelopes`, `frama`, `leastSquaresMovingAverage`, `mcGinleyDynamic`,
+ * `momentum`, `roc`, `cmo`, `detrendedPriceOscillator`, `chandeForecastOscillator`, `connorsRsi`,
+ * `coppockCurve`, `fisherTransform`, `adaptiveFisherTransform`, `knowSureThing`, `trix` and
+ * `trueStrengthIndex`) read the group's price, as the base indicators do: they work on a ticker feed
+ * too.
  */
 export class Pro {
   /**
@@ -67,6 +90,7 @@ export class Pro {
   static readonly SUFFIX_R_SQUARED = "RSquared";
   static readonly SUFFIX_STANDARD_ERROR = "StandardError";
   static readonly SUFFIX_CURRENT = "Current";
+  static readonly SUFFIX_SIGNAL = "Signal";
 
   private constructor(private readonly target: InstrumentGroupRTIndicator) {}
 
@@ -557,6 +581,362 @@ export class Pro {
     return this;
   }
 
+  // --- Averages and oscillators: they read the group's price ---
+
+  /**
+   * Arnaud Legoux moving average of the group's price over `periods`, registered as `alma` + periods, with
+   * the offset factor 0.85 and the sigma factor 6 of the class: a Gaussian weighting whose peak sits near the
+   * newest price of the window.
+   *
+   * `offsetFactor` is in [0, 1]: where the peak of the Gaussian sits in the window, 0 at the oldest price and
+   * 1 at the newest. `sigmaFactor` is finite and positive: the window over it is the width of the Gaussian,
+   * so the larger it is, the fewer prices weigh in.
+   */
+  alma(periods: number): this;
+  alma(name: string, periods: number): this;
+  alma(name: string, periods: number, offsetFactor: number, sigmaFactor: number): this;
+  alma(...args: [number] | [string, number] | [string, number, number, number]): this {
+    if (args.length === 1) {
+      return this.alma(`alma${args[0]}`, args[0]);
+    }
+    if (args.length === 2) {
+      const [name, periods] = args;
+      // The class defaults (offset factor 0.85, sigma factor 6), left as they are
+      this.target.add(
+        name,
+        new AlmaRTIndicator(periods).withMeta("periods", periods).withMeta("offsetFactor", 0.85).withMeta("sigmaFactor", 6.0),
+      );
+      return this;
+    }
+    const [name, periods, offsetFactor, sigmaFactor] = args;
+    this.target.add(
+      name,
+      new AlmaRTIndicator(periods, offsetFactor, sigmaFactor)
+        .withMeta("periods", periods)
+        .withMeta("offsetFactor", offsetFactor)
+        .withMeta("sigmaFactor", sigmaFactor),
+    );
+    return this;
+  }
+
+  /** Double exponential moving average of the group's price over `periods`, registered as `dema` + periods. */
+  dema(periods: number): this;
+  dema(name: string, periods: number): this;
+  dema(nameOrPeriods: string | number, periods?: number): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.dema(`dema${nameOrPeriods}`, nameOrPeriods);
+    }
+    this.target.add(nameOrPeriods, new DemaRTIndicator(periods!).withMeta("periods", periods));
+    return this;
+  }
+
+  /**
+   * Envelopes of the group's price: an EMA of 20 periods with a band of 2.5% above and below it, registered
+   * as `env20_2.5`. The indicator itself is the middle line; the upper and the lower bands are its other
+   * outputs. The id is `env` + periods + `_` + percentage, and a whole percentage drops its decimal part, as
+   * the SuperTrend multiplier does (`env20_2.5`, `env20_5`). `percentage` is finite and at least 0: how far
+   * each band sits from the EMA, in percent of it (0 puts both bands on the middle line).
+   */
+  envelopes(): this;
+  envelopes(periods: number, percentage: number): this;
+  envelopes(name: string): this;
+  envelopes(name: string, periods: number, percentage: number): this;
+  envelopes(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [20, 2.5],
+      (periods, percentage) => `env${periods}_${numberName(percentage)}`,
+      (name, periods, percentage) => {
+        const envelopes = new EnvelopesRTIndicator(periods, percentage);
+        envelopes.withMeta("periods", periods).withMeta("percentage", percentage);
+        // The indicator itself is the middle line; the bands are price levels
+        this.withOutputs(
+          name,
+          envelopes,
+          output(Pro.SUFFIX_UPPER, () => envelopes.getUpper(), envelopes, DisplayHint.ABSOLUTE),
+          output(Pro.SUFFIX_LOWER, () => envelopes.getLower(), envelopes, DisplayHint.ABSOLUTE),
+        );
+      },
+    );
+  }
+
+  /**
+   * Fractal adaptive moving average of the group's price over 20 periods, registered as `frama20`. The
+   * fractal dimension and the smoothing factor it works from are diagnostics of the class, not outputs.
+   * `periods` is at least 3. The class rounds an odd value up to the next even one, but the id and the
+   * metadata record the value asked for (`frama(21)` is `frama21`).
+   */
+  frama(): this;
+  frama(periods: number): this;
+  frama(name: string): this;
+  frama(name: string, periods: number): this;
+  frama(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "frama", 20, (periods) => new FramaRTIndicator(periods));
+  }
+
+  /**
+   * Least squares moving average of the group's price over 25 periods, registered as `lsma25`: the value the
+   * regression line of the window takes at the newest price. `periods` is at least 2.
+   */
+  leastSquaresMovingAverage(): this;
+  leastSquaresMovingAverage(periods: number): this;
+  leastSquaresMovingAverage(name: string): this;
+  leastSquaresMovingAverage(name: string, periods: number): this;
+  leastSquaresMovingAverage(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "lsma", 25, (periods) => new LeastSquaresMovingAverageRTIndicator(periods));
+  }
+
+  /** McGinley Dynamic of the group's price over 14 periods, registered as `mcg14`. */
+  mcGinleyDynamic(): this;
+  mcGinleyDynamic(periods: number): this;
+  mcGinleyDynamic(name: string): this;
+  mcGinleyDynamic(name: string, periods: number): this;
+  mcGinleyDynamic(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "mcg", 14, (periods) => new McGinleyDynamicRTIndicator(periods));
+  }
+
+  /** Momentum of the group's price over 10 periods, registered as `mom10`: the price minus the price 10 periods ago. */
+  momentum(): this;
+  momentum(periods: number): this;
+  momentum(name: string): this;
+  momentum(name: string, periods: number): this;
+  momentum(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "mom", 10, (periods) => new MomentumRTIndicator(periods));
+  }
+
+  /** Rate of change of the group's price over 12 periods, in percent, registered as `roc12`. */
+  roc(): this;
+  roc(periods: number): this;
+  roc(name: string): this;
+  roc(name: string, periods: number): this;
+  roc(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "roc", 12, (periods) => new RocRTIndicator(periods));
+  }
+
+  /** Chande momentum oscillator of the group's price over 14 periods, in [-100, 100], registered as `cmo14`. */
+  cmo(): this;
+  cmo(periods: number): this;
+  cmo(name: string): this;
+  cmo(name: string, periods: number): this;
+  cmo(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "cmo", 14, (periods) => new CmoRTIndicator(periods));
+  }
+
+  /** Detrended price oscillator of the group's price over 20 periods, registered as `dpo20`. `periods` is at least 3. */
+  detrendedPriceOscillator(): this;
+  detrendedPriceOscillator(periods: number): this;
+  detrendedPriceOscillator(name: string): this;
+  detrendedPriceOscillator(name: string, periods: number): this;
+  detrendedPriceOscillator(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "dpo", 20, (periods) => new DetrendedPriceOscillatorRTIndicator(periods));
+  }
+
+  /**
+   * Chande forecast oscillator of the group's price over 14 periods, registered as `cfo14`: the distance of
+   * the price from its regression line, in percent of the price. The regression value it works from is a
+   * diagnostic of the class, not an output. `periods` is at least 2.
+   */
+  chandeForecastOscillator(): this;
+  chandeForecastOscillator(periods: number): this;
+  chandeForecastOscillator(name: string): this;
+  chandeForecastOscillator(name: string, periods: number): this;
+  chandeForecastOscillator(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "cfo", 14, (periods) => new ChandeForecastOscillatorRTIndicator(periods));
+  }
+
+  /** Fisher transform of the group's price over 10 periods, registered as `fisher10`. `periods` is at least 2. */
+  fisherTransform(): this;
+  fisherTransform(periods: number): this;
+  fisherTransform(name: string): this;
+  fisherTransform(name: string, periods: number): this;
+  fisherTransform(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "fisher", 10, (periods) => new FisherTransformRTIndicator(periods));
+  }
+
+  /** TRIX of the group's price over 15 periods, registered as `trix15`. */
+  trix(): this;
+  trix(periods: number): this;
+  trix(name: string): this;
+  trix(name: string, periods: number): this;
+  trix(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "trix", 15, (periods) => new TrixRTIndicator(periods));
+  }
+
+  /**
+   * Connors RSI of the group's price with the standard (3, 2, 100) parameters, registered as `crsi3_2_100`,
+   * or as `crsi` + RSI period + `_` + streak RSI period + `_` + rank period. `rsiPeriod` is the period of
+   * the RSI of the price, at least 1; `streakRsiPeriod` the period of the RSI of the streak of up and down
+   * closes, at least 1; `rankPeriod` the window of the percent rank of the rate of change, at least 2.
+   */
+  connorsRsi(): this;
+  connorsRsi(rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number): this;
+  connorsRsi(name: string): this;
+  connorsRsi(name: string, rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number): this;
+  connorsRsi(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+    return this.shaped(
+      args,
+      [3, 2, 100],
+      (rsiPeriod, streakRsiPeriod, rankPeriod) => `crsi${rsiPeriod}_${streakRsiPeriod}_${rankPeriod}`,
+      (name, rsiPeriod, streakRsiPeriod, rankPeriod) => {
+        this.target.add(
+          name,
+          new ConnorsRsiRTIndicator(rsiPeriod, streakRsiPeriod, rankPeriod)
+            .withMeta("rsiPeriod", rsiPeriod)
+            .withMeta("streakRsiPeriod", streakRsiPeriod)
+            .withMeta("rankPeriod", rankPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * Coppock curve of the group's price with the standard (14, 11, 10) parameters, registered as
+   * `coppock14_11_10`, or as `coppock` + long ROC + `_` + short ROC + `_` + WMA period. `longRoc` and
+   * `shortRoc` are the lookbacks of the two rates of change, `wmaPeriod` the period of the weighted moving
+   * average of their sum; each is at least 1.
+   */
+  coppockCurve(): this;
+  coppockCurve(longRoc: number, shortRoc: number, wmaPeriod: number): this;
+  coppockCurve(name: string): this;
+  coppockCurve(name: string, longRoc: number, shortRoc: number, wmaPeriod: number): this;
+  coppockCurve(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+    return this.shaped(
+      args,
+      [14, 11, 10],
+      (longRoc, shortRoc, wmaPeriod) => `coppock${longRoc}_${shortRoc}_${wmaPeriod}`,
+      (name, longRoc, shortRoc, wmaPeriod) => {
+        this.target.add(
+          name,
+          new CoppockCurveRTIndicator(longRoc, shortRoc, wmaPeriod)
+            .withMeta("longRoc", longRoc)
+            .withMeta("shortRoc", shortRoc)
+            .withMeta("wmaPeriod", wmaPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * Adaptive Fisher transform of the group's price with the standard (10, 5, 20) parameters, registered as
+   * `afisher10_5_20`, or as `afisher` + efficiency ratio period + `_` + minimum period + `_` + maximum
+   * period. The efficiency ratio and the adaptive period it works from are diagnostics of the class, not
+   * outputs. `erPeriod` is the lookback of the efficiency ratio, at least 1 and below `maxPeriod`;
+   * `minPeriod` the shortest normalization window, at least 2 and at most `maxPeriod`; `maxPeriod` the
+   * longest.
+   */
+  adaptiveFisherTransform(): this;
+  adaptiveFisherTransform(erPeriod: number, minPeriod: number, maxPeriod: number): this;
+  adaptiveFisherTransform(name: string): this;
+  adaptiveFisherTransform(name: string, erPeriod: number, minPeriod: number, maxPeriod: number): this;
+  adaptiveFisherTransform(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+    return this.shaped(
+      args,
+      [10, 5, 20],
+      (erPeriod, minPeriod, maxPeriod) => `afisher${erPeriod}_${minPeriod}_${maxPeriod}`,
+      (name, erPeriod, minPeriod, maxPeriod) => {
+        this.target.add(
+          name,
+          new AdaptiveFisherTransformRTIndicator(erPeriod, minPeriod, maxPeriod)
+            .withMeta("erPeriod", erPeriod)
+            .withMeta("minPeriod", minPeriod)
+            .withMeta("maxPeriod", maxPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * True strength index of the group's price with the standard (25, 13) periods, registered as `tsi25_13`,
+   * or as `tsi` + long period + `_` + short period. `longPeriod` is the period of the first smoothing and
+   * `shortPeriod` that of the second, each at least 1.
+   */
+  trueStrengthIndex(): this;
+  trueStrengthIndex(longPeriod: number, shortPeriod: number): this;
+  trueStrengthIndex(name: string): this;
+  trueStrengthIndex(name: string, longPeriod: number, shortPeriod: number): this;
+  trueStrengthIndex(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [25, 13],
+      (longPeriod, shortPeriod) => `tsi${longPeriod}_${shortPeriod}`,
+      (name, longPeriod, shortPeriod) => {
+        this.target.add(
+          name,
+          new TrueStrengthIndexRTIndicator(longPeriod, shortPeriod)
+            .withMeta("longPeriod", longPeriod)
+            .withMeta("shortPeriod", shortPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * Know Sure Thing of the group's price with the class defaults, registered as `kst`: rates of change over
+   * 10, 15, 20 and 30 periods, smoothed over 10, 10, 10 and 15 and weighted 1 to 4. The indicator itself is
+   * the KST line; its signal line, the SMA of 9 periods of the KST, is the other output. The parameters are
+   * arrays, so no id is built from them: the form with parameters needs a name.
+   *
+   * `rocPeriods` is the lookback of each rate of change, e.g. `[10, 15, 20, 30]`: at least one, each at least
+   * 1. `smaPeriods` is the smoothing period of each rate of change, at least 1, as many as `rocPeriods`.
+   * `weights` is the finite weight of each smoothed rate of change, as many as `rocPeriods`. `signalPeriod`
+   * is the period of the signal line, at least 1; the default is 9. The class copies the weights and keeps
+   * none of the other arrays.
+   */
+  knowSureThing(): this;
+  knowSureThing(name: string): this;
+  knowSureThing(
+    name: string,
+    rocPeriods: readonly number[],
+    smaPeriods: readonly number[],
+    weights: readonly number[],
+    signalPeriod: number,
+  ): this;
+  knowSureThing(
+    ...args: [] | [string] | [string, readonly number[], readonly number[], readonly number[], number]
+  ): this {
+    const name = args[0] ?? "kst";
+    // The class defaults (ROC periods, smoothing periods and weights as above, signal period 9), left as they are
+    const kst =
+      args.length === 5 ? new KnowSureThingRTIndicator(args[1], args[2], args[3], args[4]) : new KnowSureThingRTIndicator();
+    kst.withMeta("signalPeriod", args.length === 5 ? args[4] : 9);
+    return this.withOutputs(name, kst, output(Pro.SUFFIX_SIGNAL, () => kst.getSignal(), kst, DisplayHint.ABSOLUTE));
+  }
+
+  /**
+   * The four shapes of a factory whose class has a no-argument constructor, `()`, `(...params)`, `(name)`
+   * and `(name, ...params)`: the id of the forms without a name is built from the parameters, and the
+   * parameters are the defaults of the class when none is given.
+   */
+  private shaped(
+    args: readonly unknown[],
+    defaults: readonly number[],
+    idOf: (...params: number[]) => string,
+    register: (name: string, ...params: number[]) => void,
+  ): this {
+    const named = typeof args[0] === "string";
+    const given = (named ? args.slice(1) : args) as number[];
+    const params = given.length === 0 ? [...defaults] : given;
+    register(named ? (args[0] as string) : idOf(...params), ...params);
+    return this;
+  }
+
+  /** The four shapes of a factory with a single period: `()`, `(periods)`, `(name)` and `(name, periods)`. */
+  private periodic(
+    args: [] | [number] | [string] | [string, number],
+    prefix: string,
+    defaultPeriods: number,
+    create: (periods: number) => AbstractRTIndicator,
+  ): this {
+    return this.shaped(
+      args,
+      [defaultPeriods],
+      (periods) => `${prefix}${periods}`,
+      (name, periods) => {
+        this.target.add(name, create(periods).withMeta("periods", periods));
+      },
+    );
+  }
+
   private withOutputs(name: string, main: RTIndicator, ...outputs: Output[]): this {
     this.target.add(name, main);
     for (const { suffix, view } of outputs) {
@@ -569,6 +949,21 @@ export class Pro {
 interface Output {
   suffix: string;
   view: ProOutput;
+}
+
+const LONG_MAX = 9223372036854775807n;
+const LONG_MIN = -9223372036854775808n;
+
+/**
+ * A number in an id as the Java engine's `Pro` writes it: a whole value as a long, without its decimal part (`5`,
+ * not `5.0`), and any other as `Double.toString` does (`2.5`, `1.0E-4`).
+ */
+function numberName(value: number): string {
+  if (Number.isInteger(value)) {
+    const whole = BigInt(value);
+    return String(whole > LONG_MAX ? LONG_MAX : whole < LONG_MIN ? LONG_MIN : whole);
+  }
+  return javaDouble(value);
 }
 
 function output(suffix: string, read: () => number, owner: RTIndicator, hint: DisplayHint): Output {

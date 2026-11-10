@@ -797,6 +797,8 @@ public class Oracle {
       String token = tokens[i];
       if (token.startsWith("\"")) {
         args.add(token.substring(1, token.length() - 1));
+      } else if (token.startsWith("[")) {
+        args.add(facadeArray(token));
       } else if (token.contains(".")) {
         args.add(Double.valueOf(token));
       } else {
@@ -817,7 +819,7 @@ public class Oracle {
     }
     InstrumentGroupRTIndicator group = new InstrumentGroupRTIndicator(INSTRUMENT);
     try {
-      method.invoke(Pro.on(group), args.toArray());
+      method.invoke(Pro.on(group), converted(method.getParameterTypes(), args));
     } catch (InvocationTargetException e) {
       return "{\"throws\": true}";
     } catch (ReflectiveOperationException e) {
@@ -840,7 +842,34 @@ public class Oracle {
     return out.toString();
   }
 
-  /** An integer argument also fits a double parameter, as it does in a Java call. */
+  /**
+   * An array token such as {@code [10,15,20]}: an {@code int[]}, or a {@code double[]} when any of its numbers has a
+   * decimal point. The empty array {@code []} is an {@code int[]}.
+   */
+  static Object facadeArray(String token) {
+    String inner = token.substring(1, token.length() - 1).strip();
+    if (inner.isEmpty()) {
+      return new int[0];
+    }
+    String[] parts = inner.split(",");
+    if (inner.contains(".")) {
+      double[] values = new double[parts.length];
+      for (int i = 0; i < parts.length; i++) {
+        values[i] = Double.parseDouble(parts[i].strip());
+      }
+      return values;
+    }
+    int[] values = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) {
+      values[i] = Integer.parseInt(parts[i].strip());
+    }
+    return values;
+  }
+
+  /**
+   * An integer argument also fits a double parameter, as it does in a Java call, and an {@code int[]} a {@code
+   * double[]} one, so that a line can write {@code [1,2]} for weights.
+   */
   static boolean accepts(Class<?>[] types, List<Object> args) {
     for (int i = 0; i < types.length; i++) {
       Object arg = args.get(i);
@@ -850,12 +879,27 @@ public class Oracle {
               ? arg instanceof String
               : type == int.class
                   ? arg instanceof Integer
-                  : type == double.class && (arg instanceof Double || arg instanceof Integer);
+                  : type == double.class
+                      ? arg instanceof Double || arg instanceof Integer
+                      : type == int[].class
+                          ? arg instanceof int[]
+                          : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
       if (!fits) {
         return false;
       }
     }
     return true;
+  }
+
+  /** The arguments as the method takes them: reflection widens an {@code int} to a {@code double}, not an array. */
+  static Object[] converted(Class<?>[] types, List<Object> args) {
+    Object[] out = args.toArray();
+    for (int i = 0; i < types.length; i++) {
+      if (types[i] == double[].class && out[i] instanceof int[] ints) {
+        out[i] = Arrays.stream(ints).asDoubleStream().toArray();
+      }
+    }
+    return out;
   }
 
   static String jsonString(String value) {

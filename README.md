@@ -45,8 +45,7 @@ the rolling percentile, the Calmar, Omega, Sharpe, Sortino and tail ratios, the 
 the EWMA and realized volatilities, the four OHLC volatility estimators, the ALMA, DEMA, FRAMA, least squares and
 McGinley Dynamic moving averages, the envelopes, Momentum, ROC, the Chande momentum and forecast oscillators, the
 detrended price oscillator, Connors RSI, the Coppock curve, the Fisher and adaptive Fisher transforms, Know sure
-thing, TRIX and the true strength index). The eighteen averages and momentum indicators have no `Pro` call yet: add
-them with `group.add(name, new Class(…))`. ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is
+thing, TRIX and the true strength index). ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is
 compared with the Java engine, value by value, on a seeded dataset and on the same one with values that are not finite,
 and on short synthetic series that reach the guards the dataset does not (see below).
 

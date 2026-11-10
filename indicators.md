@@ -7,9 +7,10 @@ Update the row in the same change that adds a class or a factory:
 does not exist, or the id, the outputs or the bar flag differ from what the facade registers.
 
 - **Class** — the class exported by `@qtsurfer/indicators-pro`.
-- **Call** — the call of `Pro.on(group)` that registers it with the default id. The statistics and the volatility
-  estimators have no default period: the call shows 20. `—` when the class is ported and the Java engine has no `Pro`
-  factory for it yet: it is added with `group.add(name, new Class(…))`, and the Id, Outputs and Bars columns are empty.
+- **Call** — the call of `Pro.on(group)` that registers it with the default id. The statistics, the volatility
+  estimators, ALMA and DEMA have no default period: the call shows 20. `—` when the class is ported and the Java engine
+  has no `Pro` factory for it yet: it is added with `group.add(name, new Class(…))`, and the Id, Outputs and Bars columns
+  are empty.
 - **Id** — the name it registers under; the id of every output is this name plus the suffix.
 - **Outputs** — the suffixes of the other values an indicator with several outputs registers beside it. The indicator
   itself is its main output.
@@ -95,32 +96,36 @@ on every class.
 
 ## Averages
 
-None has a `Pro` call yet: add them with `group.add(name, new Class(…))`. Each reads the group's price.
+Each reads the group's price, so it works on a ticker feed too. Each call also takes the parameters of the class, with
+or without a name (`mcGinleyDynamic(10)`, `mcGinleyDynamic("m", 10)`), and builds the id from them; ALMA and DEMA have
+no default period, so they take one.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
-| Arnaud Legoux moving average | `AlmaRTIndicator` | — | | | | Gaussian-weighted average of the window; offset factor 0.85 and sigma factor 6 by default |
-| Double exponential moving average | `DemaRTIndicator` | — | | | | twice an EMA less the EMA of that EMA, for less lag |
-| Envelopes | `EnvelopesRTIndicator` | — | | | | an EMA with a band above and below at a fixed percentage; also the two bands; 20 periods and 2.5% by default |
-| Fractal adaptive moving average | `FramaRTIndicator` | — | | | | EMA whose smoothing follows the fractal dimension of the window; also the dimension and the alpha; an odd number of periods is made even |
-| Least squares moving average | `LeastSquaresMovingAverageRTIndicator` | — | | | | end point of the least-squares line through the window; 25 periods by default |
-| McGinley Dynamic | `McGinleyDynamicRTIndicator` | — | | | | self-adjusting moving average that follows the speed of the price; 14 periods by default |
+| Arnaud Legoux moving average | `AlmaRTIndicator` | `alma(20)` | `alma20` |  | | Gaussian-weighted average of the window; offset factor 0.85 and sigma factor 6 by default |
+| Double exponential moving average | `DemaRTIndicator` | `dema(20)` | `dema20` |  | | twice an EMA less the EMA of that EMA, for less lag |
+| Envelopes | `EnvelopesRTIndicator` | `envelopes()` | `env20_2.5` | `Upper`, `Lower` | | an EMA, the main output, with a band above and below it at a fixed percentage; 20 periods and 2.5% by default; a whole percentage has no decimal part in the id |
+| Fractal adaptive moving average | `FramaRTIndicator` | `frama()` | `frama20` |  | | EMA whose smoothing follows the fractal dimension of the window; the class also gives the dimension and the alpha, which are not outputs; an odd number of periods is made even, and the id keeps the number given |
+| Least squares moving average | `LeastSquaresMovingAverageRTIndicator` | `leastSquaresMovingAverage()` | `lsma25` |  | | end point of the least-squares line through the window; 25 periods by default |
+| McGinley Dynamic | `McGinleyDynamicRTIndicator` | `mcGinleyDynamic()` | `mcg14` |  | | self-adjusting moving average that follows the speed of the price; 14 periods by default |
 
 ## Momentum
 
-None has a `Pro` call yet: add them with `group.add(name, new Class(…))`. Each reads the group's price.
+Each reads the group's price, so it works on a ticker feed too. Each call also takes the parameters of the class, with
+or without a name (`roc(5)`, `roc("r", 5)`), and builds the id from them. Know sure thing takes its arrays only with a
+name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
-| Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | — | | | | Fisher transform whose window follows the efficiency ratio; also the ratio and the window; 10, 5 and 20 periods by default |
-| Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | — | | | | percentage deviation of the price from its least squares average; also that average; 14 periods by default |
-| Chande momentum oscillator | `CmoRTIndicator` | — | | | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
-| Connors RSI | `ConnorsRsiRTIndicator` | — | | | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
-| Coppock curve | `CoppockCurveRTIndicator` | — | | | | weighted moving average of the sum of two rates of change; 14, 11 and 10 periods by default |
-| Detrended price oscillator | `DetrendedPriceOscillatorRTIndicator` | — | | | | a past price less the simple moving average of the window; 20 periods by default |
-| Fisher transform | `FisherTransformRTIndicator` | — | | | | the price turned into a Gaussian-like variable for sharper turning points; 10 periods by default |
-| Know sure thing | `KnowSureThingRTIndicator` | — | | | | weighted sum of four smoothed rates of change; also the signal, an average of the KST; Pring's periods and weights by default |
-| Momentum | `MomentumRTIndicator` | — | | | | the price less the price n ticks ago; 10 periods by default |
-| Rate of change | `RocRTIndicator` | — | | | | change of the price over n ticks, in percent; 12 periods by default |
-| TRIX | `TrixRTIndicator` | — | | | | rate of change of a triple EMA, in percent; 15 periods by default |
-| True strength index | `TrueStrengthIndexRTIndicator` | — | | | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
+| Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | `adaptiveFisherTransform()` | `afisher10_5_20` |  | | Fisher transform whose window follows the efficiency ratio; the class also gives the ratio and the window, which are not outputs; 10, 5 and 20 periods by default |
+| Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | `chandeForecastOscillator()` | `cfo14` |  | | percentage deviation of the price from its least squares average, which is not an output; 14 periods by default |
+| Chande momentum oscillator | `CmoRTIndicator` | `cmo()` | `cmo14` |  | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
+| Connors RSI | `ConnorsRsiRTIndicator` | `connorsRsi()` | `crsi3_2_100` |  | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
+| Coppock curve | `CoppockCurveRTIndicator` | `coppockCurve()` | `coppock14_11_10` |  | | weighted moving average of the sum of two rates of change; 14, 11 and 10 periods by default |
+| Detrended price oscillator | `DetrendedPriceOscillatorRTIndicator` | `detrendedPriceOscillator()` | `dpo20` |  | | a past price less the simple moving average of the window; 20 periods by default |
+| Fisher transform | `FisherTransformRTIndicator` | `fisherTransform()` | `fisher10` |  | | the price turned into a Gaussian-like variable for sharper turning points; 10 periods by default |
+| Know sure thing | `KnowSureThingRTIndicator` | `knowSureThing()` | `kst` | `Signal` | | weighted sum of four smoothed rates of change; the signal, an average of the KST, is the `Signal` output; Pring's periods and weights by default |
+| Momentum | `MomentumRTIndicator` | `momentum()` | `mom10` |  | | the price less the price n ticks ago; 10 periods by default |
+| Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
+| TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
+| True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
