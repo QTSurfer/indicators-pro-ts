@@ -9,6 +9,8 @@ export interface Reference {
   scenarios: Record<"clean" | "corrupt", Expected>;
   /** Short synthetic price series, and what every price-fed indicator gives on each. */
   edges: Record<string, EdgeExpected>;
+  /** Synthetic series of bars, and what every indicator that reads whole bars gives on each. */
+  barEdges: Record<string, BarEdgeExpected>;
   /** What each call of `facade-calls.txt` registers on an empty group through the Java engine's `Pro`. */
   facade: Record<string, FacadeExpected>;
 }
@@ -32,6 +34,17 @@ export type SeriesSet = Record<string, Encoded[]>;
 
 export interface EdgeExpected {
   price: number[];
+  /** By the key of the indicator and its parameters; `{ throws }` when the Java indicator threw. */
+  series: Record<string, SeriesSet | { throws: string }>;
+}
+
+/** A synthetic series of bars, written as inputs (a field that is not finite is a string), and the series of the bar-fed indicators on it. */
+export interface BarEdgeExpected {
+  open: Encoded[];
+  high: Encoded[];
+  low: Encoded[];
+  close: Encoded[];
+  volume: Encoded[];
   /** By the key of the indicator and its parameters; `{ throws }` when the Java indicator threw. */
   series: Record<string, SeriesSet | { throws: string }>;
 }

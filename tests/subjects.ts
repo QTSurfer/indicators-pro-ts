@@ -36,6 +36,18 @@ import { TailRatioRTIndicator } from "$statistics/ratios/TailRatioRTIndicator";
 import { UlcerIndexRTIndicator } from "$statistics/ratios/UlcerIndexRTIndicator";
 import { EwmaVolatilityRTIndicator } from "$statistics/volatility/EwmaVolatilityRTIndicator";
 import { RealizedVolatilityRTIndicator } from "$statistics/volatility/RealizedVolatilityRTIndicator";
+import { AroonRTIndicator } from "$trend/AroonRTIndicator";
+import { ChandeKrollStopRTIndicator } from "$trend/ChandeKrollStopRTIndicator";
+import { ChandelierExitRTIndicator } from "$trend/ChandelierExitRTIndicator";
+import { DonchianChannelRTIndicator } from "$trend/DonchianChannelRTIndicator";
+import { EfficiencyRatioRTIndicator } from "$trend/EfficiencyRatioRTIndicator";
+import { ParabolicSarRTIndicator } from "$trend/ParabolicSarRTIndicator";
+import { VortexRTIndicator } from "$trend/VortexRTIndicator";
+import { ChoppinessIndexRTIndicator } from "$volatility/ChoppinessIndexRTIndicator";
+import { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator";
+import { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
+import { NatrRTIndicator } from "$volatility/NatrRTIndicator";
+import { RelativeVolatilityIndexRTIndicator } from "$volatility/RelativeVolatilityIndexRTIndicator";
 import { LOG_TOLERANCE, expectSeries } from "./compare";
 import type { SeriesSet } from "./fixtures";
 
@@ -68,6 +80,7 @@ function series<T extends { update(price: number): number }>(indicator: T, price
 }
 
 const ready = (indicator: { isReady(): boolean }): number => (indicator.isReady() ? 1 : 0);
+const flag = (value: boolean): number => (value ? 1 : 0);
 
 function subject(key: string, label: string, earlier: boolean, tolerance: number, run: Subject["run"]): Subject {
   return { key, label, earlier, tolerance, run };
@@ -304,6 +317,56 @@ export const subjects: Subject[] = [
     series(new TrueStrengthIndexRTIndicator(), p, { ready }),
   ),
   subject("trueStrengthIndex5_3", "True strength index(5, 3)", false, 0, (p) => series(new TrueStrengthIndexRTIndicator(5, 3), p, { ready })),
+
+  subject("efficiencyRatioDefault", "Efficiency ratio()", false, 0, (p) =>
+    series(new EfficiencyRatioRTIndicator(), p, { direction: (i) => i.getDirection(), volatility: (i) => i.getVolatility(), ready }),
+  ),
+  subject("efficiencyRatio3", "Efficiency ratio(3)", false, 0, (p) =>
+    series(new EfficiencyRatioRTIndicator(3), p, { direction: (i) => i.getDirection(), volatility: (i) => i.getVolatility(), ready }),
+  ),
+  subject("efficiencyRatio1", "Efficiency ratio(1)", false, 0, (p) =>
+    series(new EfficiencyRatioRTIndicator(1), p, { direction: (i) => i.getDirection(), volatility: (i) => i.getVolatility(), ready }),
+  ),
+  subject("relativeVolatilityIndexDefault", "Relative volatility index()", false, 0, (p) =>
+    series(new RelativeVolatilityIndexRTIndicator(), p, { ready }),
+  ),
+  subject("relativeVolatilityIndex5_3", "Relative volatility index(5, 3)", false, 0, (p) =>
+    series(new RelativeVolatilityIndexRTIndicator(5, 3), p, { ready }),
+  ),
+  subject("relativeVolatilityIndex2_1", "Relative volatility index(2, 1)", false, 0, (p) =>
+    series(new RelativeVolatilityIndexRTIndicator(2, 1), p, { ready }),
+  ),
+
+  // The indicators that read whole bars, fed a price through update(): the bar has every field equal to the price
+  // (the Mass index takes the price as the range itself)
+  subject("aroon5AsPrice", "Aroon(5) fed a price", false, 0, (p) =>
+    series(new AroonRTIndicator(5), p, { up: (i) => i.getAroonUp(), down: (i) => i.getAroonDown(), ready }),
+  ),
+  subject("chandeKrollStop5AsPrice", "Chande Kroll stop(4, 1.5, 3, 2) fed a price", false, 0, (p) =>
+    series(new ChandeKrollStopRTIndicator(4, 1.5, 3, 2), p, { stopShort: (i) => i.getStopShort(), ready }),
+  ),
+  subject("chandelierExit5AsPrice", "Chandelier exit(5, 2) fed a price", false, 0, (p) =>
+    series(new ChandelierExitRTIndicator(5, 2.0), p, { shortExit: (i) => i.getShortExit(), ready }),
+  ),
+  subject("donchianChannel5AsPrice", "Donchian channel(5) fed a price", false, 0, (p) =>
+    series(new DonchianChannelRTIndicator(5), p, { upper: (i) => i.getUpper(), lower: (i) => i.getLower(), ready }),
+  ),
+  subject("parabolicSarDefaultAsPrice", "Parabolic SAR() fed a price", false, 0, (p) =>
+    series(new ParabolicSarRTIndicator(), p, { upTrend: (i) => flag(i.isUpTrend()), ready }),
+  ),
+  subject("vortex5AsPrice", "Vortex(5) fed a price", false, 0, (p) =>
+    series(new VortexRTIndicator(5), p, { viPlus: (i) => i.getVIPlus(), viMinus: (i) => i.getVIMinus(), ready }),
+  ),
+  subject("choppinessIndex5AsPrice", "Choppiness index(5) fed a price", false, LOG_TOLERANCE, (p) =>
+    series(new ChoppinessIndexRTIndicator(5), p, { ready }),
+  ),
+  subject("keltnerChannel5_3_2AsPrice", "Keltner channel(5, 3, 2) fed a price", false, 0, (p) =>
+    series(new KeltnerChannelRTIndicator(5, 3, 2.0), p, { upper: (i) => i.getUpper(), lower: (i) => i.getLower(), ready }),
+  ),
+  subject("massIndex5_3AsPrice", "Mass index(5, 3) fed a price as the range", false, 0, (p) =>
+    series(new MassIndexRTIndicator(5, 3), p, { ready }),
+  ),
+  subject("natr5AsPrice", "NATR(5) fed a price", false, 0, (p) => series(new NatrRTIndicator(5), p, { ready })),
 ];
 
 /** Runs a subject on the prices and compares each of its outputs with Java's. */

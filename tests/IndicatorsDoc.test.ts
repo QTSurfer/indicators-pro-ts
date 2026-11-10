@@ -85,6 +85,14 @@ describe("indicators.md", () => {
     expect(main.requiresBarData?.() === true).toBe(row.bars);
   });
 
+  it.each(rows.filter((row) => row.method === null && row.className in exported).map((row) => [row.className, row] as const))(
+    "%s has no call: the bar flag is whether the class declares requiresBarData()",
+    (_, row) => {
+      const prototype = (exported as unknown as Record<string, { prototype: { requiresBarData?: () => boolean } }>)[row.className]!.prototype;
+      expect(typeof prototype.requiresBarData === "function").toBe(row.bars);
+    },
+  );
+
   it("lists every output suffix of Pro", () => {
     const declared = Object.entries(Pro)
       .filter(([key]) => key.startsWith("SUFFIX_"))

@@ -28,17 +28,19 @@ edits it by hand.
 
 ## Layout and conventions
 
-- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `statistics`, `statistics/volatility`, `averages`,
-  `momentum`…). PascalCase files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()`
+- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `volatility`, `statistics`, `statistics/volatility`,
+  `averages`, `momentum`…). PascalCase files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()`
   registers an indicator with the id, the overloads and the output suffixes of the Java engine's `Pro`.
-- Import aliases `$averages`, `$core`, `$momentum`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in
+- Import aliases `$averages`, `$core`, `$momentum`, `$pro`, `$statistics`, `$trend`, `$volatility`, `$volume`, defined in
   `tsconfig.json`, `tsup.config.ts` and `vitest.config.ts`.
 - Zero runtime dependencies beyond `@qtsurfer/core` and `@qtsurfer/indicators`.
 - The guard against a value that is not finite is the Java class's, ported as it is: every class ported so far leaves
   the value out and keeps the last one, as the Java classes do.
 - A constructor throws a `RangeError` with the Java class's message. A message that prints a double writes it with
   `javaDouble` (`src/core/JavaNumber.ts`), as Java's `Double.toString` does: `1.0E200`, not `1e+200`.
-- A class that reads whole bars implements `RTIndicatorSource<Kline | Ticker>` and `requiresBarData()`.
+- A class that reads whole bars implements `RTIndicatorSource<Kline | Ticker>` and `requiresBarData()`. A bar with a
+  field that is not finite is left out whole, with nothing updated, when the class reads that field; a field the class
+  does not read is never looked at.
 - `indicators.md` has one row per indicator class; `tests/IndicatorsDoc.test.ts` runs every call in it and fails when a
   row differs from what the facade registers.
 - A change to the published package comes with a changeset (`pnpm changeset`), written in English. A change that
@@ -53,7 +55,9 @@ This needs a checkout of the Java engine (`QTS_JAVA_ENGINE=/path/to/java-engine`
 1. Read the Java class completely (and its test).
 2. Port it with the same algorithm, names and guards. Mirror the Java package under `src/`.
 3. Add it to `tools/java-oracle/Oracle.java`, rewrite the fixture, and compare the series in `tests/parity.test.ts`:
-   equal to the last bit, or a stated tolerance when the class takes logarithms.
+   equal to the last bit, or a stated tolerance when the class takes logarithms. A class that reads the price goes in
+   `tests/subjects.ts` (compared on the scenarios and on the `edges` series); a class that reads whole bars goes in
+   `tests/barSubjects.ts` (compared on the scenarios and on the `barEdges` series of bars).
 
    ```bash
    QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle   # rewrites tests/fixtures/reference.json

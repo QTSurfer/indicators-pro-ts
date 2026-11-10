@@ -49,3 +49,15 @@ export { FisherTransformRTIndicator } from "$momentum/FisherTransformRTIndicator
 export { KnowSureThingRTIndicator } from "$momentum/KnowSureThingRTIndicator";
 export { TrixRTIndicator } from "$momentum/TrixRTIndicator";
 export { TrueStrengthIndexRTIndicator } from "$momentum/TrueStrengthIndexRTIndicator";
+export { AroonRTIndicator } from "$trend/AroonRTIndicator";
+export { ChandeKrollStopRTIndicator } from "$trend/ChandeKrollStopRTIndicator";
+export { ChandelierExitRTIndicator } from "$trend/ChandelierExitRTIndicator";
+export { DonchianChannelRTIndicator } from "$trend/DonchianChannelRTIndicator";
+export { EfficiencyRatioRTIndicator } from "$trend/EfficiencyRatioRTIndicator";
+export { ParabolicSarRTIndicator } from "$trend/ParabolicSarRTIndicator";
+export { VortexRTIndicator } from "$trend/VortexRTIndicator";
+export { ChoppinessIndexRTIndicator } from "$volatility/ChoppinessIndexRTIndicator";
+export { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator";
+export { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
+export { NatrRTIndicator } from "$volatility/NatrRTIndicator";
+export { RelativeVolatilityIndexRTIndicator } from "$volatility/RelativeVolatilityIndexRTIndicator";

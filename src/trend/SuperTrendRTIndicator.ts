@@ -11,7 +11,8 @@ export class SuperTrendRTIndicator extends AbstractRTIndicator implements RTIndi
   private readonly atr: AtrRTIndicator;
   private upperBand = 0;
   private lowerBand = 0;
-  private upTrend = true;
+  // false until the first bar, as in the Java class: only reset() sets it to true
+  private upTrend = false;
   private initialized = false;
   private prevClose = 0;
 

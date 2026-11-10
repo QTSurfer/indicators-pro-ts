@@ -13,6 +13,7 @@ export default defineConfig({
       $pro: `${src}/pro`,
       $statistics: `${src}/statistics`,
       $trend: `${src}/trend`,
+      $volatility: `${src}/volatility`,
       $volume: `${src}/volume`,
     },
   },
