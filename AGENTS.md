@@ -34,8 +34,10 @@ edits it by hand.
 - Import aliases `$averages`, `$core`, `$momentum`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in
   `tsconfig.json`, `tsup.config.ts` and `vitest.config.ts`.
 - Zero runtime dependencies beyond `@qtsurfer/core` and `@qtsurfer/indicators`.
-- The guard against a value that is not finite is the Java class's, ported as it is: most indicators leave the value out and
-  keep the last one, and a few do not guard it because the Java class does not (their doc comment says so).
+- The guard against a value that is not finite is the Java class's, ported as it is: every class ported so far leaves
+  the value out and keeps the last one, as the Java classes do.
+- A constructor throws a `RangeError` with the Java class's message. A message that prints a double writes it with
+  `javaDouble` (`src/core/JavaNumber.ts`), as Java's `Double.toString` does: `1.0E200`, not `1e+200`.
 - A class that reads whole bars implements `RTIndicatorSource<Kline | Ticker>` and `requiresBarData()`.
 - `indicators.md` has one row per indicator class; `tests/IndicatorsDoc.test.ts` runs every call in it and fails when a
   row differs from what the facade registers.

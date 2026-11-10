@@ -10,8 +10,9 @@ import { AbstractRTIndicator } from "@qtsurfer/indicators";
  *
  * Comparing a past price with the average takes the trend out and centres the average, so the oscillator shows the
  * cycles. A window of `periods` prices and a running sum keep the state, so a tick costs the same whatever the
- * history. 0 until `periods` prices have come in. 20 periods when no argument is given. A value that is not finite is
- * not left out, as in the Java class: it goes into the window and the sum like any other.
+ * history. 0 until `periods` prices have come in. 20 periods when no argument is given. A value that is not finite
+ * (NaN or an infinity) is left out: nothing is updated and the last value is returned. The constructor throws a
+ * `RangeError` for `periods` below 3: with 1 or 2 the window does not hold the price `n/2 + 1` ticks back.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscillatorRTIndicator
  */
 export class DetrendedPriceOscillatorRTIndicator extends AbstractRTIndicator {
@@ -23,6 +24,9 @@ export class DetrendedPriceOscillatorRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 20) {
     super();
+    if (periods < 3) {
+      throw new RangeError(`Periods must be >= 3, got: ${periods}`);
+    }
     this._periods = periods;
     this.lookback = Math.trunc(periods / 2) + 1;
     this.priceWindow = new WindowSeriesStore(periods);
@@ -44,6 +48,9 @@ export class DetrendedPriceOscillatorRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.count++;
 
     // A rolling sum over the last `periods` values

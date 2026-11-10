@@ -10,7 +10,8 @@ import { AbstractRTIndicator } from "@qtsurfer/indicators";
  *
  * A window of `periods + 1` prices keeps the old one, so a tick costs the same whatever the history. 0 until the
  * window holds more than `periods` prices, and 0 when the old price is 0. 12 periods when no argument is given. A
- * value that is not finite is not left out, as in the Java class: it goes into the window like any other.
+ * value that is not finite (NaN or an infinity) is left out: nothing is updated and the last value is returned. The
+ * constructor throws a `RangeError` for `periods` below 1: a lag of 0 would compare the price with itself.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator
  */
 export class RocRTIndicator extends AbstractRTIndicator {
@@ -19,6 +20,9 @@ export class RocRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 12) {
     super();
+    if (periods < 1) {
+      throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+    }
     this._periods = periods;
     this.window = new WindowSeriesStore(periods + 1);
   }
@@ -37,6 +41,9 @@ export class RocRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.window.add(newValue);
     if (this.window.size <= this._periods) {
       return this.setValue(0);

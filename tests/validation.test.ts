@@ -72,38 +72,276 @@ describe("the guards of the constructors", () => {
   });
 });
 
-describe("the guards of the averages and the momentum indicators", () => {
-  it.each([
-    ["ALMA", (periods: number) => new AlmaRTIndicator(periods), 0],
-    ["DPO", (periods: number) => new DetrendedPriceOscillatorRTIndicator(periods), 0],
-    ["Momentum", (periods: number) => new MomentumRTIndicator(periods), 1],
-    ["ROC", (periods: number) => new RocRTIndicator(periods), 1],
-  ] as const)("%s builds a window of its periods, and the window refuses fewer than one value", (_, make, extra) => {
-    for (const periods of [-extra, -extra - 3]) {
-      expect(() => make(periods), `${periods}`).toThrow(new RangeError(`Invalid ${periods + extra} windowSize`));
-    }
-    expect(() => make(1 - extra)).not.toThrow();
+/** The construction throws a `RangeError` with exactly this message (the class is checked too: `toThrow(error)` compares the message only). */
+function rejects(message: string, construct: () => unknown): void {
+  let thrown: unknown;
+  try {
+    construct();
+  } catch (error) {
+    thrown = error;
+  }
+  expect(thrown, message).toBeInstanceOf(RangeError);
+  expect((thrown as RangeError).message).toBe(message);
+}
+
+const SHORT_SERIES = [
+  100, 101.5, 99.25, 102, 104.5, 103, 101, 100.5, 105, 107, 106, 108.25, 104, 102.5, 103.75, 109, 111, 110, 108, 107.5, 106, 105, 109.5, 112,
+  113.25, 111, 110.5, 114, 116, 115,
+];
+
+/** The value is accepted: the instance builds and 30 ticks leave every value finite. */
+function accepts<T extends { update(price: number): number }>(construct: () => T): T {
+  const indicator = construct();
+  for (const price of SHORT_SERIES) expect(Number.isFinite(indicator.update(price))).toBe(true);
+  return indicator;
+}
+
+const none = null as unknown as number[];
+
+// The limits of the constructors, with the messages of the Java engine: `<Parameter> must be <rule>, got: <value>`, a
+// double written as Java writes it (`1.0E200`, `-6.0`, `NaN`) and an int as it is. The first check that fails speaks.
+
+describe("the limits of the constructors of the averages and the momentum indicators", () => {
+  it("ALMA", () => {
+    accepts(() => new AlmaRTIndicator(1));
+    accepts(() => new AlmaRTIndicator(5, 0.0, 6.0));
+    accepts(() => new AlmaRTIndicator(5, 1.0, 6.0));
+    accepts(() => new AlmaRTIndicator(5, 0.5, Number.MIN_VALUE)); // a huge sigma: flat weights
+    rejects("Periods must be >= 1, got: 0", () => new AlmaRTIndicator(0));
+    rejects("Periods must be >= 1, got: -1", () => new AlmaRTIndicator(-1));
+    rejects("Periods must be >= 1, got: 0", () => new AlmaRTIndicator(0, 0.85, 6.0));
+    rejects("OffsetFactor must be in [0, 1], got: -0.1", () => new AlmaRTIndicator(5, -0.1, 6.0));
+    rejects("OffsetFactor must be in [0, 1], got: 1.1", () => new AlmaRTIndicator(5, 1.1, 6.0));
+    rejects("OffsetFactor must be in [0, 1], got: NaN", () => new AlmaRTIndicator(5, NaN, 6.0));
+    rejects("OffsetFactor must be in [0, 1], got: Infinity", () => new AlmaRTIndicator(5, Infinity, 6.0));
+    rejects("SigmaFactor must be finite and > 0, got: 0.0", () => new AlmaRTIndicator(5, 0.85, 0));
+    rejects("SigmaFactor must be finite and > 0, got: -6.0", () => new AlmaRTIndicator(5, 0.85, -6));
+    rejects("SigmaFactor must be finite and > 0, got: NaN", () => new AlmaRTIndicator(5, 0.85, NaN));
+    rejects("SigmaFactor must be finite and > 0, got: Infinity", () => new AlmaRTIndicator(5, 0.85, Infinity));
+    rejects("SigmaFactor must be finite and > 0, got: -Infinity", () => new AlmaRTIndicator(5, 0.85, -Infinity));
+    // sigma^2 underflows to 0: the peak weight would be exp(0/0), NaN, and the value NaN for good
+    rejects("SigmaFactor is too large for 10 periods, got: 1.0E200", () => new AlmaRTIndicator(10, 0.85, 1e200));
   });
 
-  it("FRAMA adds one to an odd number of periods, as Java does, and to a negative one too", () => {
+  it("ALMA checks the periods, then the offset factor, then the sigma factor, then the underflow", () => {
+    rejects("Periods must be >= 1, got: 0", () => new AlmaRTIndicator(0, NaN, NaN));
+    rejects("OffsetFactor must be in [0, 1], got: 2.0", () => new AlmaRTIndicator(5, 2, -1));
+    rejects("SigmaFactor must be finite and > 0, got: 0.0", () => new AlmaRTIndicator(5, 0.5, 0));
+    rejects("SigmaFactor is too large for 5 periods, got: 1.0E300", () => new AlmaRTIndicator(5, 0.5, 1e300));
+  });
+
+  it("DEMA", () => {
+    accepts(() => new DemaRTIndicator(1));
+    rejects("Periods must be >= 1, got: 0", () => new DemaRTIndicator(0));
+    rejects("Periods must be >= 1, got: -1", () => new DemaRTIndicator(-1));
+  });
+
+  it("Envelopes", () => {
+    accepts(() => new EnvelopesRTIndicator(1, 2.5));
+    const zero = accepts(() => new EnvelopesRTIndicator(5, 0));
+    expect(zero.getUpper()).toBe(zero.getValue());
+    expect(zero.getLower()).toBe(zero.getValue());
+    rejects("Periods must be >= 1, got: 0", () => new EnvelopesRTIndicator(0, 2.5));
+    rejects("Periods must be >= 1, got: -2", () => new EnvelopesRTIndicator(-2, 2.5));
+    rejects("Percentage must be finite and >= 0, got: -0.5", () => new EnvelopesRTIndicator(5, -0.5));
+    rejects("Percentage must be finite and >= 0, got: NaN", () => new EnvelopesRTIndicator(5, NaN));
+    rejects("Percentage must be finite and >= 0, got: Infinity", () => new EnvelopesRTIndicator(5, Infinity));
+    rejects("Percentage must be finite and >= 0, got: -Infinity", () => new EnvelopesRTIndicator(5, -Infinity));
+    rejects("Periods must be >= 1, got: 0", () => new EnvelopesRTIndicator(0, NaN));
+  });
+
+  it("FRAMA checks the periods as given, and makes an odd number even afterwards", () => {
+    accepts(() => new FramaRTIndicator(4));
+    expect(accepts(() => new FramaRTIndicator(3)).periods).toBe(4);
+    expect(accepts(() => new FramaRTIndicator(11)).periods).toBe(12);
     expect(new FramaRTIndicator().periods).toBe(20);
     expect(new FramaRTIndicator(7).periods).toBe(8);
     expect(new FramaRTIndicator(8).periods).toBe(8);
-    expect(new FramaRTIndicator(1).periods).toBe(2);
-    expect(() => new FramaRTIndicator(-1)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new FramaRTIndicator(-3)).toThrow(new RangeError("Invalid -2 windowSize"));
-    expect(() => new FramaRTIndicator(-4)).toThrow(new RangeError("Invalid -4 windowSize"));
+    for (const periods of [2, 1, 0, -1, -4]) {
+      rejects(`Periods must be >= 3, got: ${periods}`, () => new FramaRTIndicator(periods));
+    }
   });
 
-  it("LSMA takes the guards of the regression it wraps", () => {
-    expect(() => new LeastSquaresMovingAverageRTIndicator(1)).toThrow(new RangeError("periods must be >= 2, got 1"));
-    expect(() => new LeastSquaresMovingAverageRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new LeastSquaresMovingAverageRTIndicator(2)).not.toThrow();
+  it("LSMA", () => {
+    accepts(() => new LeastSquaresMovingAverageRTIndicator(2));
+    rejects("Periods must be >= 2, got: 1", () => new LeastSquaresMovingAverageRTIndicator(1));
+    rejects("Periods must be >= 2, got: 0", () => new LeastSquaresMovingAverageRTIndicator(0));
+    rejects("Periods must be >= 2, got: -3", () => new LeastSquaresMovingAverageRTIndicator(-3));
   });
 
-  it("CMO refuses a negative number of periods", () => {
-    expect(() => new CmoRTIndicator(-1)).toThrow(RangeError);
-    expect(() => new CmoRTIndicator(1)).not.toThrow();
+  it("McGinley Dynamic", () => {
+    accepts(() => new McGinleyDynamicRTIndicator(1));
+    rejects("Periods must be >= 1, got: 0", () => new McGinleyDynamicRTIndicator(0));
+    rejects("Periods must be >= 1, got: -3", () => new McGinleyDynamicRTIndicator(-3));
+  });
+
+  it("Momentum, ROC and CMO", () => {
+    for (const make of [(p: number) => new MomentumRTIndicator(p), (p: number) => new RocRTIndicator(p), (p: number) => new CmoRTIndicator(p)]) {
+      accepts(() => make(1));
+      rejects("Periods must be >= 1, got: 0", () => make(0));
+      rejects("Periods must be >= 1, got: -1", () => make(-1));
+    }
+  });
+
+  it("DPO", () => {
+    accepts(() => new DetrendedPriceOscillatorRTIndicator(3));
+    for (const periods of [2, 1, 0, -5]) {
+      rejects(`Periods must be >= 3, got: ${periods}`, () => new DetrendedPriceOscillatorRTIndicator(periods));
+    }
+  });
+
+  it("the Chande forecast oscillator", () => {
+    accepts(() => new ChandeForecastOscillatorRTIndicator(2));
+    for (const periods of [1, 0, -1]) {
+      rejects(`Periods must be >= 2, got: ${periods}`, () => new ChandeForecastOscillatorRTIndicator(periods));
+    }
+  });
+
+  it("Connors RSI", () => {
+    accepts(() => new ConnorsRsiRTIndicator(1, 1, 2));
+    rejects("RsiPeriod must be >= 1, got: 0", () => new ConnorsRsiRTIndicator(0, 2, 20));
+    rejects("RsiPeriod must be >= 1, got: -1", () => new ConnorsRsiRTIndicator(-1, 2, 20));
+    rejects("StreakRsiPeriod must be >= 1, got: 0", () => new ConnorsRsiRTIndicator(3, 0, 20));
+    rejects("StreakRsiPeriod must be >= 1, got: -2", () => new ConnorsRsiRTIndicator(3, -2, 20));
+    rejects("RankPeriod must be >= 2, got: 1", () => new ConnorsRsiRTIndicator(3, 2, 1));
+    rejects("RankPeriod must be >= 2, got: 0", () => new ConnorsRsiRTIndicator(3, 2, 0));
+    rejects("RankPeriod must be >= 2, got: -4", () => new ConnorsRsiRTIndicator(3, 2, -4));
+    // in the order of the parameters
+    rejects("RsiPeriod must be >= 1, got: 0", () => new ConnorsRsiRTIndicator(0, 0, 0));
+    rejects("StreakRsiPeriod must be >= 1, got: 0", () => new ConnorsRsiRTIndicator(3, 0, 0));
+  });
+
+  it("Coppock", () => {
+    accepts(() => new CoppockCurveRTIndicator(1, 1, 1));
+    rejects("LongRoc must be >= 1, got: 0", () => new CoppockCurveRTIndicator(0, 11, 10));
+    rejects("LongRoc must be >= 1, got: -1", () => new CoppockCurveRTIndicator(-1, 11, 10));
+    rejects("ShortRoc must be >= 1, got: 0", () => new CoppockCurveRTIndicator(14, 0, 10));
+    rejects("ShortRoc must be >= 1, got: -1", () => new CoppockCurveRTIndicator(14, -1, 10));
+    rejects("WmaPeriod must be >= 1, got: 0", () => new CoppockCurveRTIndicator(14, 11, 0));
+    rejects("WmaPeriod must be >= 1, got: -1", () => new CoppockCurveRTIndicator(14, 11, -1));
+    rejects("LongRoc must be >= 1, got: -3", () => new CoppockCurveRTIndicator(-3, -2, 0));
+    rejects("ShortRoc must be >= 1, got: -2", () => new CoppockCurveRTIndicator(5, -2, 0));
+  });
+
+  it("Fisher", () => {
+    accepts(() => new FisherTransformRTIndicator(2));
+    for (const periods of [1, 0, -1]) {
+      rejects(`Periods must be >= 2, got: ${periods}`, () => new FisherTransformRTIndicator(periods));
+    }
+  });
+
+  it("the adaptive Fisher", () => {
+    accepts(() => new AdaptiveFisherTransformRTIndicator(1, 2, 3)); // erPeriod 1, minPeriod 2, maxPeriod 3
+    accepts(() => new AdaptiveFisherTransformRTIndicator(5, 5, 6)); // erPeriod == maxPeriod - 1
+    accepts(() => new AdaptiveFisherTransformRTIndicator(2, 5, 5)); // minPeriod == maxPeriod
+    rejects("ErPeriod must be >= 1, got: 0", () => new AdaptiveFisherTransformRTIndicator(0, 5, 20));
+    rejects("ErPeriod must be >= 1, got: -1", () => new AdaptiveFisherTransformRTIndicator(-1, 5, 20));
+    rejects("MinPeriod must be >= 2, got: 1", () => new AdaptiveFisherTransformRTIndicator(10, 1, 20));
+    rejects("MinPeriod must be >= 2, got: 0", () => new AdaptiveFisherTransformRTIndicator(10, 0, 20));
+    rejects("MinPeriod must be >= 2, got: -3", () => new AdaptiveFisherTransformRTIndicator(10, -3, 20));
+    rejects("MinPeriod must be <= MaxPeriod, got: 6 and 5", () => new AdaptiveFisherTransformRTIndicator(2, 6, 5));
+    rejects("ErPeriod must be < MaxPeriod, got: 20 and 20", () => new AdaptiveFisherTransformRTIndicator(20, 5, 20));
+    rejects("ErPeriod must be < MaxPeriod, got: 21 and 20", () => new AdaptiveFisherTransformRTIndicator(21, 5, 20));
+  });
+
+  it("the adaptive Fisher checks erPeriod, then minPeriod, then their order, then erPeriod against maxPeriod", () => {
+    rejects("ErPeriod must be >= 1, got: 0", () => new AdaptiveFisherTransformRTIndicator(0, 1, 0));
+    rejects("MinPeriod must be >= 2, got: 1", () => new AdaptiveFisherTransformRTIndicator(10, 1, 5));
+    // erPeriod is not below maxPeriod here too, but the order of the two periods is checked first
+    rejects("MinPeriod must be <= MaxPeriod, got: 6 and 5", () => new AdaptiveFisherTransformRTIndicator(25, 6, 5));
+    rejects("ErPeriod must be < MaxPeriod, got: 25 and 20", () => new AdaptiveFisherTransformRTIndicator(25, 6, 20));
+  });
+
+  it("KST", () => {
+    accepts(() => new KnowSureThingRTIndicator([1], [1], [0], 1));
+    const rocs = [3, 4];
+    const smas = [2, 3];
+    const weights = [1, 2];
+    rejects("RocPeriods must not be null", () => new KnowSureThingRTIndicator(none, smas, weights, 3));
+    rejects("SmaPeriods must not be null", () => new KnowSureThingRTIndicator(rocs, none, weights, 3));
+    rejects("Weights must not be null", () => new KnowSureThingRTIndicator(rocs, smas, none, 3));
+    rejects("RocPeriods must not be empty", () => new KnowSureThingRTIndicator([], [], [], 3));
+    rejects("RocPeriods, SmaPeriods and Weights must have the same length, got: 2, 1 and 2", () => new KnowSureThingRTIndicator(rocs, [2], weights, 3));
+    rejects("RocPeriods, SmaPeriods and Weights must have the same length, got: 2, 3 and 2", () => new KnowSureThingRTIndicator(rocs, [2, 3, 4], weights, 3));
+    rejects("RocPeriods, SmaPeriods and Weights must have the same length, got: 2, 2 and 1", () => new KnowSureThingRTIndicator(rocs, smas, [1], 3));
+    rejects("RocPeriods[1] must be >= 1, got: 0", () => new KnowSureThingRTIndicator([3, 0], smas, weights, 3));
+    rejects("RocPeriods[0] must be >= 1, got: -2", () => new KnowSureThingRTIndicator([-2, 4], smas, weights, 3));
+    rejects("SmaPeriods[0] must be >= 1, got: 0", () => new KnowSureThingRTIndicator(rocs, [0, 3], weights, 3));
+    rejects("SmaPeriods[1] must be >= 1, got: -1", () => new KnowSureThingRTIndicator(rocs, [2, -1], weights, 3));
+    rejects("Weights[0] must be finite, got: NaN", () => new KnowSureThingRTIndicator(rocs, smas, [NaN, 2], 3));
+    rejects("Weights[1] must be finite, got: Infinity", () => new KnowSureThingRTIndicator(rocs, smas, [1, Infinity], 3));
+    rejects("Weights[1] must be finite, got: -Infinity", () => new KnowSureThingRTIndicator(rocs, smas, [1, -Infinity], 3));
+    rejects("SignalPeriod must be >= 1, got: 0", () => new KnowSureThingRTIndicator(rocs, smas, weights, 0));
+    rejects("SignalPeriod must be >= 1, got: -1", () => new KnowSureThingRTIndicator(rocs, smas, weights, -1));
+  });
+
+  it("KST checks the arrays that are null, then the empty one, then the lengths, then each index, then the signal period", () => {
+    rejects("RocPeriods must not be null", () => new KnowSureThingRTIndicator(none, none, none, 0));
+    rejects("SmaPeriods must not be null", () => new KnowSureThingRTIndicator([], none, none, 0));
+    rejects("Weights must not be null", () => new KnowSureThingRTIndicator([], [], none, 0));
+    // an empty array of rates of change is reported before the lengths
+    rejects("RocPeriods must not be empty", () => new KnowSureThingRTIndicator([], [1], [1], 0));
+    // the lengths are checked before any index
+    rejects("RocPeriods, SmaPeriods and Weights must have the same length, got: 2, 1 and 2", () => new KnowSureThingRTIndicator([0, 0], [0], [NaN, NaN], 0));
+    // one loop over the index: at an index, the rate of change, then the average, then the weight
+    rejects("RocPeriods[0] must be >= 1, got: 0", () => new KnowSureThingRTIndicator([0, 3], [0, 3], [NaN, 2], 0));
+    rejects("SmaPeriods[0] must be >= 1, got: 0", () => new KnowSureThingRTIndicator([3, 0], [0, 3], [NaN, 2], 0));
+    rejects("Weights[0] must be finite, got: NaN", () => new KnowSureThingRTIndicator([3, 0], [3, 0], [NaN, 2], 0));
+    rejects("RocPeriods[1] must be >= 1, got: 0", () => new KnowSureThingRTIndicator([3, 0], [3, 0], [1, NaN], 0));
+    // the signal period comes last
+    rejects("Weights[1] must be finite, got: Infinity", () => new KnowSureThingRTIndicator([3, 4], [3, 3], [1, Infinity], 0));
+    rejects("SignalPeriod must be >= 1, got: 0", () => new KnowSureThingRTIndicator([3, 4], [3, 3], [1, 2], 0));
+  });
+
+  it("KST copies the weights: the array given is neither kept nor changed", () => {
+    const weights = [1, 2];
+    const kst = new KnowSureThingRTIndicator([2, 3], [2, 2], weights, 2);
+    const reference = new KnowSureThingRTIndicator([2, 3], [2, 2], [1, 2], 2);
+    weights[0] = NaN;
+    weights[1] = 1000;
+    for (const price of SHORT_SERIES) expect(kst.update(price)).toBe(reference.update(price));
+    expect(weights).toEqual([NaN, 1000]);
+    const frozen = Object.freeze([1, 2]);
+    expect(() => new KnowSureThingRTIndicator([2, 3], [2, 2], frozen, 2)).not.toThrow();
+    expect(frozen).toEqual([1, 2]);
+  });
+
+  it("TRIX", () => {
+    accepts(() => new TrixRTIndicator(1));
+    rejects("Periods must be >= 1, got: 0", () => new TrixRTIndicator(0));
+    rejects("Periods must be >= 1, got: -1", () => new TrixRTIndicator(-1));
+  });
+
+  it("TSI, which the Java class limits too", () => {
+    accepts(() => new TrueStrengthIndexRTIndicator(1, 1));
+    rejects("LongPeriod must be >= 1, got: 0", () => new TrueStrengthIndexRTIndicator(0, 13));
+    rejects("LongPeriod must be >= 1, got: -1", () => new TrueStrengthIndexRTIndicator(-1, 13));
+    rejects("ShortPeriod must be >= 1, got: 0", () => new TrueStrengthIndexRTIndicator(25, 0));
+    rejects("ShortPeriod must be >= 1, got: -1", () => new TrueStrengthIndexRTIndicator(25, -1));
+    rejects("LongPeriod must be >= 1, got: 0", () => new TrueStrengthIndexRTIndicator(0, 0));
+  });
+
+  it("the default constructors still build", () => {
+    for (const make of [
+      () => new EnvelopesRTIndicator(),
+      () => new FramaRTIndicator(),
+      () => new LeastSquaresMovingAverageRTIndicator(),
+      () => new McGinleyDynamicRTIndicator(),
+      () => new MomentumRTIndicator(),
+      () => new RocRTIndicator(),
+      () => new CmoRTIndicator(),
+      () => new DetrendedPriceOscillatorRTIndicator(),
+      () => new ChandeForecastOscillatorRTIndicator(),
+      () => new ConnorsRsiRTIndicator(),
+      () => new CoppockCurveRTIndicator(),
+      () => new FisherTransformRTIndicator(),
+      () => new AdaptiveFisherTransformRTIndicator(),
+      () => new KnowSureThingRTIndicator(),
+      () => new TrixRTIndicator(),
+      () => new TrueStrengthIndexRTIndicator(),
+    ]) {
+      expect(make).not.toThrow();
+    }
   });
 
   it("the periods are what the constructor was given, and the default of each class is Java's", () => {
@@ -120,6 +358,18 @@ describe("the guards of the averages and the momentum indicators", () => {
     expect(new CmoRTIndicator(5).periods).toBe(5);
     expect(new DetrendedPriceOscillatorRTIndicator().periods).toBe(20);
     expect(new DetrendedPriceOscillatorRTIndicator(7).periods).toBe(7);
+    expect([new ChandeForecastOscillatorRTIndicator().periods, new ChandeForecastOscillatorRTIndicator(5).periods]).toEqual([14, 5]);
+    expect([new FisherTransformRTIndicator().periods, new FisherTransformRTIndicator(5).periods]).toEqual([10, 5]);
+    const connors = new ConnorsRsiRTIndicator();
+    expect([connors.getRsiPeriod(), connors.getStreakRsiPeriod(), connors.getRankPeriod()]).toEqual([3, 2, 100]);
+    const connorsOther = new ConnorsRsiRTIndicator(5, 3, 20);
+    expect([connorsOther.getRsiPeriod(), connorsOther.getStreakRsiPeriod(), connorsOther.getRankPeriod()]).toEqual([5, 3, 20]);
+    const coppock = new CoppockCurveRTIndicator();
+    expect([coppock.getLongRoc(), coppock.getShortRoc(), coppock.getWmaPeriod()]).toEqual([14, 11, 10]);
+    const coppockOther = new CoppockCurveRTIndicator(8, 5, 4);
+    expect([coppockOther.getLongRoc(), coppockOther.getShortRoc(), coppockOther.getWmaPeriod()]).toEqual([8, 5, 4]);
+    expect(new AdaptiveFisherTransformRTIndicator().getErPeriod()).toBe(10);
+    expect(new AdaptiveFisherTransformRTIndicator(5, 3, 9).getErPeriod()).toBe(5);
   });
 
   it("Envelopes is 20 periods and 2.5 percent when built with no argument", () => {
@@ -138,97 +388,6 @@ describe("the guards of the averages and the momentum indicators", () => {
     expect(envelopes.getValue()).toBe(100);
     expect(envelopes.getUpper()).toBeCloseTo(110, 12);
     expect(envelopes.getLower()).toBeCloseTo(90, 12);
-  });
-});
-
-describe("the guards of the momentum oscillators", () => {
-  const prices = reference.inputs.price.slice(0, 90);
-
-  it("the Chande forecast oscillator takes the guards of the regression it wraps", () => {
-    expect(() => new ChandeForecastOscillatorRTIndicator(1)).toThrow(new RangeError("periods must be >= 2, got 1"));
-    expect(() => new ChandeForecastOscillatorRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new ChandeForecastOscillatorRTIndicator(2)).not.toThrow();
-  });
-
-  it("Connors RSI builds its RSIs first, which take any period: only a rank window of no periods fails", () => {
-    expect(() => new ConnorsRsiRTIndicator(0, 0, 5)).not.toThrow();
-    expect(() => new ConnorsRsiRTIndicator(-1, -1, 5)).not.toThrow();
-    expect(() => new ConnorsRsiRTIndicator(3, 2, 0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new ConnorsRsiRTIndicator(3, 2, -4)).toThrow(new RangeError("Invalid -4 windowSize"));
-    expect(() => new ConnorsRsiRTIndicator(3, 2, 1)).not.toThrow();
-  });
-
-  it("Coppock builds the long rate of change, then the short one, then the average: the first that fails speaks", () => {
-    // a rate of change keeps a window of its periods + 1 prices
-    expect(() => new CoppockCurveRTIndicator(-3, -2, 0)).toThrow(new RangeError("Invalid -2 windowSize"));
-    expect(() => new CoppockCurveRTIndicator(5, -2, 0)).toThrow(new RangeError("Invalid -1 windowSize"));
-    expect(() => new CoppockCurveRTIndicator(5, 5, 0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new CoppockCurveRTIndicator(0, 0, 1)).not.toThrow();
-  });
-
-  it("Fisher and the adaptive Fisher keep a window, and the window refuses fewer than one value", () => {
-    expect(() => new FisherTransformRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new FisherTransformRTIndicator(-3)).toThrow(new RangeError("Invalid -3 windowSize"));
-    expect(() => new FisherTransformRTIndicator(1)).not.toThrow();
-    expect(() => new AdaptiveFisherTransformRTIndicator(10, 5, 0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new AdaptiveFisherTransformRTIndicator(10, 5, -2)).toThrow(new RangeError("Invalid -2 windowSize"));
-  });
-
-  it("the adaptive Fisher checks neither the order of its periods nor a negative efficiency period", () => {
-    expect(() => new AdaptiveFisherTransformRTIndicator(10, 8, 4)).not.toThrow();
-    const negative = new AdaptiveFisherTransformRTIndicator(-1, 5, 20);
-    // the window is asked for the price 1 + 1 ticks back, which it does not have
-    expect(() => negative.update(100)).toThrow(RangeError);
-  });
-
-  it("KST reads as many average periods as it has rates of change, and fails like Java when it has fewer", () => {
-    expect(() => new KnowSureThingRTIndicator([3, 5, 7], [2, 3], [1, 2, 3], 4)).toThrow(new RangeError("Index 2 out of bounds for length 2"));
-    expect(() => new KnowSureThingRTIndicator([3, 5, 7], [], [1, 2, 3], 4)).toThrow(new RangeError("Index 0 out of bounds for length 0"));
-    // the rate of change that Java builds first is the one that fails when its period is not valid
-    expect(() => new KnowSureThingRTIndicator([3, -1, 5], [2], [1, 2], 4)).toThrow(new RangeError("Invalid 0 windowSize"));
-    // more average periods than rates of change are not read
-    expect(() => new KnowSureThingRTIndicator([3, 5], [2, 3, 4], [1, 2], 4)).not.toThrow();
-  });
-
-  it("KST fails at the first tick, like Java, when it has fewer weights than rates of change", () => {
-    const kst = new KnowSureThingRTIndicator([3, 5, 7], [2, 3, 4], [1, 2], 4);
-    expect(() => kst.update(100)).toThrow(new RangeError("Index 2 out of bounds for length 2"));
-    // more weights than rates of change are not read
-    const longer = new KnowSureThingRTIndicator([2], [2], [1, 2, 3], 2);
-    expect(() => prices.slice(0, 10).forEach((p) => longer.update(p))).not.toThrow();
-  });
-
-  it("KST keeps the array of weights it was given, as Java does, and with no rate of change it is 0", () => {
-    const weights = [1];
-    const kept = new KnowSureThingRTIndicator([2], [2], weights, 2);
-    weights[0] = 3;
-    const threeFromTheStart = new KnowSureThingRTIndicator([2], [2], [3], 2);
-    for (const price of prices) expect(kept.update(price)).toBe(threeFromTheStart.update(price));
-    const empty = new KnowSureThingRTIndicator([], [], [], 4);
-    expect(empty.update(100)).toBe(0);
-    expect(empty.isReady()).toBe(false);
-  });
-
-  it("TRIX and TSI take any number of periods, as Java does", () => {
-    for (const periods of [0, -1, 1]) {
-      expect(() => new TrixRTIndicator(periods), `${periods}`).not.toThrow();
-      expect(() => new TrueStrengthIndexRTIndicator(periods, periods), `${periods}`).not.toThrow();
-    }
-  });
-
-  it("the periods are what the constructor was given, and the default of each class is Java's", () => {
-    expect([new ChandeForecastOscillatorRTIndicator().periods, new ChandeForecastOscillatorRTIndicator(5).periods]).toEqual([14, 5]);
-    expect([new FisherTransformRTIndicator().periods, new FisherTransformRTIndicator(5).periods]).toEqual([10, 5]);
-    const connors = new ConnorsRsiRTIndicator();
-    expect([connors.getRsiPeriod(), connors.getStreakRsiPeriod(), connors.getRankPeriod()]).toEqual([3, 2, 100]);
-    const connorsOther = new ConnorsRsiRTIndicator(5, 3, 20);
-    expect([connorsOther.getRsiPeriod(), connorsOther.getStreakRsiPeriod(), connorsOther.getRankPeriod()]).toEqual([5, 3, 20]);
-    const coppock = new CoppockCurveRTIndicator();
-    expect([coppock.getLongRoc(), coppock.getShortRoc(), coppock.getWmaPeriod()]).toEqual([14, 11, 10]);
-    const coppockOther = new CoppockCurveRTIndicator(8, 5, 4);
-    expect([coppockOther.getLongRoc(), coppockOther.getShortRoc(), coppockOther.getWmaPeriod()]).toEqual([8, 5, 4]);
-    expect(new AdaptiveFisherTransformRTIndicator().getErPeriod()).toBe(10);
-    expect(new AdaptiveFisherTransformRTIndicator(5, 3, 9).getErPeriod()).toBe(5);
   });
 
   it("the adaptive Fisher starts at its longest window, with no efficiency ratio", () => {
@@ -254,63 +413,6 @@ describe("the guards of the momentum oscillators", () => {
         expect(byDefault.isReady(), label).toBe(explicit.isReady());
       }
     }
-  });
-});
-
-describe("what the momentum oscillators do with a value that is not finite", () => {
-  const before = reference.inputs.price.slice(0, 60);
-  const after = reference.inputs.price.slice(60, 160);
-
-  it.each([
-    ["KST", () => new KnowSureThingRTIndicator()],
-    ["TRIX", () => new TrixRTIndicator()],
-    ["TSI", () => new TrueStrengthIndexRTIndicator()],
-    ["Connors RSI", () => new ConnorsRsiRTIndicator()],
-  ] as const)("%s stays finite on a NaN and on an infinite price", (_, make) => {
-    const indicator = make();
-    for (const price of [...before, NaN, ...after.slice(0, 20), Infinity, ...after.slice(20)]) {
-      expect(Number.isFinite(indicator.update(price))).toBe(true);
-    }
-  });
-
-  it("the Chande forecast oscillator is NaN on that tick only, because the average it wraps leaves the value out", () => {
-    const chande = new ChandeForecastOscillatorRTIndicator();
-    for (const price of before) chande.update(price);
-    expect(chande.update(NaN)).toBeNaN();
-    expect(Number.isFinite(chande.getLsmaValue())).toBe(true);
-    expect(Number.isFinite(chande.update(after[0]))).toBe(true);
-  });
-
-  it.each([
-    ["Coppock", () => new CoppockCurveRTIndicator()],
-    ["Fisher", () => new FisherTransformRTIndicator()],
-    ["adaptive Fisher", () => new AdaptiveFisherTransformRTIndicator()],
-  ] as const)("%s is NaN from a NaN price on, until reset", (_, make) => {
-    const indicator = make();
-    for (const price of before) indicator.update(price);
-    expect(indicator.update(NaN)).toBeNaN();
-    for (const price of after) expect(indicator.update(price)).toBeNaN();
-    indicator.reset();
-    const fresh = make();
-    for (const price of after) expect(indicator.update(price)).toBe(fresh.update(price));
-  });
-
-  it("the adaptive Fisher gives a NaN efficiency ratio the period 0, which is raised to the minimum, as Java's int does", () => {
-    const adaptive = new AdaptiveFisherTransformRTIndicator();
-    for (const price of before) adaptive.update(price);
-    adaptive.update(NaN);
-    expect(adaptive.getEfficiencyRatio()).toBeNaN();
-    expect(adaptive.getAdaptivePeriod()).toBe(5);
-    // the ratio looks back 10 ticks: it is NaN until the NaN has left that span, and the value stays NaN
-    for (const price of after.slice(0, 9)) {
-      adaptive.update(price);
-      expect(adaptive.getEfficiencyRatio()).toBeNaN();
-      expect(adaptive.getAdaptivePeriod()).toBe(5);
-    }
-    adaptive.update(after[9]);
-    adaptive.update(after[10]);
-    expect(Number.isFinite(adaptive.getEfficiencyRatio())).toBe(true);
-    expect(adaptive.getValue()).toBeNaN();
   });
 });
 

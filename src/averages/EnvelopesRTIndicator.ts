@@ -1,4 +1,5 @@
 import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
+import { javaDouble } from "$core/JavaNumber";
 
 /**
  * Moving average envelopes: bands at a fixed percentage above and below an EMA of the price,
@@ -10,7 +11,10 @@ import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
  * ```
  *
  * Simpler than Bollinger Bands: the bands do not widen with the volatility. The value is the middle line;
- * `getUpper` and `getLower` give the bands. 20 periods and 2.5 percent when no argument is given.
+ * `getUpper` and `getLower` give the bands. 20 periods and 2.5 percent when no argument is given. A value that is not
+ * finite (NaN or an infinity) is left out: the average is not updated, the last value is returned and the bands keep
+ * their last values. The constructor throws a `RangeError` for `periods` below 1 and for a `percentage` that is
+ * negative or not finite (0 is accepted: both bands then equal the middle line).
  * Port of com.wualabs.qtsurfer.engine.indicators.averages.pro.EnvelopesRTIndicator
  */
 export class EnvelopesRTIndicator extends AbstractRTIndicator {
@@ -23,6 +27,12 @@ export class EnvelopesRTIndicator extends AbstractRTIndicator {
   constructor(periods: number, percentage: number);
   constructor(periods = 20, percentage = 2.5) {
     super();
+    if (periods < 1) {
+      throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+    }
+    if (!(percentage >= 0) || !Number.isFinite(percentage)) {
+      throw new RangeError(`Percentage must be finite and >= 0, got: ${javaDouble(percentage)}`);
+    }
     this.ema = new EmaRTIndicator(periods);
     this.factor = percentage / 100.0;
   }
@@ -49,6 +59,9 @@ export class EnvelopesRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     const mid = this.ema.update(newValue);
     this.upper = mid * (1 + this.factor);
     this.lower = mid * (1 - this.factor);

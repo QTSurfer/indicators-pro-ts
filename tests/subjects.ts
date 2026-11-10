@@ -292,13 +292,6 @@ export const subjects: Subject[] = [
       ready,
     }),
   ),
-  subject("adaptiveFisherTransform3_0_6", "Adaptive Fisher transform(3, 0, 6), a minimum period of 0", false, LOG_TOLERANCE, (p) =>
-    series(new AdaptiveFisherTransformRTIndicator(3, 0, 6), p, {
-      efficiencyRatio: (i) => i.getEfficiencyRatio(),
-      adaptivePeriod: (i) => i.getAdaptivePeriod(),
-      ready,
-    }),
-  ),
   subject("knowSureThingDefault", "Know sure thing() with the default periods and weights", false, 0, (p) =>
     series(new KnowSureThingRTIndicator(), p, { signal: (i) => i.getSignal(), ready }),
   ),

@@ -11,8 +11,9 @@ import { AbstractRTIndicator } from "@qtsurfer/indicators";
  * It runs between -100 and +100 and is like the RSI, but uses the difference of the gains and the losses and not an
  * average of each. A ring buffer of the changes keeps the two running sums, so a tick costs the same whatever the
  * history. 0 on the first price, and 0 while the sum of gains and losses is 0. 14 periods when no argument is given.
- * A value that is not finite is not left out, as in the Java class: a NaN price makes two NaN changes, which the sums
- * skip, and an infinite price makes infinite changes, which turn the sums to NaN for good.
+ * A value that is not finite (NaN or an infinity) is left out: nothing is updated and the last value is returned. So
+ * is a price whose change from the last one overflows (prices near `Number.MAX_VALUE`), and the last price stays the
+ * reference. The constructor throws a `RangeError` for `periods` below 1.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator
  */
 export class CmoRTIndicator extends AbstractRTIndicator {
@@ -27,6 +28,9 @@ export class CmoRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 14) {
     super();
+    if (periods < 1) {
+      throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+    }
     this._periods = periods;
     this.changes = new Float64Array(periods);
   }
@@ -50,6 +54,9 @@ export class CmoRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     if (!this.initialized) {
       this.prevValue = newValue;
       this.initialized = true;
@@ -57,6 +64,11 @@ export class CmoRTIndicator extends AbstractRTIndicator {
     }
 
     const change = newValue - this.prevValue;
+    if (AbstractRTIndicator.isPoison(change)) {
+      // Only reachable when the difference overflows (|price| near Number.MAX_VALUE): hold, and keep the previous
+      // price as the reference.
+      return this.getValue();
+    }
     this.prevValue = newValue;
 
     // Evict the oldest

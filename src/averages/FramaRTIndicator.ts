@@ -19,9 +19,11 @@ const ALPHA_MAX = 1.0;
  * ```
  *
  * A trending price (D near 1) gives a high alpha and a quick average; a noisy one (D near 2) gives a very small alpha
- * and a smooth one. An odd number of periods is made even by adding one. Until the window is full the value is the
- * price itself. 20 periods when no argument is given. A value that is not finite is not left out, as in the Java
- * class: it goes into the window and the average like any other.
+ * and a smooth one. An odd number of periods is made even by adding one (3 becomes 4). Until the window is full the
+ * value is the price itself. 20 periods when no argument is given. A value that is not finite (NaN or an infinity) is
+ * left out: nothing is updated, the last value is returned and the fractal dimension and the alpha keep their last
+ * values. The constructor throws a `RangeError` for `periods` below 3: with 2 each half holds one value, and the fractal
+ * dimension would be undefined on every tick.
  * Port of com.wualabs.qtsurfer.engine.indicators.averages.pro.FramaRTIndicator
  */
 export class FramaRTIndicator extends AbstractRTIndicator {
@@ -35,6 +37,9 @@ export class FramaRTIndicator extends AbstractRTIndicator {
 
   constructor(periods: number = DEFAULT_PERIOD) {
     super();
+    if (periods < 3) {
+      throw new RangeError(`Periods must be >= 3, got: ${periods}`);
+    }
     const even = periods % 2 !== 0 ? periods + 1 : periods; // ensure even
     this._periods = even;
     this.halfPeriod = Math.trunc(even / 2);
@@ -70,6 +75,9 @@ export class FramaRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.window.add(newValue);
     this.count++;
 
@@ -111,16 +119,25 @@ export class FramaRTIndicator extends AbstractRTIndicator {
     const n3 = (maxFull - minFull) / this._periods;
 
     const sum = n1 + n2;
+    let dimension: number;
     if (sum > 0 && n3 > 0) {
-      this.fractalDimension = (Math.log(sum) - Math.log(n3)) / Math.log(2);
+      dimension = (Math.log(sum) - Math.log(n3)) / Math.log(2);
     } else {
-      this.fractalDimension = 1.0;
+      dimension = 1.0;
     }
 
-    this.alpha = Math.exp(-4.6 * (this.fractalDimension - 1.0));
-    this.alpha = Math.max(ALPHA_MIN, Math.min(ALPHA_MAX, this.alpha));
+    let nextAlpha = Math.exp(-4.6 * (dimension - 1.0));
+    nextAlpha = Math.max(ALPHA_MIN, Math.min(ALPHA_MAX, nextAlpha));
 
-    this.frama = this.alpha * newValue + (1.0 - this.alpha) * this.frama;
+    const next = nextAlpha * newValue + (1.0 - nextAlpha) * this.frama;
+    if (AbstractRTIndicator.isPoison(next)) {
+      // Only reachable when the window ranges overflow (|price| near Number.MAX_VALUE): the price is already in the
+      // window and counted; frama, fractalDimension and alpha stay as they were.
+      return this.getValue();
+    }
+    this.fractalDimension = dimension;
+    this.alpha = nextAlpha;
+    this.frama = next;
     return this.setValue(this.frama);
   }
 }

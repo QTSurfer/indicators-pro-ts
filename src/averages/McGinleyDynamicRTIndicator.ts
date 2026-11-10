@@ -9,8 +9,8 @@ import { AbstractRTIndicator } from "@qtsurfer/indicators";
  *
  * It speeds up when the price is far above the average and slows down when it is near, which gives fewer whipsaws than
  * an EMA or an SMA. The first value is the price. A tick costs the same whatever the history. 14 periods when no
- * argument is given. A value that is not finite is not left out, as in the Java class: it goes into the average like
- * any other.
+ * argument is given. A value that is not finite (NaN or an infinity) is left out: nothing is updated and the last
+ * value is returned. The constructor throws a `RangeError` for `periods` below 1.
  * Port of com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndicator
  */
 export class McGinleyDynamicRTIndicator extends AbstractRTIndicator {
@@ -19,6 +19,9 @@ export class McGinleyDynamicRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 14) {
     super();
+    if (periods < 1) {
+      throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+    }
     this._periods = periods;
   }
 
@@ -36,6 +39,9 @@ export class McGinleyDynamicRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     if (!this.initialized) {
       this.initialized = true;
       return this.setValue(newValue);
@@ -46,6 +52,11 @@ export class McGinleyDynamicRTIndicator extends AbstractRTIndicator {
     const ratio4 = ratio * ratio * ratio * ratio;
     const denominator = this._periods * ratio4;
     if (denominator === 0) return this.setValue(newValue);
-    return this.setValue(md + (newValue - md) / denominator);
+    const next = md + (newValue - md) / denominator;
+    if (AbstractRTIndicator.isPoison(next)) {
+      // Only reachable when newValue - md overflows (|price| near Number.MAX_VALUE).
+      return this.getValue();
+    }
+    return this.setValue(next);
   }
 }

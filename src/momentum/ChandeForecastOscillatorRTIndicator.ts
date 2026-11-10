@@ -11,9 +11,9 @@ import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovi
  * Positive when the price is above the trend, negative when below; it usually stays between -5 and +5. The
  * least squares moving average does the work, so the cost of a tick is the one of that average. 0 until that
  * average is ready, and 0 when the price is 0. `getLsmaValue` gives the average of the last update. 14 periods
- * when no argument is given. The class does not guard a value that is not finite, as in the Java class: the
- * average leaves such a value out and keeps its last value, but the oscillator takes the value into the
- * quotient, so it gives NaN for it.
+ * when no argument is given. A value that is not finite (NaN or an infinity) is left out: the average is not
+ * updated, the last value is returned and `getLsmaValue` keeps its last value. The constructor throws a `RangeError`
+ * for `periods` below 2: a line needs two points.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.ChandeForecastOscillatorRTIndicator
  */
 export class ChandeForecastOscillatorRTIndicator extends AbstractRTIndicator {
@@ -23,6 +23,9 @@ export class ChandeForecastOscillatorRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 14) {
     super();
+    if (periods < 2) {
+      throw new RangeError(`Periods must be >= 2, got: ${periods}`);
+    }
     this._periods = periods;
     this.lsma = new LeastSquaresMovingAverageRTIndicator(periods);
   }
@@ -47,6 +50,9 @@ export class ChandeForecastOscillatorRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.lsmaValue = this.lsma.update(newValue);
 
     if (!this.lsma.isReady() || newValue === 0) {

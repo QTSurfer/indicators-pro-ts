@@ -11,9 +11,9 @@ import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
  * Four EMAs keep the state, so a tick costs the same whatever the history. 0 on the first price, and 0 while the
  * smoothed absolute change is 0. The indicator is ready once the two short EMAs are; the long ones are not looked at.
  * 25 and 13 when no argument is given (`longPeriod`, `shortPeriod`).
- * The class does not guard a value that is not finite, as in the Java class: the EMAs leave it out and hold their last
- * value, which goes on to the short EMAs as a new tick. The change of the price after a NaN price is NaN too, because
- * the NaN is the previous price.
+ * A value that is not finite (NaN or an infinity) is left out: no average is updated and the last value is returned.
+ * So is a price whose change from the last one overflows (prices near `Number.MAX_VALUE`), and the last price stays the
+ * reference. The constructor throws a `RangeError` for `longPeriod` or `shortPeriod` below 1.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrueStrengthIndexRTIndicator
  */
 export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
@@ -28,6 +28,12 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
   constructor(longPeriod: number, shortPeriod: number);
   constructor(longPeriod = 25, shortPeriod = 13) {
     super();
+    if (longPeriod < 1) {
+      throw new RangeError(`LongPeriod must be >= 1, got: ${longPeriod}`);
+    }
+    if (shortPeriod < 1) {
+      throw new RangeError(`ShortPeriod must be >= 1, got: ${shortPeriod}`);
+    }
     this.pcLongEma = new EmaRTIndicator(longPeriod);
     this.pcShortEma = new EmaRTIndicator(shortPeriod);
     this.absPcLongEma = new EmaRTIndicator(longPeriod);
@@ -49,12 +55,20 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     if (!this.hasPrev) {
       this.hasPrev = true;
       this.prevClose = newValue;
       return this.setValue(0);
     }
     const pc = newValue - this.prevClose;
+    if (AbstractRTIndicator.isPoison(pc)) {
+      // Only reachable when the difference overflows (|price| near Number.MAX_VALUE): hold, and keep the previous price
+      // as the reference.
+      return this.getValue();
+    }
     const absPc = Math.abs(pc);
     this.prevClose = newValue;
 

@@ -20,10 +20,11 @@ const CLAMP = 0.999;
  * `maxPeriod` prices and a tick costs a pass over it; the period is rounded and clamped to `[minPeriod, maxPeriod]`
  * as a Java `int`. `getEfficiencyRatio` and `getAdaptivePeriod` give the ratio and the window of the last update; the
  * window is `maxPeriod` before the first one. 10, 5 and 20 when no argument is given (`erPeriod`, `minPeriod`,
- * `maxPeriod`). Nothing checks that `minPeriod` is not above `maxPeriod`.
- * A value that is not finite is not left out, as in the Java class: it goes into the window, and the NaN that follows
- * makes the smoothed value NaN for good (until `reset`). A NaN efficiency ratio gives the period 0, as the Java
- * `(int)` of a NaN does, which is then raised to `minPeriod`.
+ * `maxPeriod`).
+ * A value that is not finite (NaN or an infinity) is left out: nothing is updated, the last value is returned and
+ * the efficiency ratio and the adaptive period keep their last values. The constructor throws a `RangeError` for
+ * `erPeriod` below 1, `minPeriod` below 2, `minPeriod` above `maxPeriod` and `erPeriod` not below `maxPeriod` (the
+ * window of `maxPeriod` prices must hold `erPeriod + 1` of them), checked in this order.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.AdaptiveFisherTransformRTIndicator
  */
 export class AdaptiveFisherTransformRTIndicator extends AbstractRTIndicator {
@@ -41,6 +42,18 @@ export class AdaptiveFisherTransformRTIndicator extends AbstractRTIndicator {
   constructor(erPeriod: number, minPeriod: number, maxPeriod: number);
   constructor(erPeriod = 10, minPeriod = 5, maxPeriod = 20) {
     super();
+    if (erPeriod < 1) {
+      throw new RangeError(`ErPeriod must be >= 1, got: ${erPeriod}`);
+    }
+    if (minPeriod < 2) {
+      throw new RangeError(`MinPeriod must be >= 2, got: ${minPeriod}`);
+    }
+    if (minPeriod > maxPeriod) {
+      throw new RangeError(`MinPeriod must be <= MaxPeriod, got: ${minPeriod} and ${maxPeriod}`);
+    }
+    if (erPeriod >= maxPeriod) {
+      throw new RangeError(`ErPeriod must be < MaxPeriod, got: ${erPeriod} and ${maxPeriod}`);
+    }
     this._erPeriod = erPeriod;
     this.minPeriod = minPeriod;
     this.maxPeriod = maxPeriod;
@@ -77,6 +90,9 @@ export class AdaptiveFisherTransformRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.window.add(newValue);
     this.count++;
 
@@ -117,6 +133,11 @@ export class AdaptiveFisherTransformRTIndicator extends AbstractRTIndicator {
       normalized = 0;
     }
     normalized = Math.max(-CLAMP, Math.min(CLAMP, normalized));
+    if (AbstractRTIndicator.isPoison(normalized)) {
+      // Only reachable when the window range overflows (|price| near Number.MAX_VALUE): the price, the count, the
+      // efficiency ratio and the adaptive period have already advanced; smoothed and prevFisher stay as they were.
+      return this.getValue();
+    }
 
     // Smoothing
     this.smoothed = 0.5 * normalized + 0.5 * this.smoothed;

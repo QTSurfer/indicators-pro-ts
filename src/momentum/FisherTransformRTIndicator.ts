@@ -16,8 +16,9 @@ const CLAMP = 0.999;
  *
  * The minimum and maximum come from the last `periods` prices, found with a pass over the window on every tick. The
  * first smoothed value is the first normalized one. The normalized value is 0 while the window is flat. 10 periods
- * when no argument is given. A value that is not finite is not left out, as in the Java class: it goes into the
- * window, and a NaN price makes the smoothed value, and so the indicator, NaN for good (until `reset`).
+ * when no argument is given. A value that is not finite (NaN or an infinity) is left out: nothing is updated and the
+ * last value is returned. The constructor throws a `RangeError` for `periods` below 2: the range of a single price is
+ * always 0.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.FisherTransformRTIndicator
  */
 export class FisherTransformRTIndicator extends AbstractRTIndicator {
@@ -28,6 +29,9 @@ export class FisherTransformRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = DEFAULT_PERIOD) {
     super();
+    if (periods < 2) {
+      throw new RangeError(`Periods must be >= 2, got: ${periods}`);
+    }
     this._periods = periods;
     this.window = new WindowSeriesStore(periods);
   }
@@ -48,6 +52,9 @@ export class FisherTransformRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     this.window.add(newValue);
 
     const size = this.window.size;
@@ -69,6 +76,11 @@ export class FisherTransformRTIndicator extends AbstractRTIndicator {
 
     // Clamp to avoid log(0)
     normalized = Math.max(-CLAMP, Math.min(CLAMP, normalized));
+    if (AbstractRTIndicator.isPoison(normalized)) {
+      // Only reachable when the window range overflows (|price| near Number.MAX_VALUE): the price is already in the
+      // window; smoothed and initialized stay as they were.
+      return this.getValue();
+    }
 
     // EMA smoothing
     if (!this.initialized) {

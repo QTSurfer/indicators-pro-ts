@@ -14,10 +14,10 @@ import { AbstractRTIndicator, RsiRTIndicator } from "@qtsurfer/indicators";
  * Both RSIs are the free `RsiRTIndicator` with its default averages. The window of the rates of change costs a pass
  * over it on every tick. 0 on the first price, 0 as the percent rank while the window holds one rate. 3, 2 and 100
  * when no argument is given.
- * A value that is not finite is not left out, as in the Java class: the free RSIs hold their last value for it, but
- * the streak, the rate of change and the percent rank take it in. A NaN price gives no rise or fall (the streak goes
- * to 0) and a NaN rate, which counts in no comparison, so the percent rank of that tick is the negative
- * `-100 / (size - 1)`; the next rate is NaN too, because the NaN is the previous price. The value itself stays finite.
+ * A value that is not finite (NaN or an infinity) is left out: nothing is updated and the last value is returned. The
+ * one-tick rate of change can overflow to an infinity when the last price is near zero; the rank only compares it, so it
+ * stays in the window. The constructor throws a `RangeError` for `rsiPeriod` or `streakRsiPeriod` below 1 and for `rankPeriod`
+ * below 2: the rank of a single value is undefined.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.ConnorsRsiRTIndicator
  */
 export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
@@ -37,6 +37,15 @@ export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
   constructor(rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number);
   constructor(rsiPeriod = 3, streakRsiPeriod = 2, rankPeriod = 100) {
     super();
+    if (rsiPeriod < 1) {
+      throw new RangeError(`RsiPeriod must be >= 1, got: ${rsiPeriod}`);
+    }
+    if (streakRsiPeriod < 1) {
+      throw new RangeError(`StreakRsiPeriod must be >= 1, got: ${streakRsiPeriod}`);
+    }
+    if (rankPeriod < 2) {
+      throw new RangeError(`RankPeriod must be >= 2, got: ${rankPeriod}`);
+    }
     this._rsiPeriod = rsiPeriod;
     this._streakRsiPeriod = streakRsiPeriod;
     this._rankPeriod = rankPeriod;
@@ -72,6 +81,9 @@ export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     if (!this.initialized) {
       this.prevClose = newValue;
       this.initialized = true;

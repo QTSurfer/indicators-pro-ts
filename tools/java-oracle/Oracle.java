@@ -664,12 +664,6 @@ public class Oracle {
       return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
           read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
     }));
-    // a minimum period of 0: a trending window has an adaptive period of 0, which looks at no value at all
-    list.add(new Subject("adaptiveFisherTransform3_0_6", false, () -> {
-      var i = new AdaptiveFisherTransformRTIndicator(3, 0, 6);
-      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
-          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
-    }));
     list.add(new Subject("knowSureThingDefault", false, () -> {
       var i = new KnowSureThingRTIndicator();
       return run(p, i::update, read("signal", i::getSignal), ready(i));

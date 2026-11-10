@@ -11,8 +11,10 @@ import { RocRTIndicator } from "./RocRTIndicator";
  * Made to find long-term buying opportunities. The two rates of change are the `RocRTIndicator` of this package,
  * and the average is the free `WmaIncrementalRTIndicator`, so a tick costs the same whatever the history. The
  * average takes in the zeros that the rates of change give while they warm up. 14, 11 and 10 when no argument is
- * given. A value that is not finite is not left out, as in the Java class: it goes into the rates of change and, with
- * them, into the average, whose sums a NaN price turns to NaN for good (until `reset`).
+ * given. A value that is not finite (NaN or an infinity) is left out: nothing is updated and the last value is
+ * returned. So is a sum of the two rates that is not finite (a rate overflows when its base price is near zero): the
+ * rates of change take the price, and only the average is skipped. The constructor throws a `RangeError` for
+ * `longRoc`, `shortRoc` or `wmaPeriod` below 1.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.CoppockCurveRTIndicator
  */
 export class CoppockCurveRTIndicator extends AbstractRTIndicator {
@@ -28,6 +30,15 @@ export class CoppockCurveRTIndicator extends AbstractRTIndicator {
   constructor(longRoc: number, shortRoc: number, wmaPeriod: number);
   constructor(longRoc = 14, shortRoc = 11, wmaPeriod = 10) {
     super();
+    if (longRoc < 1) {
+      throw new RangeError(`LongRoc must be >= 1, got: ${longRoc}`);
+    }
+    if (shortRoc < 1) {
+      throw new RangeError(`ShortRoc must be >= 1, got: ${shortRoc}`);
+    }
+    if (wmaPeriod < 1) {
+      throw new RangeError(`WmaPeriod must be >= 1, got: ${wmaPeriod}`);
+    }
     this._longRoc = longRoc;
     this._shortRoc = shortRoc;
     this._wmaPeriod = wmaPeriod;
@@ -60,9 +71,17 @@ export class CoppockCurveRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     const lr = this.longRocIndicator.update(newValue);
     const sr = this.shortRocIndicator.update(newValue);
     const rocSum = lr + sr;
+    if (AbstractRTIndicator.isPoison(rocSum)) {
+      // A rate of change overflowed (its base price is near zero) or the two rates cancel to NaN: the average has no
+      // guard of its own, so hold. Both windows of the rates have already taken the price.
+      return this.getValue();
+    }
     const result = this.wma.update(rocSum);
     return this.setValue(result);
   }

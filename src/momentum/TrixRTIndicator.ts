@@ -12,10 +12,8 @@ import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
  *
  * The triple smoothing filters out the small moves of the price; a cross of the zero line is a signal. Three EMAs
  * keep the state, so a tick costs the same whatever the history. 0 on the first price, and 0 while the previous EMA3
- * is 0. 15 periods when no argument is given.
- * The class does not guard a value that is not finite, as in the Java class: the first EMA leaves it out and holds its
- * last value, and that held value goes on to the second EMA, and from it to the third, as a new tick. The TRIX stays
- * finite.
+ * is 0. 15 periods when no argument is given. A value that is not finite (NaN or an infinity) is left out: no
+ * average is updated and the last value is returned. The constructor throws a `RangeError` for `periods` below 1.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator
  */
 export class TrixRTIndicator extends AbstractRTIndicator {
@@ -27,6 +25,9 @@ export class TrixRTIndicator extends AbstractRTIndicator {
 
   constructor(periods = 15) {
     super();
+    if (periods < 1) {
+      throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+    }
     this.ema1 = new EmaRTIndicator(periods);
     this.ema2 = new EmaRTIndicator(periods);
     this.ema3 = new EmaRTIndicator(periods);
@@ -46,6 +47,9 @@ export class TrixRTIndicator extends AbstractRTIndicator {
   }
 
   override update(newValue: number): number {
+    if (AbstractRTIndicator.isPoison(newValue)) {
+      return this.getValue();
+    }
     const e1 = this.ema1.update(newValue);
     const e2 = this.ema2.update(e1);
     const e3 = this.ema3.update(e2);
