@@ -1,4 +1,5 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
+import { minimumPeriods } from "$core/Periods";
 
 /**
  * Rolling Sharpe ratio of the log returns of the price over a window: `(mean - riskFreeRate) / stddev`. Two
@@ -17,10 +18,7 @@ export class SharpeRatioRTIndicator extends AbstractWindowSeriesRTIndicator {
   private annualizationFactor = 1.0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 2) {
-      throw new RangeError(`Periods must be >= 2, got: ${periods}`);
-    }
+    super(minimumPeriods(periods, 2));
   }
 
   protected override onEvict(evicted: number): void {

@@ -1,6 +1,7 @@
 import type { Kline, Ticker } from "@qtsurfer/core";
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator, type RTIndicatorSource } from "@qtsurfer/indicators";
 import { barOf } from "$core/Bar";
+import { minimumPeriods } from "$core/Periods";
 
 const COEFF_CO = 2.0 * Math.log(2) - 1.0;
 
@@ -17,7 +18,7 @@ export class GarmanKlassVolatilityRTIndicator
   private annualizationFactor = 1.0;
 
   constructor(periods: number) {
-    super(periods);
+    super(minimumPeriods(periods, 1));
   }
 
   protected override onEvict(evicted: number): void {

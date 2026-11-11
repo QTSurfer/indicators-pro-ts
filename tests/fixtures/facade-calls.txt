@@ -294,6 +294,22 @@ rollingPercentile 20 0.0001
 rollingPercentile 20 0.001
 ewmaVolatility 0.0001
 ewmaVolatility 0.99999
+# a period below the minimum is rejected before the window is built (the classes that did not check it)
+skewness 0
+kurtosis 3
+hurstExponent 3
+valueAtRisk 1
+sharpeRatio 0
+sharpeRatio 1
+linearRegressionSlope 1
+simpleLinearRegression 1
+realizedVolatility 0
+parkinson 0
+garmanKlass 0
+rogersSatchell 0
+cmf -1
+mfi -1
+ichimoku 9 26 -1
 # the limits of the classes come through the factory
 autocorrelation 3
 skewness 2

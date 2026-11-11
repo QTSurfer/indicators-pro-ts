@@ -1,6 +1,7 @@
 import type { Kline, Ticker } from "@qtsurfer/core";
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator, type RTIndicatorSource } from "@qtsurfer/indicators";
 import { barOf } from "$core/Bar";
+import { minimumPeriods } from "$core/Periods";
 
 const FOUR_LN2 = 4.0 * Math.log(2);
 
@@ -17,7 +18,7 @@ export class ParkinsonVolatilityRTIndicator
   private annualizationFactor = 1.0;
 
   constructor(periods: number) {
-    super(periods);
+    super(minimumPeriods(periods, 1));
   }
 
   protected override onEvict(evicted: number): void {

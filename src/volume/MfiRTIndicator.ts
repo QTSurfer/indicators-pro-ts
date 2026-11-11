@@ -18,6 +18,9 @@ export class MfiRTIndicator extends AbstractRTIndicator implements RTIndicatorSo
 
   constructor(private readonly _periods: number = 14) {
     super();
+    if (_periods < 0) {
+      throw new RangeError(`Periods must be >= 0, got: ${_periods}`);
+    }
     this.flows = new Float64Array(_periods);
   }
 

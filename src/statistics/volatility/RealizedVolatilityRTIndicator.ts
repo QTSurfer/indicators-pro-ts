@@ -1,4 +1,5 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
+import { minimumPeriods } from "$core/Periods";
 
 /**
  * Rolling realized volatility: the standard deviation of the log returns of the price over a window,
@@ -16,7 +17,7 @@ export class RealizedVolatilityRTIndicator extends AbstractWindowSeriesRTIndicat
   private annualizationFactor = 1.0;
 
   constructor(periods: number) {
-    super(periods);
+    super(minimumPeriods(periods, 1));
   }
 
   protected override onEvict(evicted: number): void {

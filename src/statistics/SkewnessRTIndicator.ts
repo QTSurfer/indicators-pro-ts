@@ -1,5 +1,6 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
 import { copyWindow, isFlat, mean } from "./WindowMath";
+import { minimumPeriods } from "$core/Periods";
 
 /**
  * Rolling sample skewness over a window: how asymmetric the values are. Positive means a right tail,
@@ -12,10 +13,7 @@ export class SkewnessRTIndicator extends AbstractWindowSeriesRTIndicator {
   private _mean = 0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 3) {
-      throw new RangeError(`Periods must be >= 3, got: ${periods}`);
-    }
+    super(minimumPeriods(periods, 3));
     this.scratch = new Float64Array(periods);
   }
 
