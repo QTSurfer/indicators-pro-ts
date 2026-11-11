@@ -12,13 +12,15 @@ const calls = readFileSync(new URL("./fixtures/facade-calls.txt", import.meta.ur
   .map((line) => line.trim())
   .filter((line) => line !== "" && !line.startsWith("#"));
 
-type Arg = string | number | number[];
+type Arg = string | number | boolean | number[];
 
-// A name is in double quotes and an array is in brackets without spaces, like [10,15,20]; the Java side tells an int[]
-// from a double[] by the decimal point, which JavaScript does not need
+// A name is in double quotes, an array is in brackets without spaces, like [10,15,20], and true and false are booleans;
+// the Java side tells an int[] from a double[] by the decimal point, which JavaScript does not need
 function parse(line: string): { method: string; args: Arg[] } {
   const [method, ...rest] = line.split(/\s+/);
   const arg = (token: string): Arg => {
+    if (token === "true") return true;
+    if (token === "false") return false;
     if (token.startsWith('"')) return token.slice(1, -1);
     if (token.startsWith("[")) {
       const inner = token.slice(1, -1).trim();

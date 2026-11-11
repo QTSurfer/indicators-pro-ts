@@ -1,9 +1,9 @@
 # One call of Pro.on(group) per line: the method, then its arguments. A name is in double quotes, a whole number
-# is an integer, and a number with a decimal point is a double. An array is in brackets, without spaces, like
-# [10,15,20,30]: it is an int[], or a double[] when any of its numbers has a decimal point; [] is an int[]. The Java
-# engine's Pro runs each call on an empty group (tools/java-oracle) and tests/facade.test.ts runs the same call here:
-# they must register the same names, with the same display hint and metadata. Add the line of every factory and
-# overload you add.
+# is an integer, and a number with a decimal point is a double. The words true and false are booleans. An array is in
+# brackets, without spaces, like [10,15,20,30]: it is an int[], or a double[] when any of its numbers has a decimal
+# point; [] is an int[]. The Java engine's Pro runs each call on an empty group (tools/java-oracle) and
+# tests/facade.test.ts runs the same call here: they must register the same names, with the same display hint and
+# metadata. Add the line of every factory and overload you add.
 adx
 adx 7
 adx "trend" 21
@@ -277,6 +277,16 @@ negativeVolumeIndex
 negativeVolumeIndex "n"
 pvt
 pvt "p"
+exactStdDev 20
+exactStdDev 5
+exactStdDev "sd" 14
+exactStdDev "sd" 14 true
+exactStdDev "sd" 14 false
+exactVariance 20
+exactVariance 5
+exactVariance "var" 14
+exactVariance "var" 14 true
+exactVariance "var" 14 false
 # a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
 superTrend 10 0.0001
 superTrend 10 2.5E-5
@@ -371,3 +381,15 @@ chaikinOscillator "c" 3 0
 easeOfMovement 0
 elderForceIndex 0
 elderForceIndex -3
+exactStdDev 0
+exactStdDev -1
+exactStdDev "sd" 0
+exactStdDev "sd" -1
+exactStdDev "sd" 0 true
+exactStdDev "sd" -1 false
+exactVariance 0
+exactVariance -1
+exactVariance "var" 0
+exactVariance "var" -1
+exactVariance "var" 0 true
+exactVariance "var" -1 false

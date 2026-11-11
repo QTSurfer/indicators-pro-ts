@@ -12,7 +12,9 @@ export { LinearRegressionSlopeRTIndicator } from "$statistics/LinearRegressionSl
 export { RollingPercentileRTIndicator } from "$statistics/RollingPercentileRTIndicator";
 export { SimpleLinearRegressionRTIndicator } from "$statistics/SimpleLinearRegressionRTIndicator";
 export { SkewnessRTIndicator } from "$statistics/SkewnessRTIndicator";
+export { StandardDeviationRTIndicator } from "$statistics/StandardDeviationRTIndicator";
 export { ValueAtRiskRTIndicator } from "$statistics/ValueAtRiskRTIndicator";
+export { VarianceRTIndicator } from "$statistics/VarianceRTIndicator";
 export { ZScoreRTIndicator } from "$statistics/ZScoreRTIndicator";
 export { CalmarRatioRTIndicator } from "$statistics/ratios/CalmarRatioRTIndicator";
 export { MaxDrawdownRTIndicator } from "$statistics/ratios/MaxDrawdownRTIndicator";

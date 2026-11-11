@@ -8,10 +8,10 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 
 - **Class** — the class exported by `@qtsurfer/indicators-pro`.
 - **Call** — the call of `Pro.on(group)` that registers it with the default id. The statistics, the volatility
-  estimators, ALMA, DEMA and NATR have no default period: the call shows 20. `—` when the class has no `Pro` call: a class
-  ported before the Java engine's `Pro` has a factory for it is added with `group.add(name, new Class(…))`, and Variance is
-  internal and not exported. The Id and Outputs columns are then empty (the Bars column still says whether the class
-  reads whole bars).
+  estimators, ALMA, DEMA and NATR have no default period: the call shows 20. `—` when the class has no `Pro` call (every
+  class has one today): a class ported before the Java engine's `Pro` has a factory for it is added with
+  `group.add(name, new Class(…))`. The Id and Outputs columns are then empty (the Bars column still says whether the
+  class reads whole bars).
 - **Id** — the name it registers under; the id of every output is this name plus the suffix.
 - **Outputs** — the suffixes of the other values an indicator with several outputs registers beside it. The indicator
   itself is its main output.
@@ -25,7 +25,7 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 |---|---:|
 | Trend | 10 |
 | Volume | 11 |
-| Statistics | 9 |
+| Statistics | 11 |
 | Risk and performance ratios | 7 |
 | Volatility estimators | 6 |
 | Volatility | 5 |
@@ -74,8 +74,13 @@ take only an optional name (`pvt("p")`).
 
 ## Statistics
 
-Every statistics indicator here has a `Pro` call. Variance is the building block of Z-Score: it is a class of the
-source tree, but not exported, without a call, and not counted in the Summary.
+Every statistics indicator here has a `Pro` call and reads the group's price, so it works on a ticker feed too. Standard
+deviation and Variance are the pro classes, worked out from the window on every tick and registered as `xstd` and
+`xvar` plus the periods. They differ from the `stdDev` and `variance` of `@qtsurfer/indicators` (and from the classes of
+the same name there) in their default: the free ones give the sample form (Bessel's correction) and these give the
+population form. Each takes the form as a third argument, `exactVariance("v", 20, true)`; with `true` it gives the same
+values as the free one once the window is full, except on a window of identical prices, where these give exactly 0 and
+the free ones can leave a tiny rounding residue. The Z-Score builds on the pro variance.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
@@ -86,8 +91,9 @@ source tree, but not exported, without a call, and not counted in the Summary.
 | Rolling percentile | `RollingPercentileRTIndicator` | `rollingPercentile(20, 0.95)` | `pctl20_0.95` | `Median`, `Min`, `Max` |  | percentile of the window, interpolated between ranks; also the median, the minimum and the maximum |
 | Simple linear regression | `SimpleLinearRegressionRTIndicator` | `simpleLinearRegression(20)` | `slr20` | `Intercept`, `RSquared`, `StandardError` |  | slope of the least-squares line; also the intercept, R squared, the standard error and a forecast |
 | Skewness | `SkewnessRTIndicator` | `skewness(20)` | `skew20` |  |  | sample skewness of the group's price |
+| Standard deviation | `StandardDeviationRTIndicator` | `exactStdDev(20)` | `xstd20` |  |  | square root of the variance of the window; the population deviation by default, the sample deviation with `true`; the class also gives the mean and the variance, which are not outputs |
 | Value at Risk | `ValueAtRiskRTIndicator` | `valueAtRisk(20)` | `valRisk20` |  |  | parametric (Gaussian) Value at Risk of the log returns; 95% confidence by default |
-| Variance | `VarianceRTIndicator` | — | | | | rolling variance of the window; an internal building block that is not exported |
+| Variance | `VarianceRTIndicator` | `exactVariance(20)` | `xvar20` |  |  | variance of the window; the population variance by default, the sample variance with `true`; the class also gives the mean, which is not an output |
 | Z-Score | `ZScoreRTIndicator` | `zScore(20)` | `zscore20` |  |  | distance of the group's price from the mean of the window, in standard deviations |
 
 ## Risk and performance ratios

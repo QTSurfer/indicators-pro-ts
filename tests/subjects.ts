@@ -24,6 +24,7 @@ import { LinearRegressionSlopeRTIndicator } from "$statistics/LinearRegressionSl
 import { RollingPercentileRTIndicator } from "$statistics/RollingPercentileRTIndicator";
 import { SimpleLinearRegressionRTIndicator } from "$statistics/SimpleLinearRegressionRTIndicator";
 import { SkewnessRTIndicator } from "$statistics/SkewnessRTIndicator";
+import { StandardDeviationRTIndicator } from "$statistics/StandardDeviationRTIndicator";
 import { ValueAtRiskRTIndicator } from "$statistics/ValueAtRiskRTIndicator";
 import { VarianceRTIndicator } from "$statistics/VarianceRTIndicator";
 import { ZScoreRTIndicator } from "$statistics/ZScoreRTIndicator";
@@ -134,6 +135,18 @@ export const subjects: Subject[] = [
   subject("variance20", "Variance(20)", true, 0, (p) => series(new VarianceRTIndicator(20), p, { mean: (i) => i.getMean() })),
   subject("sampleVariance20", "sample Variance(20)", true, 0, (p) =>
     series(new VarianceRTIndicator(20).withSampleVariance(true), p, { mean: (i) => i.getMean() }),
+  ),
+
+  // The standard deviation wraps the variance: its mean and the value of the variance behind it are read too
+  subject("standardDeviation20", "StandardDeviation(20)", false, 0, (p) =>
+    series(new StandardDeviationRTIndicator(20), p, { mean: (i) => i.getMean(), variance: (i) => i.getVariance().getValue(), ready }),
+  ),
+  subject("sampleStandardDeviation20", "sample StandardDeviation(20)", false, 0, (p) =>
+    series(new StandardDeviationRTIndicator(20).withSampleVariance(true), p, {
+      mean: (i) => i.getMean(),
+      variance: (i) => i.getVariance().getValue(),
+      ready,
+    }),
   ),
 
   subject("calmarRatio20", "Calmar(20)", false, LOG_TOLERANCE, (p) =>

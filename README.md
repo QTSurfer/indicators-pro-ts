@@ -38,10 +38,10 @@ belong on a kline group: on a ticker those are the exchange's 24-hour statistics
 
 ## Ported
 
-74 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF, Ichimoku, MFI, OBV,
-SuperTrend, VWAP) and the sixty-seven that came after it (Kurtosis, Skewness, Z-Score, Value at Risk, Autocorrelation,
-the Hurst exponent, the linear regression slope, the simple linear regression, the rolling percentile, the Calmar,
-Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index, the EWMA and realized volatilities, the
+76 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF, Ichimoku, MFI, OBV,
+SuperTrend, VWAP) and the sixty-nine that came after it (Kurtosis, Skewness, Z-Score, the exact variance and standard
+deviation, Value at Risk, Autocorrelation, the Hurst exponent, the linear regression slope, the simple linear
+regression, the rolling percentile, the Calmar, Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index, the EWMA and realized volatilities, the
 four OHLC volatility estimators, the ALMA, DEMA, FRAMA, least squares and McGinley Dynamic moving averages, the
 envelopes, Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the
 Coppock curve, the Fisher and adaptive Fisher transforms, Know sure thing, TRIX, the true strength index, Aroon, the
@@ -72,8 +72,8 @@ figures below say for the machine they were measured on. The series that take no
 
 The arithmetic of `+ - * /` and `sqrt` is exact in every JavaScript engine, so those series are equal to
 the last bit. That holds the maximum drawdown and the Ulcer index to the last bit, as every other indicator that takes
-no logarithm or exponential (among them the DEMA, the envelopes, the least squares and McGinley Dynamic averages,
-Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the Coppock
+no logarithm or exponential (among them the exact variance and standard deviation, the DEMA, the envelopes, the least
+squares and McGinley Dynamic averages, Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the Coppock
 curve, Know sure thing, TRIX, the true strength index, Aroon, the Chande Kroll stop, the Chandelier exit, the Donchian
 channel, the efficiency ratio, the Parabolic SAR, Vortex, the Keltner channel, the Mass index, NATR, the relative
 volatility index, and the fifteen momentum and volume indicators that read whole bars). The indicators that take logarithms or an exponential (the four OHLC volatility estimators, the EWMA

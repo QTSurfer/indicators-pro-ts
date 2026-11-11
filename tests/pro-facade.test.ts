@@ -63,6 +63,7 @@ import {
   SimpleLinearRegressionRTIndicator,
   SkewnessRTIndicator,
   SortinoRatioRTIndicator,
+  StandardDeviationRTIndicator,
   StochasticOscillatorRTIndicator,
   TailRatioRTIndicator,
   TrixRTIndicator,
@@ -70,12 +71,13 @@ import {
   UlcerIndexRTIndicator,
   UltimateOscillatorRTIndicator,
   ValueAtRiskRTIndicator,
+  VarianceRTIndicator,
   VortexRTIndicator,
   WilliamsRRTIndicator,
   YangZhangVolatilityRTIndicator,
   ZScoreRTIndicator,
 } from "../src";
-import { LOG_TOLERANCE, expectSeries } from "./compare";
+import { LOG_TOLERANCE, expectSeries, relativeError } from "./compare";
 import { inputsOf, klines, reference } from "./fixtures";
 
 const INSTRUMENT = "BTC/USDT";
@@ -1245,5 +1247,194 @@ describe("the momentum and volume factories that read whole bars, as the Java en
     const notices = group.getNotices();
     expect(notices.map((notice) => notice.indicatorName).sort()).toEqual(DEFAULTS.map(([id]) => id).sort());
     expect(notices.every((notice) => notice.instrument === INSTRUMENT)).toBe(true);
+  });
+});
+
+describe("the exact statistics factories, as the Java engine's Pro gives them", () => {
+  const closes = klines(inputsOf("clean")).map((bar) => bar.close);
+
+  it("default ids, with the pro classes behind them and no other output", () => {
+    const { group } = klineGroup();
+    Pro.on(group).exactStdDev(20).exactVariance(20);
+    expect(registeredNames(group)).toEqual(["xstd20", "xvar20"]);
+    expect(group.getExisting("xstd20")).toBeInstanceOf(StandardDeviationRTIndicator);
+    expect(group.getExisting("xvar20")).toBeInstanceOf(VarianceRTIndicator);
+    expect(group.getExisting("xstd20").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
+    expect(group.getExisting("xvar20").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
+  });
+
+  it("the three shapes of each: a period, a name and a period, a name with the period and the form", () => {
+    const { group } = klineGroup();
+    Pro.on(group)
+      .exactStdDev(5).exactStdDev("sd", 14).exactStdDev("sdSample", 15, true).exactStdDev("sdPopulation", 16, false)
+      .exactVariance(5).exactVariance("v", 14).exactVariance("vSample", 15, true).exactVariance("vPopulation", 16, false);
+    expect(registeredNames(group)).toEqual(
+      ["sd", "sdPopulation", "sdSample", "v", "vPopulation", "vSample", "xstd5", "xvar5"],
+    );
+  });
+
+  it("records the periods and the form in the metadata: the short forms are the population form", () => {
+    const { group } = klineGroup();
+    Pro.on(group)
+      .exactStdDev(5).exactStdDev("sd", 14).exactStdDev("sdSample", 15, true).exactStdDev("sdPopulation", 16, false)
+      .exactVariance(5).exactVariance("v", 14).exactVariance("vSample", 15, true).exactVariance("vPopulation", 16, false);
+    expect(meta(group, "xstd5")).toEqual({ periods: "5", sample: "false" });
+    expect(meta(group, "sd")).toEqual({ periods: "14", sample: "false" });
+    expect(meta(group, "sdSample")).toEqual({ periods: "15", sample: "true" });
+    expect(meta(group, "sdPopulation")).toEqual({ periods: "16", sample: "false" });
+    expect(meta(group, "xvar5")).toEqual({ periods: "5", sample: "false" });
+    expect(meta(group, "v")).toEqual({ periods: "14", sample: "false" });
+    expect(meta(group, "vSample")).toEqual({ periods: "15", sample: "true" });
+    expect(meta(group, "vPopulation")).toEqual({ periods: "16", sample: "false" });
+  });
+
+  it("the short forms and the form false give the population value, and true gives the sample value", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group)
+      .exactVariance("short", 20).exactVariance("population", 20, false).exactVariance("sample", 20, true)
+      .exactStdDev("sdShort", 20).exactStdDev("sdPopulation", 20, false).exactStdDev("sdSample", 20, true);
+    const population = new VarianceRTIndicator(20);
+    const sample = new VarianceRTIndicator(20).withSampleVariance(true);
+    const sdPopulation = new StandardDeviationRTIndicator(20);
+    const sdSample = new StandardDeviationRTIndicator(20).withSampleVariance(true);
+    for (const bar of klines(inputsOf("clean"))) {
+      map.updateFrom(bar);
+      const expected: Record<string, number> = {
+        short: population.update(bar.close),
+        population: population.getValue(),
+        sample: sample.update(bar.close),
+        sdShort: sdPopulation.update(bar.close),
+        sdPopulation: sdPopulation.getValue(),
+        sdSample: sdSample.update(bar.close),
+      };
+      for (const [name, value] of Object.entries(expected)) {
+        expect(group.getIndicatorValue(name), name).toBe(value);
+      }
+    }
+    expect(group.getIndicatorValue("sample")).toBeGreaterThan(group.getIndicatorValue("population"));
+    expect(group.getIndicatorValue("sdSample")).toBeGreaterThan(group.getIndicatorValue("sdPopulation"));
+  });
+
+  it("a kline group gives, bar after bar, what each class gives on the close", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group).exactStdDev(20).exactVariance(20);
+    const stdDev = new StandardDeviationRTIndicator(20);
+    const variance = new VarianceRTIndicator(20);
+    for (const bar of klines(inputsOf("clean"))) {
+      map.updateFrom(bar);
+      expect(group.getIndicatorValue("xstd20")).toBe(stdDev.update(bar.close));
+      expect(group.getIndicatorValue("xvar20")).toBe(variance.update(bar.close));
+    }
+    expect(stdDev.getValue()).toBeGreaterThan(0);
+  });
+
+  it("reads the price of a ticker feed too, and raises no notice, unlike a bar reader", () => {
+    const map = new InstrumentMapTickerSourceRTIndicator(INSTRUMENT);
+    const group = new InstrumentGroupRTIndicator(map);
+    Pro.on(group).exactStdDev(20).exactVariance(20).exactVariance("sample", 20, true);
+    const stdDev = new StandardDeviationRTIndicator(20);
+    const variance = new VarianceRTIndicator(20);
+    const sample = new VarianceRTIndicator(20).withSampleVariance(true);
+    closes.slice(0, 60).forEach((close, i) => {
+      map.updateFrom(tickerOf(close, i + 1));
+      expect(group.getIndicatorValue("xstd20")).toBe(stdDev.update(close));
+      expect(group.getIndicatorValue("xvar20")).toBe(variance.update(close));
+      expect(group.getIndicatorValue("sample")).toBe(sample.update(close));
+    });
+    expect(group.getNotices()).toEqual([]);
+    expect(group.getIndicatorValue("xvar20")).not.toBe(0);
+  });
+
+  it("exactVariance(name, 20, true) equals the free variance(20) once the window is full, and exactStdDev the free stdDev(20)", () => {
+    const { map, group } = klineGroup();
+    group.variance(20).stdDev(20);
+    Pro.on(group).exactVariance("xv", 20, true).exactStdDev("xs", 20, true);
+    let warm = 0;
+    for (const bar of klines(inputsOf("clean"))) {
+      map.updateFrom(bar);
+      if (group.getExisting("variance20").isReady()) {
+        warm++;
+        expect(group.getIndicatorValue("xv"), `variance at ${warm}`).toBe(group.getIndicatorValue("variance20"));
+        expect(group.getIndicatorValue("xs"), `stdDev at ${warm}`).toBe(group.getIndicatorValue("stdDev20"));
+      }
+    }
+    expect(warm).toBeGreaterThan(500);
+  });
+
+  it("a window of identical prices has exactly no variance and no deviation, where the free variance can leave a rounding residue", () => {
+    const { map, group } = klineGroup();
+    group.variance(20);
+    Pro.on(group).exactVariance("xv", 20, true).exactVariance(20).exactStdDev("xs", 20, true).exactStdDev(20);
+    for (let i = 0; i < 30; i++) {
+      map.updateFrom({ ...klines(inputsOf("clean"))[0], open: 0.1, high: 0.1, low: 0.1, close: 0.1, timestamp: i + 1 });
+    }
+    for (const name of ["xv", "xvar20", "xs", "xstd20"]) {
+      expect(group.getIndicatorValue(name), name).toBe(0);
+    }
+    expect(Math.abs(group.getIndicatorValue("variance20"))).toBeLessThan(1e-12);
+  });
+
+  it("exactVariance(20) is the free variance(20) times (periods - 1) / periods, and exactStdDev(20) the free stdDev(20) times its square root", () => {
+    const { map, group } = klineGroup();
+    group.variance(20).stdDev(20);
+    Pro.on(group).exactVariance(20).exactStdDev(20);
+    // the scaling rounds once more on the free side, so the two agree to a rounding or two and not to the last bit
+    // (about 2.3e-16 apart at the most on this dataset, and equal for most of the values)
+    const ROUNDING = 5e-16;
+    let warm = 0;
+    for (const bar of klines(inputsOf("clean"))) {
+      map.updateFrom(bar);
+      if (group.getExisting("variance20").isReady()) {
+        warm++;
+        expect(relativeError(group.getIndicatorValue("xvar20"), (group.getIndicatorValue("variance20") * 19) / 20), `variance at ${warm}`)
+          .toBeLessThanOrEqual(ROUNDING);
+        expect(relativeError(group.getIndicatorValue("xstd20"), group.getIndicatorValue("stdDev20") * Math.sqrt(19 / 20)), `stdDev at ${warm}`)
+          .toBeLessThanOrEqual(ROUNDING);
+      }
+    }
+    expect(warm).toBeGreaterThan(500);
+  });
+
+  it("a bad period throws in every shape, and registers nothing", () => {
+    const { group } = klineGroup();
+    for (const periods of [0, -1]) {
+      expect(() => Pro.on(group).exactStdDev(periods)).toThrow();
+      expect(() => Pro.on(group).exactStdDev("sd", periods)).toThrow();
+      expect(() => Pro.on(group).exactStdDev("sd", periods, true)).toThrow();
+      expect(() => Pro.on(group).exactStdDev("sd", periods, false)).toThrow();
+      expect(() => Pro.on(group).exactVariance(periods)).toThrow();
+      expect(() => Pro.on(group).exactVariance("v", periods)).toThrow();
+      expect(() => Pro.on(group).exactVariance("v", periods, true)).toThrow();
+      expect(() => Pro.on(group).exactVariance("v", periods, false)).toThrow();
+      expect(() => new StandardDeviationRTIndicator(periods)).toThrow();
+      expect(() => new VarianceRTIndicator(periods)).toThrow();
+    }
+    expect(registeredNames(group)).toEqual([]);
+  });
+
+  it("the deviation class: periods, mean, the variance behind it, the form, readiness and reset", () => {
+    const stdDev = new StandardDeviationRTIndicator(4);
+    expect(stdDev.periods).toBe(4);
+    expect(stdDev.isReady()).toBe(false);
+    for (const price of [1, 2, 3, 4]) stdDev.update(price);
+    expect(stdDev.isReady()).toBe(true);
+    expect(stdDev.getMean()).toBe(2.5);
+    expect(stdDev.getVariance().getValue()).toBe(1.25);
+    expect(stdDev.getValue()).toBe(Math.sqrt(1.25));
+    // the variance behind the deviation is the live instance, and the form chosen on the deviation is the one it works
+    expect(stdDev.getVariance()).toBe(stdDev.getVariance());
+    expect(stdDev.withSampleVariance(true)).toBe(stdDev);
+    stdDev.update(5);
+    expect(stdDev.getVariance().getValue()).toBe((1.25 * 4) / 3);
+    expect(stdDev.getValue()).toBe(Math.sqrt((1.25 * 4) / 3));
+    stdDev.reset();
+    expect(stdDev.isReady()).toBe(false);
+    expect(stdDev.getValue()).toBe(0);
+    expect(stdDev.getMean()).toBe(0);
+    expect(stdDev.getVariance().getValue()).toBe(0);
+    // a flat window has no deviation
+    for (let i = 0; i < 4; i++) stdDev.update(7);
+    expect(stdDev.getValue()).toBe(0);
+    expect(stdDev.getMean()).toBe(7);
   });
 });

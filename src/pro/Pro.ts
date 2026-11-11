@@ -33,7 +33,9 @@ import { LinearRegressionSlopeRTIndicator } from "$statistics/LinearRegressionSl
 import { RollingPercentileRTIndicator } from "$statistics/RollingPercentileRTIndicator";
 import { SimpleLinearRegressionRTIndicator } from "$statistics/SimpleLinearRegressionRTIndicator";
 import { SkewnessRTIndicator } from "$statistics/SkewnessRTIndicator";
+import { StandardDeviationRTIndicator } from "$statistics/StandardDeviationRTIndicator";
 import { ValueAtRiskRTIndicator } from "$statistics/ValueAtRiskRTIndicator";
+import { VarianceRTIndicator } from "$statistics/VarianceRTIndicator";
 import { ZScoreRTIndicator } from "$statistics/ZScoreRTIndicator";
 import { CalmarRatioRTIndicator } from "$statistics/ratios/CalmarRatioRTIndicator";
 import { MaxDrawdownRTIndicator } from "$statistics/ratios/MaxDrawdownRTIndicator";
@@ -89,9 +91,9 @@ import { ProOutput } from "./ProOutput";
  * from a ticker raises a notice for each of them. The exceptions read only the group's price, as the base
  * indicators do, and work on a ticker feed too: the statistics (`kurtosis`, `autocorrelation`,
  * `hurstExponent`, `linearRegressionSlope`, `rollingPercentile`, `simpleLinearRegression`, `skewness`,
- * `valueAtRisk` and `zScore`), the risk ones (`calmarRatio`, `maxDrawdown`, `omegaRatio`, `sharpeRatio`,
- * `sortinoRatio`, `tailRatio`, `ulcerIndex`, `ewmaVolatility` and `realizedVolatility`), the averages and
- * oscillators that follow them (`alma`, `dema`, `envelopes`, `frama`, `leastSquaresMovingAverage`,
+ * `valueAtRisk`, `zScore`, `exactStdDev` and `exactVariance`), the risk ones (`calmarRatio`, `maxDrawdown`,
+ * `omegaRatio`, `sharpeRatio`, `sortinoRatio`, `tailRatio`, `ulcerIndex`, `ewmaVolatility` and
+ * `realizedVolatility`), the averages and oscillators that follow them (`alma`, `dema`, `envelopes`, `frama`, `leastSquaresMovingAverage`,
  * `mcGinleyDynamic`, `momentum`, `roc`, `cmo`, `detrendedPriceOscillator`, `chandeForecastOscillator`,
  * `connorsRsi`, `coppockCurve`, `fisherTransform`, `adaptiveFisherTransform`, `knowSureThing`, `trix` and
  * `trueStrengthIndex`), and `efficiencyRatio` and `relativeVolatilityIndex`.
@@ -676,6 +678,56 @@ export class Pro {
       return this.zScore(`zscore${nameOrPeriods}`, nameOrPeriods);
     }
     this.target.add(nameOrPeriods, new ZScoreRTIndicator(periods!).withMeta("periods", periods));
+    return this;
+  }
+
+  /**
+   * Standard deviation of the group's price over `periods`, worked out exactly from the window on every tick,
+   * registered as `xstd` + periods. The short forms give the population deviation, the default of the class. The
+   * free `stdDev` of `@qtsurfer/indicators` is the sample deviation (Bessel's correction), so it is
+   * `sqrt(periods / (periods - 1))` times this one; `exactStdDev(name, periods, true)` is the form that equals it
+   * (but on a window of identical prices, where this one gives exactly 0). The mean and the variance of the window are
+   * diagnostics, not outputs. `periods` is at least 1.
+   */
+  exactStdDev(periods: number): this;
+  exactStdDev(name: string, periods: number): this;
+  exactStdDev(name: string, periods: number, sample: boolean): this;
+  exactStdDev(nameOrPeriods: string | number, periods?: number, sample?: boolean): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.exactStdDev(`xstd${nameOrPeriods}`, nameOrPeriods);
+    }
+    const stdDev = new StandardDeviationRTIndicator(periods!);
+    if (sample === undefined) {
+      // The class default (population variance), left as it is
+      this.target.add(nameOrPeriods, stdDev.withMeta("periods", periods).withMeta("sample", false));
+    } else {
+      this.target.add(nameOrPeriods, stdDev.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+    }
+    return this;
+  }
+
+  /**
+   * Variance of the group's price over `periods`, worked out exactly from the window on every tick, registered as
+   * `xvar` + periods. The short forms give the population variance, the default of the class. The free `variance` of
+   * `@qtsurfer/indicators` is the sample variance (Bessel's correction), so it is `periods / (periods - 1)` times
+   * this one; `exactVariance(name, periods, true)` is the form that equals it (but on a window of identical
+   * prices, where this one gives exactly 0). The mean of the window is a diagnostic, not an output. `periods` is at
+   * least 1.
+   */
+  exactVariance(periods: number): this;
+  exactVariance(name: string, periods: number): this;
+  exactVariance(name: string, periods: number, sample: boolean): this;
+  exactVariance(nameOrPeriods: string | number, periods?: number, sample?: boolean): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.exactVariance(`xvar${nameOrPeriods}`, nameOrPeriods);
+    }
+    const variance = new VarianceRTIndicator(periods!);
+    if (sample === undefined) {
+      // The class default (population variance), left as it is
+      this.target.add(nameOrPeriods, variance.withMeta("periods", periods).withMeta("sample", false));
+    } else {
+      this.target.add(nameOrPeriods, variance.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+    }
     return this;
   }
 

@@ -38,6 +38,7 @@ import com.wualabs.qtsurfer.engine.indicators.statistics.pro.LinearRegressionSlo
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.RollingPercentileRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.SimpleLinearRegressionRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.SkewnessRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.statistics.pro.StandardDeviationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.ValueAtRiskRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.VarianceRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.ZScoreRTIndicator;
@@ -505,6 +506,16 @@ public class Oracle {
     list.add(new Subject("sampleVariance20", true, () -> {
       var i = new VarianceRTIndicator(20).withSampleVariance(true);
       return run(p, i::update, read("mean", i::getMean));
+    }));
+    list.add(new Subject("standardDeviation20", false, () -> {
+      var i = new StandardDeviationRTIndicator(20);
+      return run(p, i::update, read("mean", i::getMean),
+          read("variance", () -> i.getVariance().getValue()), ready(i));
+    }));
+    list.add(new Subject("sampleStandardDeviation20", false, () -> {
+      var i = new StandardDeviationRTIndicator(20).withSampleVariance(true);
+      return run(p, i::update, read("mean", i::getMean),
+          read("variance", () -> i.getVariance().getValue()), ready(i));
     }));
 
     list.add(new Subject("calmarRatio20", false, () -> {
@@ -1490,6 +1501,8 @@ public class Oracle {
         args.add(token.substring(1, token.length() - 1));
       } else if (token.startsWith("[")) {
         args.add(facadeArray(token));
+      } else if (token.equals("true") || token.equals("false")) {
+        args.add(Boolean.valueOf(token));
       } else if (token.contains(".")) {
         args.add(Double.valueOf(token));
       } else {
@@ -1559,7 +1572,8 @@ public class Oracle {
 
   /**
    * An integer argument also fits a double parameter, as it does in a Java call, and an {@code int[]} a {@code
-   * double[]} one, so that a line can write {@code [1,2]} for weights.
+   * double[]} one, so that a line can write {@code [1,2]} for weights. {@code true} and {@code false} fit a {@code
+   * boolean} parameter.
    */
   static boolean accepts(Class<?>[] types, List<Object> args) {
     for (int i = 0; i < types.length; i++) {
@@ -1570,11 +1584,13 @@ public class Oracle {
               ? arg instanceof String
               : type == int.class
                   ? arg instanceof Integer
-                  : type == double.class
-                      ? arg instanceof Double || arg instanceof Integer
-                      : type == int[].class
-                          ? arg instanceof int[]
-                          : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
+                  : type == boolean.class
+                      ? arg instanceof Boolean
+                      : type == double.class
+                          ? arg instanceof Double || arg instanceof Integer
+                          : type == int[].class
+                              ? arg instanceof int[]
+                              : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
       if (!fits) {
         return false;
       }
