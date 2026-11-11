@@ -1,7 +1,25 @@
 import com.wualabs.qtsurfer.engine.core.KlineInterval;
 import com.wualabs.qtsurfer.engine.core.KlineSnapshot;
 import com.wualabs.qtsurfer.engine.core.instrument.Instrument;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.AlmaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.DemaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.EnvelopesRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.FramaRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.LeastSquaresMovingAverageRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.helpers.group.InstrumentGroupRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AdaptiveFisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ChandeForecastOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ConnorsRsiRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CoppockCurveRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.FisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.KnowSureThingRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.MomentumRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrueStrengthIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.pro.Pro;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.AutocorrelationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.HurstExponentRTIndicator;
@@ -333,8 +351,9 @@ public class Oracle {
 
   /**
    * Like {@link #array}, but a value that is not finite keeps its kind, as the string "NaN",
-   * "Infinity" or "-Infinity" (as the poisons are written): the series of the edge cases can hold
-   * all three, and the TypeScript side must tell them apart.
+   * "Infinity" or "-Infinity" (as the poisons are written): the series of the price-fed indicators
+   * (the edge cases, and the corrupt scenario) can hold all three, and the TypeScript side must tell
+   * them apart.
    */
   static String exactArray(double[] values) {
     StringJoiner j = new StringJoiner(",", "[", "]");
@@ -515,14 +534,171 @@ public class Oracle {
       return run(p, i::update, read("meanReturn", i::getMeanReturn),
           read("realizedVariance", i::getRealizedVariance), ready(i));
     }));
+
+    list.add(new Subject("alma20", false, () -> {
+      var i = new AlmaRTIndicator(20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("alma20Offset05", false, () -> {
+      var i = new AlmaRTIndicator(20, 0.5, 6.0);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("alma20Sigma3", false, () -> {
+      var i = new AlmaRTIndicator(20, 0.85, 3.0);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("dema20", false, () -> {
+      var i = new DemaRTIndicator(20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("envelopesDefault", false, () -> {
+      var i = new EnvelopesRTIndicator();
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("envelopes20Percentage5", false, () -> {
+      var i = new EnvelopesRTIndicator(20, 5.0);
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("framaDefault", false, () -> {
+      var i = new FramaRTIndicator();
+      return run(p, i::update, read("fractalDimension", i::getFractalDimension),
+          read("alpha", i::getAlpha), read("periods", i::getPeriods), ready(i));
+    }));
+    list.add(new Subject("frama7", false, () -> {
+      var i = new FramaRTIndicator(7);
+      return run(p, i::update, read("fractalDimension", i::getFractalDimension),
+          read("alpha", i::getAlpha), read("periods", i::getPeriods), ready(i));
+    }));
+    list.add(new Subject("leastSquaresMovingAverageDefault", false, () -> {
+      var i = new LeastSquaresMovingAverageRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("leastSquaresMovingAverage10", false, () -> {
+      var i = new LeastSquaresMovingAverageRTIndicator(10);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("mcGinleyDynamicDefault", false, () -> {
+      var i = new McGinleyDynamicRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("mcGinleyDynamic5", false, () -> {
+      var i = new McGinleyDynamicRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("momentumDefault", false, () -> {
+      var i = new MomentumRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("momentum3", false, () -> {
+      var i = new MomentumRTIndicator(3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("rocDefault", false, () -> {
+      var i = new RocRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("roc3", false, () -> {
+      var i = new RocRTIndicator(3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("cmoDefault", false, () -> {
+      var i = new CmoRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("cmo5", false, () -> {
+      var i = new CmoRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("detrendedPriceOscillatorDefault", false, () -> {
+      var i = new DetrendedPriceOscillatorRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("detrendedPriceOscillator7", false, () -> {
+      var i = new DetrendedPriceOscillatorRTIndicator(7);
+      return run(p, i::update, ready(i));
+    }));
+
+    list.add(new Subject("chandeForecastOscillatorDefault", false, () -> {
+      var i = new ChandeForecastOscillatorRTIndicator();
+      return run(p, i::update, read("lsmaValue", i::getLsmaValue), ready(i));
+    }));
+    list.add(new Subject("chandeForecastOscillator5", false, () -> {
+      var i = new ChandeForecastOscillatorRTIndicator(5);
+      return run(p, i::update, read("lsmaValue", i::getLsmaValue), ready(i));
+    }));
+    list.add(new Subject("connorsRsiDefault", false, () -> {
+      var i = new ConnorsRsiRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("connorsRsi5_3_20", false, () -> {
+      var i = new ConnorsRsiRTIndicator(5, 3, 20);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("connorsRsi2_4_8", false, () -> {
+      var i = new ConnorsRsiRTIndicator(2, 4, 8);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("coppockCurveDefault", false, () -> {
+      var i = new CoppockCurveRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("coppockCurve8_5_4", false, () -> {
+      var i = new CoppockCurveRTIndicator(8, 5, 4);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("fisherTransformDefault", false, () -> {
+      var i = new FisherTransformRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("fisherTransform5", false, () -> {
+      var i = new FisherTransformRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("adaptiveFisherTransformDefault", false, () -> {
+      var i = new AdaptiveFisherTransformRTIndicator();
+      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
+          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
+    }));
+    list.add(new Subject("adaptiveFisherTransform5_3_9", false, () -> {
+      var i = new AdaptiveFisherTransformRTIndicator(5, 3, 9);
+      return run(p, i::update, read("efficiencyRatio", i::getEfficiencyRatio),
+          read("adaptivePeriod", i::getAdaptivePeriod), ready(i));
+    }));
+    list.add(new Subject("knowSureThingDefault", false, () -> {
+      var i = new KnowSureThingRTIndicator();
+      return run(p, i::update, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new Subject("knowSureThing3Weighted", false, () -> {
+      var i = new KnowSureThingRTIndicator(
+          new int[] {3, 5, 7}, new int[] {2, 3, 4}, new double[] {1.5, 2.5, 0.5}, 4);
+      return run(p, i::update, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new Subject("trixDefault", false, () -> {
+      var i = new TrixRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trix5", false, () -> {
+      var i = new TrixRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trueStrengthIndexDefault", false, () -> {
+      var i = new TrueStrengthIndexRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("trueStrengthIndex5_3", false, () -> {
+      var i = new TrueStrengthIndexRTIndicator(5, 3);
+      return run(p, i::update, ready(i));
+    }));
     return list;
   }
 
   /**
    * The series of the price-fed indicators on {@code p}, one JSON line each, joined by commas. The
-   * scenarios write only the indicators that are not {@code earlier}, with {@link #array} (they must
-   * not throw); the edge cases write all of them, with the non-finite values told apart, and an
-   * indicator that throws is written as {@code {"throws": "<message>"}}.
+   * scenarios write only the indicators that are not {@code earlier} (they must not throw); the edge
+   * cases write all of them, and an indicator that throws is written as {@code {"throws":
+   * "<message>"}}. Both write a value that is not finite with {@link #exactArray}, as NaN, Infinity or
+   * -Infinity: an indicator that does not leave a non-finite price out can give any of the three on
+   * the corrupt scenario.
    */
   static String subjectLines(double[] p, boolean edge, String indent) {
     StringJoiner lines = new StringJoiner(",\n");
@@ -534,8 +710,7 @@ public class Oracle {
       try {
         StringJoiner outputs = new StringJoiner(", ", "{", "}");
         subject.run().get().forEach(
-            (name, series) ->
-                outputs.add("\"" + name + "\": " + (edge ? exactArray(series) : array(series))));
+            (name, series) -> outputs.add("\"" + name + "\": " + exactArray(series)));
         body = outputs.toString();
       } catch (RuntimeException e) {
         if (!edge) {
@@ -622,6 +797,8 @@ public class Oracle {
       String token = tokens[i];
       if (token.startsWith("\"")) {
         args.add(token.substring(1, token.length() - 1));
+      } else if (token.startsWith("[")) {
+        args.add(facadeArray(token));
       } else if (token.contains(".")) {
         args.add(Double.valueOf(token));
       } else {
@@ -642,7 +819,7 @@ public class Oracle {
     }
     InstrumentGroupRTIndicator group = new InstrumentGroupRTIndicator(INSTRUMENT);
     try {
-      method.invoke(Pro.on(group), args.toArray());
+      method.invoke(Pro.on(group), converted(method.getParameterTypes(), args));
     } catch (InvocationTargetException e) {
       return "{\"throws\": true}";
     } catch (ReflectiveOperationException e) {
@@ -665,7 +842,34 @@ public class Oracle {
     return out.toString();
   }
 
-  /** An integer argument also fits a double parameter, as it does in a Java call. */
+  /**
+   * An array token such as {@code [10,15,20]}: an {@code int[]}, or a {@code double[]} when any of its numbers has a
+   * decimal point. The empty array {@code []} is an {@code int[]}.
+   */
+  static Object facadeArray(String token) {
+    String inner = token.substring(1, token.length() - 1).strip();
+    if (inner.isEmpty()) {
+      return new int[0];
+    }
+    String[] parts = inner.split(",");
+    if (inner.contains(".")) {
+      double[] values = new double[parts.length];
+      for (int i = 0; i < parts.length; i++) {
+        values[i] = Double.parseDouble(parts[i].strip());
+      }
+      return values;
+    }
+    int[] values = new int[parts.length];
+    for (int i = 0; i < parts.length; i++) {
+      values[i] = Integer.parseInt(parts[i].strip());
+    }
+    return values;
+  }
+
+  /**
+   * An integer argument also fits a double parameter, as it does in a Java call, and an {@code int[]} a {@code
+   * double[]} one, so that a line can write {@code [1,2]} for weights.
+   */
   static boolean accepts(Class<?>[] types, List<Object> args) {
     for (int i = 0; i < types.length; i++) {
       Object arg = args.get(i);
@@ -675,12 +879,27 @@ public class Oracle {
               ? arg instanceof String
               : type == int.class
                   ? arg instanceof Integer
-                  : type == double.class && (arg instanceof Double || arg instanceof Integer);
+                  : type == double.class
+                      ? arg instanceof Double || arg instanceof Integer
+                      : type == int[].class
+                          ? arg instanceof int[]
+                          : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
       if (!fits) {
         return false;
       }
     }
     return true;
+  }
+
+  /** The arguments as the method takes them: reflection widens an {@code int} to a {@code double}, not an array. */
+  static Object[] converted(Class<?>[] types, List<Object> args) {
+    Object[] out = args.toArray();
+    for (int i = 0; i < types.length; i++) {
+      if (types[i] == double[].class && out[i] instanceof int[] ints) {
+        out[i] = Arrays.stream(ints).asDoubleStream().toArray();
+      }
+    }
+    return out;
   }
 
   static String jsonString(String value) {

@@ -12,9 +12,21 @@ const calls = readFileSync(new URL("./fixtures/facade-calls.txt", import.meta.ur
   .map((line) => line.trim())
   .filter((line) => line !== "" && !line.startsWith("#"));
 
-function parse(line: string): { method: string; args: (string | number)[] } {
+type Arg = string | number | number[];
+
+// A name is in double quotes and an array is in brackets without spaces, like [10,15,20]; the Java side tells an int[]
+// from a double[] by the decimal point, which JavaScript does not need
+function parse(line: string): { method: string; args: Arg[] } {
   const [method, ...rest] = line.split(/\s+/);
-  return { method: method!, args: rest.map((token) => (token.startsWith('"') ? token.slice(1, -1) : Number(token))) };
+  const arg = (token: string): Arg => {
+    if (token.startsWith('"')) return token.slice(1, -1);
+    if (token.startsWith("[")) {
+      const inner = token.slice(1, -1).trim();
+      return inner === "" ? [] : inner.split(",").map(Number);
+    }
+    return Number(token);
+  };
+  return { method: method!, args: rest.map(arg) };
 }
 
 // JavaScript writes a whole double without its ".0" and a small one as 0.0001, where Java writes 1.0 and 1.0E-4: the
@@ -24,7 +36,7 @@ const normalize = (value: string): string => (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.t
 function registeredBy(line: string): Record<string, { hint: string; meta: Record<string, string> }> {
   const group = new InstrumentGroupRTIndicator(new InstrumentMapKlineSourceRTIndicator("BTC/USDT"));
   const { method, args } = parse(line);
-  (Pro.on(group) as unknown as Record<string, (...args: (string | number)[]) => unknown>)[method]!(...args);
+  (Pro.on(group) as unknown as Record<string, (...args: Arg[]) => unknown>)[method]!(...args);
   const registered: Record<string, { hint: string; meta: Record<string, string> }> = {};
   group.indicators.forEachPublicable((name, indicator) => {
     registered[name] = {

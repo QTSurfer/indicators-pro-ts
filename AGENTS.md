@@ -28,13 +28,16 @@ edits it by hand.
 
 ## Layout and conventions
 
-- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `statistics`, `statistics/volatility`…). PascalCase
-  files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()` registers an indicator with
-  the id, the overloads and the output suffixes of the Java engine's `Pro`.
-- Import aliases `$core`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in `tsconfig.json`, `tsup.config.ts`
-  and `vitest.config.ts`.
+- `src/<group>/` mirrors the Java packages (`trend`, `volume`, `statistics`, `statistics/volatility`, `averages`,
+  `momentum`…). PascalCase files named as the Java class. `src/pro/Pro.ts` is the facade: `Pro.on(group).adx()`
+  registers an indicator with the id, the overloads and the output suffixes of the Java engine's `Pro`.
+- Import aliases `$averages`, `$core`, `$momentum`, `$pro`, `$statistics`, `$trend`, `$volume`, defined in
+  `tsconfig.json`, `tsup.config.ts` and `vitest.config.ts`.
 - Zero runtime dependencies beyond `@qtsurfer/core` and `@qtsurfer/indicators`.
-- A value that is not finite is left out of an indicator, and the last value is kept.
+- The guard against a value that is not finite is the Java class's, ported as it is: every class ported so far leaves
+  the value out and keeps the last one, as the Java classes do.
+- A constructor throws a `RangeError` with the Java class's message. A message that prints a double writes it with
+  `javaDouble` (`src/core/JavaNumber.ts`), as Java's `Double.toString` does: `1.0E200`, not `1e+200`.
 - A class that reads whole bars implements `RTIndicatorSource<Kline | Ticker>` and `requiresBarData()`.
 - `indicators.md` has one row per indicator class; `tests/IndicatorsDoc.test.ts` runs every call in it and fails when a
   row differs from what the facade registers.

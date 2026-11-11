@@ -1,7 +1,9 @@
 # One call of Pro.on(group) per line: the method, then its arguments. A name is in double quotes, a whole number
-# is an integer, and a number with a decimal point is a double. The Java engine's Pro runs each call on an empty
-# group (tools/java-oracle) and tests/facade.test.ts runs the same call here: they must register the same names,
-# with the same display hint and metadata. Add the line of every factory and overload you add.
+# is an integer, and a number with a decimal point is a double. An array is in brackets, without spaces, like
+# [10,15,20,30]: it is an int[], or a double[] when any of its numbers has a decimal point; [] is an int[]. The Java
+# engine's Pro runs each call on an empty group (tools/java-oracle) and tests/facade.test.ts runs the same call here:
+# they must register the same names, with the same display hint and metadata. Add the line of every factory and
+# overload you add.
 adx
 adx 7
 adx "trend" 21
@@ -87,6 +89,97 @@ ewmaVolatility "annual" 0.94 252.0
 realizedVolatility 20
 realizedVolatility "r" 16
 realizedVolatility "r" 16 365.0
+alma 20
+alma "a" 10
+alma "b" 21 0.9 4.0
+alma "c" 9 1.0 6.0
+alma "d" 14 0.0 3
+dema 20
+dema "d" 9
+envelopes
+envelopes 20 5.0
+envelopes 10 2.5
+envelopes 15 0.0005
+envelopes 20 0.0
+envelopes 5 12345678.5
+envelopes 20 1.0E18
+envelopes 20 1.152921504606846976E18
+envelopes 20 1.0E19
+envelopes "e"
+envelopes "e" 30 1.5
+envelopes "w" 12 3.0
+frama
+frama 30
+frama 21
+frama 3
+frama "f"
+frama "f" 10
+frama "g" 25
+leastSquaresMovingAverage
+leastSquaresMovingAverage 7
+leastSquaresMovingAverage "n"
+leastSquaresMovingAverage "n" 9
+mcGinleyDynamic
+mcGinleyDynamic 7
+mcGinleyDynamic "n"
+mcGinleyDynamic "n" 9
+momentum
+momentum 7
+momentum "n"
+momentum "n" 9
+roc
+roc 7
+roc "n"
+roc "n" 9
+cmo
+cmo 7
+cmo "n"
+cmo "n" 9
+detrendedPriceOscillator
+detrendedPriceOscillator 7
+detrendedPriceOscillator "n"
+detrendedPriceOscillator "n" 9
+chandeForecastOscillator
+chandeForecastOscillator 7
+chandeForecastOscillator "n"
+chandeForecastOscillator "n" 9
+fisherTransform
+fisherTransform 7
+fisherTransform "n"
+fisherTransform "n" 9
+trix
+trix 7
+trix "n"
+trix "n" 9
+connorsRsi
+connorsRsi 5 3 50
+connorsRsi "c"
+connorsRsi "c" 4 2 20
+coppockCurve
+coppockCurve 10 8 5
+coppockCurve "c"
+coppockCurve "c" 12 9 6
+adaptiveFisherTransform
+adaptiveFisherTransform 8 4 16
+adaptiveFisherTransform "a"
+adaptiveFisherTransform "a" 6 3 12
+trueStrengthIndex
+trueStrengthIndex 20 10
+trueStrengthIndex "t"
+trueStrengthIndex "t" 30 15
+knowSureThing
+knowSureThing "k"
+knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9
+knowSureThing "k2" [5,10] [5,5] [1,2] 5
+knowSureThing "k3" [8] [4] [1.5] 3
+knowSureThing "k4" [10,15] [10,10] [0.5,-1.0] 4
+# a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
+superTrend 10 0.0001
+superTrend 10 2.5E-5
+rollingPercentile 20 0.0001
+rollingPercentile 20 0.001
+ewmaVolatility 0.0001
+ewmaVolatility 0.99999
 # the limits of the classes come through the factory
 autocorrelation 3
 skewness 2
@@ -95,3 +188,39 @@ valueAtRisk "v" 20 1.0
 calmarRatio 1
 tailRatio "t" 20 1.2 0.05
 ulcerIndex 0
+alma 0
+alma "a" 10 1.5 6.0
+alma "a" 10 -0.5 6.0
+alma "a" 10 0.85 0.0
+alma "a" 10 0.85 -1.0
+dema 0
+envelopes 0 2.5
+envelopes 20 -1.0
+frama 2
+frama "f" 2
+leastSquaresMovingAverage 1
+mcGinleyDynamic 0
+momentum 0
+roc 0
+cmo 0
+detrendedPriceOscillator 2
+chandeForecastOscillator 1
+fisherTransform 1
+trix 0
+connorsRsi 0 2 100
+connorsRsi 3 0 100
+connorsRsi 3 2 1
+coppockCurve 0 11 10
+coppockCurve 14 0 10
+coppockCurve 14 11 0
+adaptiveFisherTransform 0 5 20
+adaptiveFisherTransform 10 1 20
+adaptiveFisherTransform 5 6 5
+adaptiveFisherTransform 20 5 20
+trueStrengthIndex 0 13
+trueStrengthIndex 25 0
+knowSureThing "k" [10,15] [10] [1,2] 9
+knowSureThing "k" [] [] [] 9
+knowSureThing "k" [0,15] [10,10] [1,2] 9
+knowSureThing "k" [10,15] [0,10] [1,2] 9
+knowSureThing "k" [10,15] [10,10] [1,2] 0

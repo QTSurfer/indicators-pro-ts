@@ -21,7 +21,9 @@ export type FacadeExpected =
 
 /**
  * A value of a series as the oracle writes it: a number, or `null` or a string for one that is not finite.
- * The series of the edge cases keep NaN, Infinity and -Infinity apart as strings; the older ones write null.
+ * The series of the edge cases, and those of the scenarios that `subjects.ts` lists, keep NaN, Infinity and
+ * -Infinity apart as strings: an indicator that does not leave a non-finite price out can give any of them. The
+ * older series, the fields of `Expected`, write null.
  */
 export type Encoded = number | null | "NaN" | "Infinity" | "-Infinity";
 
