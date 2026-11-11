@@ -1,5 +1,90 @@
 # @qtsurfer/indicators-pro
 
+## 0.4.0
+
+### Minor Changes
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`c94a1fe`](https://github.com/QTSurfer/indicators-pro-ts/commit/c94a1fe1a5b24721b1581f2eb8ca962f8a04b581) Thanks [@mrmx](https://github.com/mrmx)! - New indicators, ported from the Java engine and compared with it value by value, on the reference dataset with and
+  without values that are not finite and on synthetic series of bars: the momentum indicators
+  `AcceleratorOscillatorRTIndicator`, `AwesomeOscillatorRTIndicator`, `BalanceOfPowerRTIndicator`,
+  `BullBearPowerRTIndicator`, `RelativeVigorIndexRTIndicator`, `StochasticOscillatorRTIndicator`,
+  `UltimateOscillatorRTIndicator` and `WilliamsRRTIndicator`, and the volume indicators `AdlRTIndicator`,
+  `ChaikinOscillatorRTIndicator`, `EaseOfMovementRTIndicator`, `ElderForceIndexRTIndicator`,
+  `KlingerOscillatorRTIndicator`, `NegativeVolumeIndexRTIndicator` and `PvtRTIndicator`. All fifteen read whole bars, so
+  they belong on a kline group. A bar with a field the class reads that is not finite is left out, and a constructor
+  throws a `RangeError` with the Java message for a degenerate argument. The Awesome and Chaikin oscillators accept a fast
+  period above the slow one, and are ready when both of their averages are. The values are equal to Java's to the last bit.
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`4da1941`](https://github.com/QTSurfer/indicators-pro-ts/commit/4da1941fb9f2eea92d3b45ca7fbef213495791ba) Thanks [@mrmx](https://github.com/mrmx)! - `Pro.on(group)` gains `exactStdDev` and `exactVariance`, with the ids, overloads and metadata of the Java engine's
+  `Pro`, and the package now exports the two classes behind them, `StandardDeviationRTIndicator` and
+  `VarianceRTIndicator` (the variance was internal until now).
+
+  - `exactStdDev(periods)` registers `xstd` + periods, `exactStdDev(name, periods)` a name, and
+    `exactStdDev(name, periods, sample)` a name with the form chosen. `exactVariance` takes the same three shapes and
+    registers `xvar` + periods. There is no form without a period. The metadata hold `periods` and `sample`.
+  - Both read the group's price, so they work on a ticker feed too and raise no notice.
+  - They differ from the `stdDev` and `variance` of `@qtsurfer/indicators` in their default: these two give the
+    population deviation and variance, the free ones the sample form (Bessel's correction). Pass `true` as `sample` to
+    get the sample form: `exactVariance(name, 20, true)` gives the same values as the free `variance(20)` once the
+    window is full, except on a window of identical prices, where it gives exactly 0.
+  - The two classes have the same simple names as the free ones: import them from `@qtsurfer/indicators-pro`, and the
+    free ones from `@qtsurfer/indicators`.
+  - A period below 1 throws a `RangeError` (`Periods must be >= 1, got: 0`) when the indicator is created, as in the Java
+    engine; the pro `ZScoreRTIndicator`, which builds on the variance, reports the same message.
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`e708f17`](https://github.com/QTSurfer/indicators-pro-ts/commit/e708f171272c08a24826946e35e9ddc67a3fc85a) Thanks [@mrmx](https://github.com/mrmx)! - `Pro.on(group)` gains the factories of the momentum and volume indicators that read whole bars, with the ids,
+  overloads, outputs, display hints and metadata of the Java engine's `Pro`:
+
+  - Momentum: `acceleratorOscillator` (`acc`), `awesomeOscillator` (`ao5_34`), `balanceOfPower` (`bop`), `bullBearPower`
+    (`bbp13`, with `Bull` and `Bear`), `relativeVigorIndex` (`rvgi10`), `stochasticOscillator` (`stoch14_3_3`, with `D`;
+    %K and %D in percent), `ultimateOscillator` (`uo`, in percent) and `williamsR` (`willr14`, in percent).
+  - Volume: `adl` (`adl`), `chaikinOscillator` (`chaikin3_10`), `easeOfMovement` (`eom14`), `elderForceIndex` (`efi13`),
+    `klingerOscillator` (`klinger`, with `Signal`), `negativeVolumeIndex` (`nvi`) and `pvt` (`pvt`). Of these, the
+    accumulation/distribution line, the Chaikin oscillator, the Elder force index, the Klinger oscillator (its signal line
+    included) and the price volume trend carry the volume display hint; the ease of movement and the negative volume index
+    carry none.
+
+  All fifteen read whole bars, so they belong on a kline group: a group fed from a ticker raises one notice for each, for
+  the indicator and not for its outputs. The ones with parameters (`awesomeOscillator`, `bullBearPower`,
+  `relativeVigorIndex`, `stochasticOscillator`, `williamsR`, `chaikinOscillator`, `easeOfMovement` and `elderForceIndex`)
+  take them with or without a name, build their id from them and put them in the metadata; the short forms keep the
+  class defaults. The seven without parameters (`acceleratorOscillator`, `balanceOfPower`, `ultimateOscillator`, `adl`,
+  `klingerOscillator`, `negativeVolumeIndex` and `pvt`) take only an optional name. A fast period above the slow one is
+  accepted by the Awesome and Chaikin oscillators, as in the Java engine. The new constants `Pro.SUFFIX_BULL`,
+  `Pro.SUFFIX_BEAR` and `Pro.SUFFIX_D` name the new outputs.
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`8eced70`](https://github.com/QTSurfer/indicators-pro-ts/commit/8eced70b3cb306be4b92cc9b24f172fa053c6084) Thanks [@mrmx](https://github.com/mrmx)! - `Pro.on(group)` gains the factories of the trend and volatility indicators, with the ids, overloads and outputs of the
+  Java engine's `Pro`:
+
+  - `aroon` (`aroon25`, with `Up` and `Down`, all three in percent), `chandeKrollStop` (`cks10_1_9_9`, with `StopShort`),
+    `chandelierExit` (`chand22_3`, with `ShortExit`), `donchianChannel` (`donch20`, with `Upper` and `Lower`),
+    `parabolicSar` (`psar0.02_0.2`), `vortex` (`vortex14`, with `ViPlus` and `ViMinus`), `choppinessIndex` (`chop14`, in
+    percent), `keltnerChannel` (`kc20_10_1.5`, with `Upper` and `Lower`), `massIndex` (`mass25_9`) and `natr`
+    (`natr14`, in percent) read whole bars, so they belong on a kline group: a group fed from a ticker raises one notice
+    for each, for the indicator and not for its outputs.
+  - `efficiencyRatio` (`er10`) and `relativeVolatilityIndex` (`rvi10_14`, in percent) read the group's price, so they work
+    on a ticker feed too and raise no notice.
+
+  Each takes the parameters of its class, with or without a name, and builds its id from them (a whole multiplier, step
+  or maximum has no decimal part: `chand10_2`, `psar1_2`); the short forms keep the class defaults and put them in the
+  metadata. `natr` has no default period, so it takes a period or a name and a period. The new constants
+  `Pro.SUFFIX_UP`, `Pro.SUFFIX_DOWN`, `Pro.SUFFIX_STOP_SHORT`, `Pro.SUFFIX_SHORT_EXIT`, `Pro.SUFFIX_VI_PLUS` and
+  `Pro.SUFFIX_VI_MINUS` name the new outputs.
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`45ff8fb`](https://github.com/QTSurfer/indicators-pro-ts/commit/45ff8fb2fab14e0a6b488a53c9dbbcabbf192bfb) Thanks [@mrmx](https://github.com/mrmx)! - New indicators, ported from the Java engine and compared with it value by value, on the reference dataset with and
+  without values that are not finite and on synthetic series of prices and of bars: the trend indicators
+  `AroonRTIndicator`, `ChandeKrollStopRTIndicator`, `ChandelierExitRTIndicator`, `DonchianChannelRTIndicator`,
+  `EfficiencyRatioRTIndicator`, `ParabolicSarRTIndicator` and `VortexRTIndicator`, and the volatility indicators
+  `ChoppinessIndexRTIndicator`, `KeltnerChannelRTIndicator`, `MassIndexRTIndicator`, `NatrRTIndicator` and
+  `RelativeVolatilityIndexRTIndicator`. All but the efficiency ratio and the relative volatility index read whole bars, so
+  they belong on a kline group. A bar with a high, low or close that is not finite (whichever the class reads) is left out,
+  and a constructor throws a `RangeError` with the Java message for a degenerate argument.
+
+### Patch Changes
+
+- [#4](https://github.com/QTSurfer/indicators-pro-ts/pull/4) [`45ff8fb`](https://github.com/QTSurfer/indicators-pro-ts/commit/45ff8fb2fab14e0a6b488a53c9dbbcabbf192bfb) Thanks [@mrmx](https://github.com/mrmx)! - `SuperTrendRTIndicator.isUpTrend()` is `false` until the first bar, as in the Java engine (it was `true`). After `reset()`
+  it is `true`, as in Java.
+
 ## 0.3.0
 
 ### Minor Changes
