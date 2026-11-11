@@ -31,7 +31,7 @@ import type { BarEdgeExpected, SeriesSet } from "./fixtures";
  * `value` is `getValue()` after each bar, the other outputs are its getters read after each bar.
  */
 export interface BarSubject {
-  /** The key of the series in `reference.json`. */
+  /** The key of the series in the reference (`tests/fixtures/reference/`). */
   key: string;
   label: string;
   /** Whether the two scenarios hold it too: the older ones have their own tests there, a few variants only matter on the edges. */

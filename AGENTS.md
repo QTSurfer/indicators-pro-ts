@@ -15,13 +15,15 @@ pnpm test       # vitest: parity with the Java values, the doc test, the licence
 ```
 
 `pnpm test` needs no Java. The values the indicators must give, and what each call of `Pro` must register, are in
-`tests/fixtures/reference.json`, which is committed. The Java engine wrote it (see "Maintainers" below) and nobody
-edits it by hand.
+`tests/fixtures/reference/`, which is committed. It is a set of gzip files (`base`, `scenarios`, `edges`, `barEdges`
+and `facade`, each `.json.gz`) that the Java engine's oracle wrote (see "Maintainers" below), and nobody edits them
+by hand. To look at one: `gunzip -c tests/fixtures/reference/facade.json.gz | head`. `tests/fixtures.ts` reads them
+all and gives the tests one `reference` object.
 
 ## What you can change
 
 - A bug in the TypeScript code, with a test that fails before the fix and passes after it.
-- Tests, documentation, and speed, as long as no value in `tests/fixtures/reference.json` changes.
+- Tests, documentation, and speed, as long as no value in `tests/fixtures/reference/` changes.
 - A new indicator, a different algorithm, or any change to a value in the fixture starts in the Java engine, which is
   not public. Open an issue that says what you need; a maintainer ports it. A pull request that edits the fixture or
   changes a number will not pass `tests/parity.test.ts`.
@@ -60,10 +62,12 @@ This needs a checkout of the Java engine (`QTS_JAVA_ENGINE=/path/to/java-engine`
    `tests/barSubjects.ts` (compared on the scenarios and on the `barEdges` series of bars).
 
    ```bash
-   QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle   # rewrites tests/fixtures/reference.json
+   QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle   # rewrites tests/fixtures/reference/
    ```
 
-   Check that the values that were in the fixture before did not change.
+   The oracle runs as `Oracle.java <output.json> <facade-calls.txt>` and writes one JSON document to a temporary
+   file; `tools/java-oracle/reference-files.mjs` splits it into the gzip files and leaves a file as it is when its
+   text did not change. Check that the values that were in the fixture before did not change.
 4. Add its factory to `src/pro/Pro.ts` once the Java engine's `Pro` has it, with the same id, overloads and output
    suffixes. A class without a factory is added with `group.add(name, new Class(…))`. Add one line per overload to
    `tests/fixtures/facade-calls.txt` and rewrite the fixture: `tests/facade.test.ts` runs each call here and compares

@@ -128,7 +128,12 @@ public class Oracle {
 
   static double[] prices, open, high, low, close, volume;
 
+  /** Usage: {@code Oracle.java <output.json> <facade-calls.txt>}: writes one JSON document to the first path. */
   public static void main(String[] args) throws Exception {
+    if (args.length != 2) {
+      System.err.println("usage: Oracle.java <output.json> <facade-calls.txt>");
+      System.exit(2);
+    }
     dataset();
     StringBuilder out = new StringBuilder();
     out.append("{\n  \"bars\": ").append(N).append(",\n");
@@ -151,7 +156,7 @@ public class Oracle {
     out.append("    \"corrupt\": ").append(scenario(true)).append("\n  },\n");
     out.append("  \"edges\": ").append(edges()).append(",\n");
     out.append("  \"barEdges\": ").append(barEdges()).append(",\n");
-    out.append("  \"facade\": ").append(facade(Path.of(args[0]).resolveSibling("facade-calls.txt"))).append("\n}\n");
+    out.append("  \"facade\": ").append(facade(Path.of(args[1]))).append("\n}\n");
     Files.writeString(Path.of(args[0]), out.toString());
   }
 

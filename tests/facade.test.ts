@@ -5,7 +5,7 @@ import { Pro } from "../src";
 import { reference } from "./fixtures";
 
 // Every call of tests/fixtures/facade-calls.txt, run here and by the Java engine's Pro (tools/java-oracle), must
-// register the same names with the same display hint and metadata. The Java side is in reference.json.
+// register the same names with the same display hint and metadata. The Java side is in tests/fixtures/reference/facade.json.gz.
 
 const calls = readFileSync(new URL("./fixtures/facade-calls.txt", import.meta.url), "utf8")
   .split("\n")

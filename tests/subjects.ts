@@ -57,7 +57,7 @@ import type { SeriesSet } from "./fixtures";
  * `update` returns, the other outputs are its getters read after each tick.
  */
 export interface Subject {
-  /** The key of the series in `reference.json`. */
+  /** The key of the series in the reference (`tests/fixtures/reference/`). */
   key: string;
   label: string;
   /** Ported before the ratios: the scenarios compare these in their own tests. */

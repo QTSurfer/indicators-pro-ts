@@ -56,8 +56,8 @@ whole bars. A test fails when it differs from what the facade registers.
 
 ## Parity with Java
 
-`tests/fixtures/reference.json` is written by the Java engine (`tools/java-oracle/Oracle.java`), never by
-hand, from a checkout of the Java engine:
+The files of `tests/fixtures/reference/` (gzip, one per area) are written by the Java engine
+(`tools/java-oracle/Oracle.java`), never by hand, from a checkout of the Java engine:
 
 ```bash
 QTS_JAVA_ENGINE=/path/to/java-engine pnpm oracle
