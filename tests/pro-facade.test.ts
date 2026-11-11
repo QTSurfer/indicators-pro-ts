@@ -1395,19 +1395,21 @@ describe("the exact statistics factories, as the Java engine's Pro gives them", 
     expect(warm).toBeGreaterThan(500);
   });
 
-  it("a bad period throws in every shape, and registers nothing", () => {
+  it("a period below 1 throws in every shape, with the message of the Java engine, and registers nothing", () => {
     const { group } = klineGroup();
     for (const periods of [0, -1]) {
-      expect(() => Pro.on(group).exactStdDev(periods)).toThrow();
-      expect(() => Pro.on(group).exactStdDev("sd", periods)).toThrow();
-      expect(() => Pro.on(group).exactStdDev("sd", periods, true)).toThrow();
-      expect(() => Pro.on(group).exactStdDev("sd", periods, false)).toThrow();
-      expect(() => Pro.on(group).exactVariance(periods)).toThrow();
-      expect(() => Pro.on(group).exactVariance("v", periods)).toThrow();
-      expect(() => Pro.on(group).exactVariance("v", periods, true)).toThrow();
-      expect(() => Pro.on(group).exactVariance("v", periods, false)).toThrow();
-      expect(() => new StandardDeviationRTIndicator(periods)).toThrow();
-      expect(() => new VarianceRTIndicator(periods)).toThrow();
+      const message = new RangeError(`Periods must be >= 1, got: ${periods}`);
+      expect(() => Pro.on(group).exactStdDev(periods)).toThrow(message);
+      expect(() => Pro.on(group).exactStdDev("sd", periods)).toThrow(message);
+      expect(() => Pro.on(group).exactStdDev("sd", periods, true)).toThrow(message);
+      expect(() => Pro.on(group).exactStdDev("sd", periods, false)).toThrow(message);
+      expect(() => Pro.on(group).exactVariance(periods)).toThrow(message);
+      expect(() => Pro.on(group).exactVariance("v", periods)).toThrow(message);
+      expect(() => Pro.on(group).exactVariance("v", periods, true)).toThrow(message);
+      expect(() => Pro.on(group).exactVariance("v", periods, false)).toThrow(message);
+      expect(() => new StandardDeviationRTIndicator(periods)).toThrow(message);
+      expect(() => new VarianceRTIndicator(periods)).toThrow(message);
+      expect(() => new ZScoreRTIndicator(periods)).toThrow(message);
     }
     expect(registeredNames(group)).toEqual([]);
   });

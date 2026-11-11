@@ -16,4 +16,5 @@
   window is full, except on a window of identical prices, where it gives exactly 0.
 - The two classes have the same simple names as the free ones: import them from `@qtsurfer/indicators-pro`, and the
   free ones from `@qtsurfer/indicators`.
-- A period below 1 throws when the indicator is created.
+- A period below 1 throws a `RangeError` (`Periods must be >= 1, got: 0`) when the indicator is created, as in the Java
+  engine; the pro `ZScoreRTIndicator`, which builds on the variance, reports the same message.

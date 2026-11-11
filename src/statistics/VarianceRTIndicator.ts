@@ -19,7 +19,7 @@ export class VarianceRTIndicator extends AbstractWindowSeriesRTIndicator {
   private sampleVariance = false;
 
   constructor(periods: number) {
-    super(periods);
+    super(checkPeriods(periods));
     this.scratch = new Float64Array(periods);
   }
 
@@ -56,4 +56,12 @@ export class VarianceRTIndicator extends AbstractWindowSeriesRTIndicator {
     }
     return this.setValue(variance);
   }
+}
+
+/** Runs before the window is created, which would fail with its own text: a period below 1 is rejected as in the Java class. */
+function checkPeriods(periods: number): number {
+  if (periods < 1) {
+    throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+  }
+  return periods;
 }
