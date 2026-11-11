@@ -1,4 +1,5 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
+import { minimumPeriods } from "$core/Periods";
 
 /**
  * Rolling Hurst exponent by rescaled range (R/S) over a window of log returns: below 0.5 the series
@@ -18,10 +19,7 @@ export class HurstExponentRTIndicator extends AbstractWindowSeriesRTIndicator {
   private count = 0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 4) {
-      throw new RangeError(`Periods must be >= 4, got: ${periods}`);
-    }
+    super(minimumPeriods(periods, 4));
     this.returns = new Float64Array(periods);
     this.invLogN = 1.0 / Math.log(periods);
   }

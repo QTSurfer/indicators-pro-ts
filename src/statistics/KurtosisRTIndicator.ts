@@ -1,5 +1,6 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
 import { isFlat, mean } from "./WindowMath";
+import { minimumPeriods } from "$core/Periods";
 
 /**
  * Rolling sample excess kurtosis over a window: how heavy the tails are. A normal distribution has
@@ -12,10 +13,7 @@ export class KurtosisRTIndicator extends AbstractWindowSeriesRTIndicator {
   private _mean = 0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 4) {
-      throw new RangeError(`Periods must be >= 4, got: ${periods}`);
-    }
+    super(minimumPeriods(periods, 4));
     this.scratch = new Float64Array(periods);
   }
 

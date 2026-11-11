@@ -16,6 +16,9 @@ export class CmfRTIndicator extends AbstractRTIndicator implements RTIndicatorSo
 
   constructor(private readonly _periods: number = 20) {
     super();
+    if (_periods < 0) {
+      throw new RangeError(`Periods must be >= 0, got: ${_periods}`);
+    }
     this.mfvBuffer = new Float64Array(_periods);
     this.volBuffer = new Float64Array(_periods);
   }

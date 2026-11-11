@@ -73,10 +73,10 @@ describe("the guards of the constructors", () => {
     expect(() => make(minimum)).not.toThrow();
   });
 
-  it("Sharpe and Realized build their window first: a window of no periods fails with the window's message", () => {
-    expect(() => new SharpeRatioRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new RealizedVolatilityRTIndicator(0)).toThrow(new RangeError("Invalid 0 windowSize"));
-    expect(() => new RealizedVolatilityRTIndicator(-3)).toThrow(new RangeError("Invalid -3 windowSize"));
+  it("Sharpe and Realized check their period before they build the window, and the window's text never shows", () => {
+    expect(() => new SharpeRatioRTIndicator(0)).toThrow(new RangeError("Periods must be >= 2, got: 0"));
+    expect(() => new RealizedVolatilityRTIndicator(0)).toThrow(new RangeError("Periods must be >= 1, got: 0"));
+    expect(() => new RealizedVolatilityRTIndicator(-3)).toThrow(new RangeError("Periods must be >= 1, got: -3"));
   });
 
   it("Realized volatility has no minimum beyond a window of one", () => {

@@ -1,4 +1,5 @@
 import { AbstractRTIndicator } from "@qtsurfer/indicators";
+import { javaDouble } from "$core/JavaNumber";
 
 /**
  * Rolling percentile over a window, by sorted insertion: a circular buffer keeps the arrival order and a
@@ -20,7 +21,7 @@ export class RollingPercentileRTIndicator extends AbstractRTIndicator {
       throw new RangeError(`Periods must be >= 1, got: ${periods}`);
     }
     if (percentile < 0 || percentile > 1) {
-      throw new RangeError(`Percentile must be in [0, 1], got: ${percentile}`);
+      throw new RangeError(`Percentile must be in [0, 1], got: ${javaDouble(percentile)}`);
     }
     this._periods = periods;
     this.percentile = percentile;

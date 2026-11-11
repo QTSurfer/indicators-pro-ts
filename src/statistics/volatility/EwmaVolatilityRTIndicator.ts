@@ -1,4 +1,5 @@
 import { AbstractRTIndicator } from "@qtsurfer/indicators";
+import { javaDouble } from "$core/JavaNumber";
 
 /**
  * Exponentially weighted moving average (EWMA) volatility of the log returns of the price, the RiskMetrics
@@ -22,7 +23,7 @@ export class EwmaVolatilityRTIndicator extends AbstractRTIndicator {
   constructor(lambda = 0.94) {
     super();
     if (lambda <= 0 || lambda >= 1) {
-      throw new RangeError(`Lambda must be in (0, 1), got: ${lambda}`);
+      throw new RangeError(`Lambda must be in (0, 1), got: ${javaDouble(lambda)}`);
     }
     this.lambda = lambda;
     this.oneMinusLambda = 1.0 - lambda;

@@ -26,6 +26,9 @@ export class IchimokuRTIndicator extends AbstractRTIndicator implements RTIndica
     private readonly _senkouPeriod: number = 52,
   ) {
     super();
+    if (_senkouPeriod < 0) {
+      throw new RangeError(`SenkouPeriod must be >= 0, got: ${_senkouPeriod}`);
+    }
     this.highBuffer = new Float64Array(_senkouPeriod);
     this.lowBuffer = new Float64Array(_senkouPeriod);
   }

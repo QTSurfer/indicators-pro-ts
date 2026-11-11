@@ -1,4 +1,6 @@
 import { AbstractRTIndicator, AbstractWindowSeriesRTIndicator } from "@qtsurfer/indicators";
+import { minimumPeriods } from "$core/Periods";
+import { javaDouble } from "$core/JavaNumber";
 
 /**
  * Rolling parametric (Gaussian) Value at Risk of the log returns of the price: `z * stddev - mean`, the
@@ -17,10 +19,7 @@ export class ValueAtRiskRTIndicator extends AbstractWindowSeriesRTIndicator {
   private annualizationFactor = 1.0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 2) {
-      throw new RangeError(`Periods must be >= 2, got: ${periods}`);
-    }
+    super(minimumPeriods(periods, 2));
   }
 
   protected override onEvict(evicted: number): void {
@@ -42,7 +41,7 @@ export class ValueAtRiskRTIndicator extends AbstractWindowSeriesRTIndicator {
    */
   withConfidenceLevel(confidence: number): this {
     if (confidence <= 0 || confidence >= 1) {
-      throw new RangeError(`Confidence must be in (0, 1), got: ${confidence}`);
+      throw new RangeError(`Confidence must be in (0, 1), got: ${javaDouble(confidence)}`);
     }
     this.zScore = inverseNormalCDF(confidence);
     return this;

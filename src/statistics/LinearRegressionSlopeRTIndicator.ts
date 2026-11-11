@@ -12,10 +12,7 @@ export class LinearRegressionSlopeRTIndicator extends AbstractWindowSeriesRTIndi
   private _mean = 0;
 
   constructor(periods: number) {
-    super(periods);
-    if (periods < 2) {
-      throw new RangeError(`periods must be >= 2, got ${periods}`);
-    }
+    super(checkPeriods(periods));
     this.scratch = new Float64Array(periods);
   }
 
@@ -62,4 +59,12 @@ export class LinearRegressionSlopeRTIndicator extends AbstractWindowSeriesRTIndi
     const sxx = (n * (n * n - 1)) / 12.0;
     return this.setValue(sxy / sxx);
   }
+}
+
+/** Runs before the window is created, which would fail with its own text. The Java text is kept as it is: lower case, no colon. */
+function checkPeriods(periods: number): number {
+  if (periods < 2) {
+    throw new RangeError(`periods must be >= 2, got ${periods}`);
+  }
+  return periods;
 }
