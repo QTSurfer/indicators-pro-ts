@@ -155,3 +155,13 @@ name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
 | Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
 | TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
 | True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
+
+## Not in this package
+
+Six classes of the Java engine's pro module have no TypeScript class and no `Pro` call, on purpose. Adding any of them later
+is a minor change, not a breaking one.
+
+| Java class | Why |
+|---|---|
+| `Smma` | An alias of `Mma` (Wilder's smoothing), which `@qtsurfer/indicators` already has: SMMA is its `mma`. |
+| `Beta`, `Correlation`, `Covariance`, `InformationRatio`, `TreynorRatio` | Each needs two series, an asset and a benchmark, and a group has no way yet to feed a second series to an indicator. They wait for a design of pairs between instruments. |
