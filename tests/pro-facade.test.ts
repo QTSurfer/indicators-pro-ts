@@ -7,12 +7,18 @@ import {
   InstrumentMapTickerSourceRTIndicator,
 } from "@qtsurfer/indicators";
 import {
+  AcceleratorOscillatorRTIndicator,
   AdaptiveFisherTransformRTIndicator,
+  AdlRTIndicator,
   AdxRTIndicator,
   AlmaRTIndicator,
   AroonRTIndicator,
   AutocorrelationRTIndicator,
+  AwesomeOscillatorRTIndicator,
+  BalanceOfPowerRTIndicator,
+  BullBearPowerRTIndicator,
   CalmarRatioRTIndicator,
+  ChaikinOscillatorRTIndicator,
   ChandeForecastOscillatorRTIndicator,
   ChandeKrollStopRTIndicator,
   ChandelierExitRTIndicator,
@@ -23,7 +29,9 @@ import {
   DemaRTIndicator,
   DetrendedPriceOscillatorRTIndicator,
   DonchianChannelRTIndicator,
+  EaseOfMovementRTIndicator,
   EfficiencyRatioRTIndicator,
+  ElderForceIndexRTIndicator,
   EnvelopesRTIndicator,
   EwmaVolatilityRTIndicator,
   FisherTransformRTIndicator,
@@ -31,6 +39,7 @@ import {
   HurstExponentRTIndicator,
   IchimokuRTIndicator,
   KeltnerChannelRTIndicator,
+  KlingerOscillatorRTIndicator,
   KnowSureThingRTIndicator,
   KurtosisRTIndicator,
   LeastSquaresMovingAverageRTIndicator,
@@ -40,10 +49,13 @@ import {
   McGinleyDynamicRTIndicator,
   MomentumRTIndicator,
   NatrRTIndicator,
+  NegativeVolumeIndexRTIndicator,
   OmegaRatioRTIndicator,
   ParabolicSarRTIndicator,
   Pro,
+  PvtRTIndicator,
   RealizedVolatilityRTIndicator,
+  RelativeVigorIndexRTIndicator,
   RelativeVolatilityIndexRTIndicator,
   RocRTIndicator,
   RollingPercentileRTIndicator,
@@ -51,12 +63,15 @@ import {
   SimpleLinearRegressionRTIndicator,
   SkewnessRTIndicator,
   SortinoRatioRTIndicator,
+  StochasticOscillatorRTIndicator,
   TailRatioRTIndicator,
   TrixRTIndicator,
   TrueStrengthIndexRTIndicator,
   UlcerIndexRTIndicator,
+  UltimateOscillatorRTIndicator,
   ValueAtRiskRTIndicator,
   VortexRTIndicator,
+  WilliamsRRTIndicator,
   YangZhangVolatilityRTIndicator,
   ZScoreRTIndicator,
 } from "../src";
@@ -69,6 +84,21 @@ function klineGroup(): { map: InstrumentMapKlineSourceRTIndicator; group: Instru
   const map = new InstrumentMapKlineSourceRTIndicator(INSTRUMENT);
   return { map, group: new InstrumentGroupRTIndicator(map) };
 }
+
+const tickerOf = (last: number, timestamp: number, high: number | null = null, low: number | null = null) => ({
+  instrument: INSTRUMENT, open: null, high, low, last, bid: null, bidSize: null,
+  ask: null, askSize: null, volume: high === null ? null : 1, quoteVolume: null, vwap: null, percentageChange: null, timestamp,
+});
+
+// the metadata without the display hint, which is tested on its own (a percentage is the `dsp` entry)
+const meta = (group: InstrumentGroupRTIndicator, name: string) =>
+  Object.fromEntries([...group.getExisting(name).getMeta!().asMap()].filter(([key]) => key !== "dsp"));
+
+const registeredNames = (group: InstrumentGroupRTIndicator): string[] => {
+  const names: string[] = [];
+  group.indicators.forEachPublicable((name) => names.push(name));
+  return names.sort();
+};
 
 describe("every factory of the Java engine's Pro is here", () => {
   it("with its default id", () => {
@@ -703,21 +733,6 @@ describe("the trend and volatility factories, as the Java engine's Pro gives the
     "aroon25", "cks10_1_9_9", "chand22_3", "donch20", "psar0.02_0.2", "vortex14", "chop14", "kc20_10_1.5", "mass25_9", "natr14",
   ];
 
-  const tickerOf = (last: number, timestamp: number, high: number | null = null, low: number | null = null) => ({
-    instrument: INSTRUMENT, open: null, high, low, last, bid: null, bidSize: null,
-    ask: null, askSize: null, volume: high === null ? null : 1, quoteVolume: null, vwap: null, percentageChange: null, timestamp,
-  });
-
-  // the metadata without the display hint, which is tested on its own (a percentage is the `dsp` entry)
-  const meta = (group: InstrumentGroupRTIndicator, name: string) =>
-    Object.fromEntries([...group.getExisting(name).getMeta!().asMap()].filter(([key]) => key !== "dsp"));
-
-  const registeredNames = (group: InstrumentGroupRTIndicator): string[] => {
-    const names: string[] = [];
-    group.indicators.forEachPublicable((name) => names.push(name));
-    return names.sort();
-  };
-
   function allWithDefaults(): InstrumentGroupRTIndicator {
     const { group } = klineGroup();
     Pro.on(group)
@@ -992,5 +1007,243 @@ describe("the trend and volatility factories, as the Java engine's Pro gives the
     expect(group.getIndicatorValue("rvi10_14")).toBe(rvi.getValue());
     expect(group.getIndicatorValue("er10")).not.toBe(0);
     expect(group.getIndicatorValue("rvi10_14")).not.toBe(0);
+  });
+});
+
+describe("the momentum and volume factories that read whole bars, as the Java engine's Pro gives them", () => {
+  // the id each of the fifteen registers under with its defaults, and the class behind it
+  const DEFAULTS = [
+    ["acc", AcceleratorOscillatorRTIndicator], ["ao5_34", AwesomeOscillatorRTIndicator], ["bop", BalanceOfPowerRTIndicator],
+    ["bbp13", BullBearPowerRTIndicator], ["rvgi10", RelativeVigorIndexRTIndicator], ["stoch14_3_3", StochasticOscillatorRTIndicator],
+    ["uo", UltimateOscillatorRTIndicator], ["willr14", WilliamsRRTIndicator], ["adl", AdlRTIndicator],
+    ["chaikin3_10", ChaikinOscillatorRTIndicator], ["eom14", EaseOfMovementRTIndicator], ["efi13", ElderForceIndexRTIndicator],
+    ["klinger", KlingerOscillatorRTIndicator], ["nvi", NegativeVolumeIndexRTIndicator], ["pvt", PvtRTIndicator],
+  ] as const;
+
+  function allWithDefaults(group: InstrumentGroupRTIndicator): InstrumentGroupRTIndicator {
+    Pro.on(group)
+      .acceleratorOscillator().awesomeOscillator().balanceOfPower().bullBearPower().relativeVigorIndex()
+      .stochasticOscillator().ultimateOscillator().williamsR().adl().chaikinOscillator().easeOfMovement()
+      .elderForceIndex().klingerOscillator().negativeVolumeIndex().pvt();
+    return group;
+  }
+
+  it("default ids, and the outputs beside the indicator, and no other output", () => {
+    const { group } = klineGroup();
+    allWithDefaults(group);
+    expect(registeredNames(group)).toEqual(
+      [
+        ...DEFAULTS.map(([id]) => id), "bbp13Bull", "bbp13Bear", "stoch14_3_3D", "klingerSignal",
+      ].sort(),
+    );
+    for (const [id, type] of DEFAULTS) {
+      expect(group.getExisting(id), id).toBeInstanceOf(type);
+    }
+  });
+
+  it("the suffix constants, and the output each one registers", () => {
+    expect([Pro.SUFFIX_BULL, Pro.SUFFIX_BEAR, Pro.SUFFIX_D]).toEqual(["Bull", "Bear", "D"]);
+    const { group } = klineGroup();
+    allWithDefaults(group);
+    for (const [name, output] of [
+      ["bbp13Bull", "bull"], ["bbp13Bear", "bear"], ["stoch14_3_3D", "d"], ["klingerSignal", "signal"],
+    ] as const) {
+      expect(group.getExisting(name).getMeta!().get("output"), name).toBe(output);
+    }
+  });
+
+  it("the display hints: a percentage or a volume where Java says so, the default everywhere else", () => {
+    const { group } = klineGroup();
+    allWithDefaults(group);
+    const percent = ["stoch14_3_3", "stoch14_3_3D", "uo", "willr14"];
+    const volume = ["adl", "chaikin3_10", "efi13", "klinger", "klingerSignal", "pvt"];
+    for (const name of registeredNames(group)) {
+      const expected = percent.includes(name) ? DisplayHint.PERCENT : volume.includes(name) ? DisplayHint.VOLUME : DisplayHint.ABSOLUTE;
+      expect(group.getExisting(name).getDisplayHint!(), name).toBe(expected);
+    }
+  });
+
+  it("the four shapes of a factory with one period: the default, the period, a name and a name and a period", () => {
+    const { group } = klineGroup();
+    // the factories whose option is `periods`, and those whose option is `period`
+    const factories = [
+      ["williamsR", "willr", 14, "periods"], ["easeOfMovement", "eom", 14, "periods"], ["elderForceIndex", "efi", 13, "periods"],
+      ["bullBearPower", "bbp", 13, "period"], ["relativeVigorIndex", "rvgi", 10, "period"],
+    ] as const;
+    const pro = Pro.on(group) as unknown as Record<string, (...args: (string | number)[]) => unknown>;
+    for (const [method, prefix, periods, option] of factories) {
+      pro[method]!();
+      pro[method]!(7);
+      pro[method]!(`${method}Named`);
+      pro[method]!(`${method}Both`, 9);
+      const expected: [string, number][] = [[`${prefix}${periods}`, periods], [`${prefix}7`, 7], [`${method}Named`, periods], [`${method}Both`, 9]];
+      for (const [name, value] of expected) {
+        expect(meta(group, name), name).toEqual({ [option]: String(value) });
+      }
+    }
+    // the outputs follow the name they were registered under
+    for (const name of ["bullBearPowerNamedBull", "bullBearPowerBothBear", "bbp7Bull", "bbp7Bear"]) {
+      expect(group.getExisting(name), name).toBeDefined();
+    }
+  });
+
+  it("the multi-parameter factories: ids, names and metadata, and the class defaults on the short forms", () => {
+    const { group } = klineGroup();
+    Pro.on(group)
+      .awesomeOscillator(8, 21).awesomeOscillator("a", 3, 13).awesomeOscillator("a0")
+      .chaikinOscillator(5, 20).chaikinOscillator("c", 2, 8).chaikinOscillator("c0")
+      .stochasticOscillator(5, 3, 2).stochasticOscillator("s", 9, 4, 4).stochasticOscillator("s0");
+    expect(meta(group, "ao8_21")).toEqual({ fastPeriod: "8", slowPeriod: "21" });
+    expect(meta(group, "a")).toEqual({ fastPeriod: "3", slowPeriod: "13" });
+    expect(meta(group, "a0")).toEqual({ fastPeriod: "5", slowPeriod: "34" });
+    expect(meta(group, "chaikin5_20")).toEqual({ fastPeriod: "5", slowPeriod: "20" });
+    expect(meta(group, "c")).toEqual({ fastPeriod: "2", slowPeriod: "8" });
+    expect(meta(group, "c0")).toEqual({ fastPeriod: "3", slowPeriod: "10" });
+    expect(meta(group, "stoch5_3_2")).toEqual({ kPeriod: "5", kSmooth: "3", dSmooth: "2" });
+    expect(meta(group, "s")).toEqual({ kPeriod: "9", kSmooth: "4", dSmooth: "4" });
+    expect(meta(group, "s0")).toEqual({ kPeriod: "14", kSmooth: "3", dSmooth: "3" });
+    // the outputs of a named form follow its name
+    for (const name of ["stoch5_3_2D", "sD", "s0D"]) {
+      expect(group.getExisting(name), name).toBeDefined();
+    }
+    expect(group.get("aD")).toBeUndefined();
+  });
+
+  it("a fast period above the slow one is accepted by the Awesome and Chaikin oscillators", () => {
+    const { group } = klineGroup();
+    Pro.on(group).awesomeOscillator(8, 3).chaikinOscillator(10, 3);
+    expect(meta(group, "ao8_3")).toEqual({ fastPeriod: "8", slowPeriod: "3" });
+    expect(meta(group, "chaikin10_3")).toEqual({ fastPeriod: "10", slowPeriod: "3" });
+  });
+
+  it("the seven classes without parameters take only a name, and record no metadata", () => {
+    const { group } = klineGroup();
+    const pro = Pro.on(group);
+    pro.acceleratorOscillator().balanceOfPower().ultimateOscillator().adl().klingerOscillator().negativeVolumeIndex().pvt();
+    pro.acceleratorOscillator("a").balanceOfPower("b").ultimateOscillator("u").adl("d").klingerOscillator("k").negativeVolumeIndex("n").pvt("p");
+    for (const name of ["acc", "bop", "uo", "adl", "klinger", "nvi", "pvt", "a", "b", "u", "d", "k", "n", "p"]) {
+      expect(meta(group, name), name).toEqual({});
+    }
+    expect(group.getExisting("a")).toBeInstanceOf(AcceleratorOscillatorRTIndicator);
+    expect(group.getExisting("kSignal")).toBeDefined();
+    expect(group.getExisting("kSignal").getMeta!().get("output")).toBe("signal");
+    // the type checker refuses a parameter (the closure never runs)
+    // @ts-expect-error adl() has no parameter
+    const withParameter = () => Pro.on(group).adl(5);
+    expect(withParameter).toBeTypeOf("function");
+  });
+
+  it("the constructor limits come through the factory, with the Java messages, and register nothing", () => {
+    const { group } = klineGroup();
+    const pro = Pro.on(group);
+    const limits: [() => unknown, string][] = [
+      [() => pro.awesomeOscillator(0, 34), "FastPeriod must be >= 1, got: 0"],
+      [() => pro.awesomeOscillator(5, 0), "SlowPeriod must be >= 1, got: 0"],
+      [() => pro.awesomeOscillator("a", 0, 34), "FastPeriod must be >= 1, got: 0"],
+      [() => pro.bullBearPower(0), "Period must be >= 1, got: 0"],
+      [() => pro.bullBearPower("b", 0), "Period must be >= 1, got: 0"],
+      [() => pro.relativeVigorIndex(0), "Period must be >= 1, got: 0"],
+      [() => pro.stochasticOscillator(0, 3, 3), "KPeriod must be >= 1, got: 0"],
+      [() => pro.stochasticOscillator(14, 0, 3), "KSmooth must be >= 1, got: 0"],
+      [() => pro.stochasticOscillator(14, 3, 0), "DSmooth must be >= 1, got: 0"],
+      [() => pro.stochasticOscillator("s", 14, 3, 0), "DSmooth must be >= 1, got: 0"],
+      [() => pro.williamsR(0), "Periods must be >= 1, got: 0"],
+      [() => pro.williamsR("w", 0), "Periods must be >= 1, got: 0"],
+      [() => pro.chaikinOscillator(0, 10), "FastPeriod must be >= 1, got: 0"],
+      [() => pro.chaikinOscillator(3, 0), "SlowPeriod must be >= 1, got: 0"],
+      [() => pro.chaikinOscillator("c", 3, 0), "SlowPeriod must be >= 1, got: 0"],
+      [() => pro.easeOfMovement(0), "Periods must be >= 1, got: 0"],
+      [() => pro.elderForceIndex(0), "Periods must be >= 1, got: 0"],
+      [() => pro.elderForceIndex(-3), "Periods must be >= 1, got: -3"],
+    ];
+    for (const [call, message] of limits) {
+      expect(call).toThrow(new RangeError(message));
+    }
+    // a factory that throws registers nothing
+    expect(registeredNames(group)).toEqual([]);
+  });
+
+  it("a kline group gives, bar after bar, what each class gives on the same bars, options and outputs included", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group)
+      .acceleratorOscillator().awesomeOscillator().awesomeOscillator("aoFast", 3, 13).awesomeOscillator("aoInverted", 8, 3)
+      .balanceOfPower().bullBearPower().bullBearPower(5).relativeVigorIndex().relativeVigorIndex(4)
+      .stochasticOscillator().stochasticOscillator("stochTuned", 5, 3, 2).ultimateOscillator().williamsR().williamsR(5)
+      .adl().chaikinOscillator().chaikinOscillator("chaikinTuned", 2, 8).chaikinOscillator("chaikinInverted", 10, 3)
+      .easeOfMovement().easeOfMovement(5).elderForceIndex().elderForceIndex(5).klingerOscillator().negativeVolumeIndex().pvt();
+    const acc = new AcceleratorOscillatorRTIndicator();
+    const ao = new AwesomeOscillatorRTIndicator();
+    const aoFast = new AwesomeOscillatorRTIndicator(3, 13);
+    const aoInverted = new AwesomeOscillatorRTIndicator(8, 3);
+    const bop = new BalanceOfPowerRTIndicator();
+    const bbp = new BullBearPowerRTIndicator();
+    const bbp5 = new BullBearPowerRTIndicator(5);
+    const rvgi = new RelativeVigorIndexRTIndicator();
+    const rvgi4 = new RelativeVigorIndexRTIndicator(4);
+    const stoch = new StochasticOscillatorRTIndicator();
+    const stochTuned = new StochasticOscillatorRTIndicator(5, 3, 2);
+    const uo = new UltimateOscillatorRTIndicator();
+    const willr = new WilliamsRRTIndicator();
+    const willr5 = new WilliamsRRTIndicator(5);
+    const adl = new AdlRTIndicator();
+    const chaikin = new ChaikinOscillatorRTIndicator();
+    const chaikinTuned = new ChaikinOscillatorRTIndicator(2, 8);
+    const chaikinInverted = new ChaikinOscillatorRTIndicator(10, 3);
+    const eom = new EaseOfMovementRTIndicator();
+    const eom5 = new EaseOfMovementRTIndicator(5);
+    const efi = new ElderForceIndexRTIndicator();
+    const efi5 = new ElderForceIndexRTIndicator(5);
+    const klinger = new KlingerOscillatorRTIndicator();
+    const nvi = new NegativeVolumeIndexRTIndicator();
+    const pvt = new PvtRTIndicator();
+    const fed = <T extends { updateFrom(bar: Kline): void; getValue(): number }>(indicator: T, bar: Kline): T => {
+      indicator.updateFrom(bar);
+      return indicator;
+    };
+    let finite = 0;
+    let bars = 0;
+    for (const bar of klines(inputsOf("clean"))) {
+      map.updateFrom(bar);
+      bars++;
+      const expected: Record<string, number> = {
+        acc: fed(acc, bar).getValue(),
+        ao5_34: fed(ao, bar).getValue(), aoFast: fed(aoFast, bar).getValue(), aoInverted: fed(aoInverted, bar).getValue(),
+        bop: fed(bop, bar).getValue(),
+        bbp13: fed(bbp, bar).getValue(), bbp13Bull: bbp.getBullPower(), bbp13Bear: bbp.getBearPower(),
+        bbp5: fed(bbp5, bar).getValue(), bbp5Bull: bbp5.getBullPower(), bbp5Bear: bbp5.getBearPower(),
+        rvgi10: fed(rvgi, bar).getValue(), rvgi4: fed(rvgi4, bar).getValue(),
+        stoch14_3_3: fed(stoch, bar).getValue(), stoch14_3_3D: stoch.getPercentD(),
+        stochTuned: fed(stochTuned, bar).getValue(), stochTunedD: stochTuned.getPercentD(),
+        uo: fed(uo, bar).getValue(),
+        willr14: fed(willr, bar).getValue(), willr5: fed(willr5, bar).getValue(),
+        adl: fed(adl, bar).getValue(),
+        chaikin3_10: fed(chaikin, bar).getValue(), chaikinTuned: fed(chaikinTuned, bar).getValue(),
+        chaikinInverted: fed(chaikinInverted, bar).getValue(),
+        eom14: fed(eom, bar).getValue(), eom5: fed(eom5, bar).getValue(),
+        efi13: fed(efi, bar).getValue(), efi5: fed(efi5, bar).getValue(),
+        klinger: fed(klinger, bar).getValue(), klingerSignal: klinger.getSignal(),
+        nvi: fed(nvi, bar).getValue(), pvt: fed(pvt, bar).getValue(),
+      };
+      for (const [name, value] of Object.entries(expected)) {
+        expect(group.getIndicatorValue(name), name).toBe(value);
+        if (Number.isFinite(value) && value !== 0) finite++;
+      }
+      // %K is the value of the stochastic oscillator
+      expect(stoch.getPercentK()).toBe(stoch.getValue());
+    }
+    // the comparison is not between zeros
+    expect(finite).toBeGreaterThan(30 * 500);
+    expect(bars).toBeGreaterThan(500);
+  });
+
+  it("on a ticker feed each of the fifteen raises one notice, for the indicator and not for its outputs", () => {
+    const map = new InstrumentMapTickerSourceRTIndicator(INSTRUMENT);
+    const group = allWithDefaults(new InstrumentGroupRTIndicator(map));
+    for (let i = 1; i <= 3; i++) {
+      map.updateFrom({ ...tickerOf(1.5 + i, i, 2 + i, 1), open: 1.2 + i });
+    }
+    const notices = group.getNotices();
+    expect(notices.map((notice) => notice.indicatorName).sort()).toEqual(DEFAULTS.map(([id]) => id).sort());
+    expect(notices.every((notice) => notice.instrument === INSTRUMENT)).toBe(true);
   });
 });

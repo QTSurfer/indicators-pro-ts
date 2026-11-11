@@ -229,6 +229,54 @@ relativeVolatilityIndex
 relativeVolatilityIndex 5 7
 relativeVolatilityIndex "r"
 relativeVolatilityIndex "r" 8 10
+acceleratorOscillator
+acceleratorOscillator "a"
+awesomeOscillator
+awesomeOscillator 8 21
+awesomeOscillator "ao"
+awesomeOscillator "ao" 3 13
+awesomeOscillator 8 3
+balanceOfPower
+balanceOfPower "b"
+bullBearPower
+bullBearPower 20
+bullBearPower "bb"
+bullBearPower "bb" 8
+relativeVigorIndex
+relativeVigorIndex 5
+relativeVigorIndex "rv"
+relativeVigorIndex "rv" 7
+stochasticOscillator
+stochasticOscillator 5 3 2
+stochasticOscillator "s"
+stochasticOscillator "s" 9 4 4
+ultimateOscillator
+ultimateOscillator "u"
+williamsR
+williamsR 7
+williamsR "w"
+williamsR "w" 21
+adl
+adl "a"
+chaikinOscillator
+chaikinOscillator 5 20
+chaikinOscillator "c"
+chaikinOscillator "c" 2 8
+chaikinOscillator 10 3
+easeOfMovement
+easeOfMovement 7
+easeOfMovement "e"
+easeOfMovement "e" 20
+elderForceIndex
+elderForceIndex 21
+elderForceIndex "f"
+elderForceIndex "f" 8
+klingerOscillator
+klingerOscillator "k"
+negativeVolumeIndex
+negativeVolumeIndex "n"
+pvt
+pvt "p"
 # a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
 superTrend 10 0.0001
 superTrend 10 2.5E-5
@@ -305,3 +353,21 @@ natr 0
 natr "n" 0
 relativeVolatilityIndex 1 14
 relativeVolatilityIndex 10 0
+awesomeOscillator 0 34
+awesomeOscillator 5 0
+awesomeOscillator "a" 0 34
+bullBearPower 0
+bullBearPower "b" 0
+relativeVigorIndex 0
+stochasticOscillator 0 3 3
+stochasticOscillator 14 0 3
+stochasticOscillator 14 3 0
+stochasticOscillator "s" 14 3 0
+williamsR 0
+williamsR "w" 0
+chaikinOscillator 0 10
+chaikinOscillator 3 0
+chaikinOscillator "c" 3 0
+easeOfMovement 0
+elderForceIndex 0
+elderForceIndex -3
