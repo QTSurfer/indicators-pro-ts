@@ -1,6 +1,14 @@
 import type { Kline, Ticker } from "@qtsurfer/core";
 import type { AbstractRTIndicator } from "@qtsurfer/indicators";
 import { describe, expect, it } from "vitest";
+import { AcceleratorOscillatorRTIndicator } from "$momentum/AcceleratorOscillatorRTIndicator";
+import { AwesomeOscillatorRTIndicator } from "$momentum/AwesomeOscillatorRTIndicator";
+import { BalanceOfPowerRTIndicator } from "$momentum/BalanceOfPowerRTIndicator";
+import { BullBearPowerRTIndicator } from "$momentum/BullBearPowerRTIndicator";
+import { RelativeVigorIndexRTIndicator } from "$momentum/RelativeVigorIndexRTIndicator";
+import { StochasticOscillatorRTIndicator } from "$momentum/StochasticOscillatorRTIndicator";
+import { UltimateOscillatorRTIndicator } from "$momentum/UltimateOscillatorRTIndicator";
+import { WilliamsRRTIndicator } from "$momentum/WilliamsRRTIndicator";
 import { AroonRTIndicator } from "$trend/AroonRTIndicator";
 import { ChandeKrollStopRTIndicator } from "$trend/ChandeKrollStopRTIndicator";
 import { ChandelierExitRTIndicator } from "$trend/ChandelierExitRTIndicator";
@@ -14,10 +22,18 @@ import { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator
 import { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
 import { NatrRTIndicator } from "$volatility/NatrRTIndicator";
 import { RelativeVolatilityIndexRTIndicator } from "$volatility/RelativeVolatilityIndexRTIndicator";
+import { AdlRTIndicator } from "$volume/AdlRTIndicator";
+import { ChaikinOscillatorRTIndicator } from "$volume/ChaikinOscillatorRTIndicator";
+import { EaseOfMovementRTIndicator } from "$volume/EaseOfMovementRTIndicator";
+import { ElderForceIndexRTIndicator } from "$volume/ElderForceIndexRTIndicator";
+import { KlingerOscillatorRTIndicator } from "$volume/KlingerOscillatorRTIndicator";
+import { NegativeVolumeIndexRTIndicator } from "$volume/NegativeVolumeIndexRTIndicator";
+import { PvtRTIndicator } from "$volume/PvtRTIndicator";
 
-// A bar with a field that is not finite (NaN, Infinity, -Infinity) in a field the class reads is ignored by the ten new
-// bar-fed indicators (and by SuperTrend), as it is by the Java engine's: nothing is updated (no window, inner indicator, counter, running
-// sum or flag), the value it held is kept, and so is every other getter. A field the class does not read is never
+// A bar with a field that is not finite (NaN, Infinity, -Infinity) in a field the class reads is ignored by the bar-fed
+// indicators ported with the guards (and by SuperTrend), as it is by the Java engine's: nothing is updated (no window,
+// inner indicator, counter, running sum or flag), the value it held is kept, and so is every other getter. That includes
+// the readiness: an indicator that is ready after its first bar is not ready after bars that are left out. A field the class does not read is never
 // looked at. The property: an instance fed a series with such bars put in anywhere behaves, from then on and at every
 // later step, exactly like one fed the same series without them, bit for bit. The scalar `update` is guarded the same
 // way, and so are the two indicators that read the price. The derived holds (a value worked out from finite fields
@@ -54,8 +70,12 @@ function bar<T extends BarIndicator>(
 
 const HL: readonly Field[] = ["high", "low"];
 const HLC: readonly Field[] = ["high", "low", "close"];
+const OHLC: readonly Field[] = ["open", "high", "low", "close"];
+const HLCV: readonly Field[] = ["high", "low", "close", "volume"];
+const HLV: readonly Field[] = ["high", "low", "volume"];
+const CV: readonly Field[] = ["close", "volume"];
 
-/** The ten classes, with parameters short enough to warm up well inside the series. */
+/** The classes, with parameters short enough to warm up well inside the series. */
 const bars: BarCase[] = [
   bar("Aroon", HL, () => new AroonRTIndicator(10), (i) => [i.getAroonUp(), i.getAroonDown()]),
   bar("ChandeKrollStop", HLC, () => new ChandeKrollStopRTIndicator(5, 1.5, 4, 3), (i) => [i.getStopLong(), i.getStopShort()]),
@@ -69,6 +89,22 @@ const bars: BarCase[] = [
   bar("Natr", HLC, () => new NatrRTIndicator(8)),
   // an older class that reads the same three fields
   bar("SuperTrend", HLC, () => new SuperTrendRTIndicator(6, 2.0), (i) => [i.getUpperBand(), i.getLowerBand(), i.isUpTrend() ? 1 : 0]),
+  // the momentum and volume indicators
+  bar("AcceleratorOscillator", HL, () => new AcceleratorOscillatorRTIndicator(), (i) => [i.getAO()]),
+  bar("AwesomeOscillator", HL, () => new AwesomeOscillatorRTIndicator(5, 20)),
+  bar("BalanceOfPower", OHLC, () => new BalanceOfPowerRTIndicator()),
+  bar("BullBearPower", HLC, () => new BullBearPowerRTIndicator(8), (i) => [i.getBullPower(), i.getBearPower()]),
+  bar("RelativeVigorIndex", OHLC, () => new RelativeVigorIndexRTIndicator(6)),
+  bar("StochasticOscillator", HLC, () => new StochasticOscillatorRTIndicator(8, 3, 3), (i) => [i.getPercentK(), i.getPercentD()]),
+  bar("UltimateOscillator", HLC, () => new UltimateOscillatorRTIndicator()),
+  bar("WilliamsR", HLC, () => new WilliamsRRTIndicator(8)),
+  bar("Adl", HLCV, () => new AdlRTIndicator()),
+  bar("ChaikinOscillator", HLCV, () => new ChaikinOscillatorRTIndicator(3, 8)),
+  bar("EaseOfMovement", HLV, () => new EaseOfMovementRTIndicator(8)),
+  bar("ElderForceIndex", CV, () => new ElderForceIndexRTIndicator(8)),
+  bar("KlingerOscillator", HLCV, () => new KlingerOscillatorRTIndicator(), (i) => [i.getSignal()]),
+  bar("NegativeVolumeIndex", CV, () => new NegativeVolumeIndexRTIndicator()),
+  bar("Pvt", CV, () => new PvtRTIndicator()),
 ];
 
 /** Deterministic, positive, not trivial: a trend, two cycles, a sawtooth, and flat bars. */
@@ -177,9 +213,9 @@ function runAndCompare(c: BarCase, clean: readonly Kline[], dirtySeries: readonl
 }
 
 describe("a bar with a field it reads that is not finite", () => {
-  it("is left out by the 11 classes of the registry, and by no other", () => {
-    expect(bars).toHaveLength(11);
-    expect(new Set(bars.map((c) => c.name)).size).toBe(11);
+  it("is left out by the 26 classes of the registry, and by no other", () => {
+    expect(bars).toHaveLength(26);
+    expect(new Set(bars.map((c) => c.name)).size).toBe(26);
   });
 
   const cases = bars.flatMap((c) => c.reads.flatMap((field) => BAD.map(([label, bad]) => [c.name, field, label, c, bad] as const)));
@@ -242,7 +278,7 @@ describe("a bar with a field it reads that is not finite", () => {
     }
   });
 
-  it.each(bars.map((c) => [c.name, c] as const))("%s: a ticker with no high, low or last price is left out too", (_, c) => {
+  it.each(bars.map((c) => [c.name, c] as const))("%s: a ticker with no open, high, low, last price or volume is left out too when the class reads it", (_, c) => {
     const indicator = c.make();
     const fresh = c.make();
     const clean = barSeries();
@@ -250,9 +286,9 @@ describe("a bar with a field it reads that is not finite", () => {
       indicator.updateFrom(kline);
       fresh.updateFrom(kline);
     }
-    const ticker = (missing: "high" | "low" | "last"): Ticker => ({
+    const ticker = (missing: "open" | "high" | "low" | "last" | "volume"): Ticker => ({
       instrument: "BTC/USDT",
-      open: 100,
+      open: missing === "open" ? null : 100,
       high: missing === "high" ? null : 101,
       low: missing === "low" ? null : 99,
       last: missing === "last" ? null : 100.5,
@@ -260,13 +296,13 @@ describe("a bar with a field it reads that is not finite", () => {
       bidSize: null,
       ask: null,
       askSize: null,
-      volume: 1000,
+      volume: missing === "volume" ? null : 1000,
       quoteVolume: null,
       vwap: null,
       percentageChange: null,
       timestamp: 1,
     });
-    for (const missing of ["high", "low", "last"] as const) {
+    for (const missing of ["open", "high", "low", "last", "volume"] as const) {
       const reads = missing === "last" ? c.reads.includes("close") : c.reads.includes(missing);
       if (reads) {
         indicator.updateFrom(ticker(missing) as unknown as Kline);
@@ -279,11 +315,18 @@ describe("a bar with a field it reads that is not finite", () => {
 describe("a field the class does not read", () => {
   const cases = bars.flatMap((c) => FIELDS.filter((field) => !c.reads.includes(field)).map((field) => [c.name, field, c] as const));
 
-  it("is not looked at: the open and the volume by all, the close by the four that read the high and the low only", () => {
-    expect(cases.filter(([, field]) => field === "open")).toHaveLength(11);
-    expect(cases.filter(([, field]) => field === "volume")).toHaveLength(11);
-    expect(cases.filter(([, field]) => field === "close").map(([name]) => name)).toEqual(["Aroon", "DonchianChannel", "ParabolicSar", "MassIndex"]);
-    expect(cases.filter(([, field]) => field === "high" || field === "low")).toEqual([]);
+  it("is not looked at: the open by all but the two that read it, the volume by all but the seven that read it, the high and the low by the three that read the close and the volume only", () => {
+    const names = (field: Field): string[] => cases.filter(([, f]) => f === field).map(([name]) => name);
+    expect(names("open")).toHaveLength(24);
+    expect(names("open")).not.toContain("BalanceOfPower");
+    expect(names("open")).not.toContain("RelativeVigorIndex");
+    expect(names("volume")).toHaveLength(19);
+    for (const reader of ["Adl", "ChaikinOscillator", "EaseOfMovement", "ElderForceIndex", "KlingerOscillator", "NegativeVolumeIndex", "Pvt"]) {
+      expect(names("volume")).not.toContain(reader);
+    }
+    expect(names("close")).toEqual(["Aroon", "DonchianChannel", "ParabolicSar", "MassIndex", "AcceleratorOscillator", "AwesomeOscillator", "EaseOfMovement"]);
+    expect(names("high")).toEqual(["ElderForceIndex", "NegativeVolumeIndex", "Pvt"]);
+    expect(names("low")).toEqual(["ElderForceIndex", "NegativeVolumeIndex", "Pvt"]);
   });
 
   it.each(cases)("%s: a bar with %s not finite is a bar like any other", (_name, field, c) => {
@@ -318,8 +361,8 @@ describe("a value that is not finite given to the scalar update", () => {
     return barSeries().map((kline) => kline.close);
   }
 
-  it("is held by the 11 bar classes and the 2 price classes", () => {
-    expect(priceCases).toHaveLength(13);
+  it("is held by the 26 bar classes and the 2 price classes", () => {
+    expect(priceCases).toHaveLength(28);
   });
 
   describe.each(priceCases.flatMap((c) => BAD.map(([label, bad]) => [c.name, label, c, bad] as const)))("%s with %s put in", (_name, _label, c, bad) => {

@@ -1,6 +1,14 @@
 import type { Kline } from "@qtsurfer/core";
 import { AtrRTIndicator } from "@qtsurfer/indicators";
 import { expect } from "vitest";
+import { AcceleratorOscillatorRTIndicator } from "$momentum/AcceleratorOscillatorRTIndicator";
+import { AwesomeOscillatorRTIndicator } from "$momentum/AwesomeOscillatorRTIndicator";
+import { BalanceOfPowerRTIndicator } from "$momentum/BalanceOfPowerRTIndicator";
+import { BullBearPowerRTIndicator } from "$momentum/BullBearPowerRTIndicator";
+import { RelativeVigorIndexRTIndicator } from "$momentum/RelativeVigorIndexRTIndicator";
+import { StochasticOscillatorRTIndicator } from "$momentum/StochasticOscillatorRTIndicator";
+import { UltimateOscillatorRTIndicator } from "$momentum/UltimateOscillatorRTIndicator";
+import { WilliamsRRTIndicator } from "$momentum/WilliamsRRTIndicator";
 import { GarmanKlassVolatilityRTIndicator } from "$statistics/volatility/GarmanKlassVolatilityRTIndicator";
 import { ParkinsonVolatilityRTIndicator } from "$statistics/volatility/ParkinsonVolatilityRTIndicator";
 import { RogersSatchellVolatilityRTIndicator } from "$statistics/volatility/RogersSatchellVolatilityRTIndicator";
@@ -18,9 +26,16 @@ import { ChoppinessIndexRTIndicator } from "$volatility/ChoppinessIndexRTIndicat
 import { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator";
 import { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
 import { NatrRTIndicator } from "$volatility/NatrRTIndicator";
+import { AdlRTIndicator } from "$volume/AdlRTIndicator";
+import { ChaikinOscillatorRTIndicator } from "$volume/ChaikinOscillatorRTIndicator";
 import { CmfRTIndicator } from "$volume/CmfRTIndicator";
+import { EaseOfMovementRTIndicator } from "$volume/EaseOfMovementRTIndicator";
+import { ElderForceIndexRTIndicator } from "$volume/ElderForceIndexRTIndicator";
+import { KlingerOscillatorRTIndicator } from "$volume/KlingerOscillatorRTIndicator";
 import { MfiRTIndicator } from "$volume/MfiRTIndicator";
+import { NegativeVolumeIndexRTIndicator } from "$volume/NegativeVolumeIndexRTIndicator";
 import { ObvRTIndicator } from "$volume/ObvRTIndicator";
+import { PvtRTIndicator } from "$volume/PvtRTIndicator";
 import { VwapRTIndicator } from "$volume/VwapRTIndicator";
 import { LOG_TOLERANCE, decode, expectSeries } from "./compare";
 import type { BarEdgeExpected, SeriesSet } from "./fixtures";
@@ -191,6 +206,64 @@ export const barSubjects: BarSubject[] = [
   subject("massIndex1_1", "Mass index(1, 1)", false, 0, (b) => barSeries(new MassIndexRTIndicator(1, 1), b, { ready })),
   subject("natr14", "NATR(14)", true, 0, (b) => barSeries(new NatrRTIndicator(14), b, { ready })),
   subject("natr3", "NATR(3)", true, 0, (b) => barSeries(new NatrRTIndicator(3), b, { ready })),
+
+  // the momentum and volume indicators: only + - * /, comparisons, minimum, maximum and absolute value, so equal to the last bit
+  subject("acceleratorOscillator", "Accelerator Oscillator()", true, 0, (b) =>
+    barSeries(new AcceleratorOscillatorRTIndicator(), b, { ao: (i) => i.getAO(), ready }),
+  ),
+  subject("awesomeOscillatorDefault", "Awesome Oscillator()", true, 0, (b) => barSeries(new AwesomeOscillatorRTIndicator(), b, { ready })),
+  subject("awesomeOscillator3_8", "Awesome Oscillator(3, 8)", true, 0, (b) => barSeries(new AwesomeOscillatorRTIndicator(3, 8), b, { ready })),
+  subject("awesomeOscillator8_3", "Awesome Oscillator(8, 3), a fast period above the slow one", true, 0, (b) =>
+    barSeries(new AwesomeOscillatorRTIndicator(8, 3), b, { ready }),
+  ),
+  subject("awesomeOscillator1_1", "Awesome Oscillator(1, 1)", false, 0, (b) => barSeries(new AwesomeOscillatorRTIndicator(1, 1), b, { ready })),
+  subject("balanceOfPower", "Balance of Power", true, 0, (b) => barSeries(new BalanceOfPowerRTIndicator(), b, { ready })),
+  subject("bullBearPowerDefault", "Bull Bear Power()", true, 0, (b) =>
+    barSeries(new BullBearPowerRTIndicator(), b, { bull: (i) => i.getBullPower(), bear: (i) => i.getBearPower(), ready }),
+  ),
+  subject("bullBearPower5", "Bull Bear Power(5)", true, 0, (b) =>
+    barSeries(new BullBearPowerRTIndicator(5), b, { bull: (i) => i.getBullPower(), bear: (i) => i.getBearPower(), ready }),
+  ),
+  subject("bullBearPower1", "Bull Bear Power(1)", false, 0, (b) =>
+    barSeries(new BullBearPowerRTIndicator(1), b, { bull: (i) => i.getBullPower(), bear: (i) => i.getBearPower(), ready }),
+  ),
+  subject("relativeVigorIndexDefault", "Relative Vigor Index()", true, 0, (b) => barSeries(new RelativeVigorIndexRTIndicator(), b, { ready })),
+  subject("relativeVigorIndex5", "Relative Vigor Index(5)", true, 0, (b) => barSeries(new RelativeVigorIndexRTIndicator(5), b, { ready })),
+  subject("relativeVigorIndex1", "Relative Vigor Index(1)", false, 0, (b) => barSeries(new RelativeVigorIndexRTIndicator(1), b, { ready })),
+  subject("stochasticOscillatorDefault", "Stochastic Oscillator()", true, 0, (b) =>
+    barSeries(new StochasticOscillatorRTIndicator(), b, { percentK: (i) => i.getPercentK(), percentD: (i) => i.getPercentD(), ready }),
+  ),
+  subject("stochasticOscillator5_2_4", "Stochastic Oscillator(5, 2, 4)", true, 0, (b) =>
+    barSeries(new StochasticOscillatorRTIndicator(5, 2, 4), b, { percentK: (i) => i.getPercentK(), percentD: (i) => i.getPercentD(), ready }),
+  ),
+  subject("stochasticOscillator3_5_2", "Stochastic Oscillator(3, 5, 2), a smoothing longer than the window", false, 0, (b) =>
+    barSeries(new StochasticOscillatorRTIndicator(3, 5, 2), b, { percentK: (i) => i.getPercentK(), percentD: (i) => i.getPercentD(), ready }),
+  ),
+  subject("stochasticOscillator1_1_1", "Stochastic Oscillator(1, 1, 1)", false, 0, (b) =>
+    barSeries(new StochasticOscillatorRTIndicator(1, 1, 1), b, { percentK: (i) => i.getPercentK(), percentD: (i) => i.getPercentD(), ready }),
+  ),
+  subject("ultimateOscillator", "Ultimate Oscillator", true, 0, (b) => barSeries(new UltimateOscillatorRTIndicator(), b, { ready })),
+  subject("williamsRDefault", "Williams %R()", true, 0, (b) => barSeries(new WilliamsRRTIndicator(), b, { ready })),
+  subject("williamsR5", "Williams %R(5)", true, 0, (b) => barSeries(new WilliamsRRTIndicator(5), b, { ready })),
+  subject("williamsR1", "Williams %R(1)", false, 0, (b) => barSeries(new WilliamsRRTIndicator(1), b, { ready })),
+  subject("adl", "ADL", true, 0, (b) => barSeries(new AdlRTIndicator(), b, { ready })),
+  subject("chaikinOscillatorDefault", "Chaikin Oscillator()", true, 0, (b) => barSeries(new ChaikinOscillatorRTIndicator(), b, { ready })),
+  subject("chaikinOscillator2_5", "Chaikin Oscillator(2, 5)", true, 0, (b) => barSeries(new ChaikinOscillatorRTIndicator(2, 5), b, { ready })),
+  subject("chaikinOscillator8_3", "Chaikin Oscillator(8, 3), a fast period above the slow one", true, 0, (b) =>
+    barSeries(new ChaikinOscillatorRTIndicator(8, 3), b, { ready }),
+  ),
+  subject("chaikinOscillator1_1", "Chaikin Oscillator(1, 1)", false, 0, (b) => barSeries(new ChaikinOscillatorRTIndicator(1, 1), b, { ready })),
+  subject("easeOfMovementDefault", "Ease of Movement()", true, 0, (b) => barSeries(new EaseOfMovementRTIndicator(), b, { ready })),
+  subject("easeOfMovement5", "Ease of Movement(5)", true, 0, (b) => barSeries(new EaseOfMovementRTIndicator(5), b, { ready })),
+  subject("easeOfMovement1", "Ease of Movement(1)", false, 0, (b) => barSeries(new EaseOfMovementRTIndicator(1), b, { ready })),
+  subject("elderForceIndexDefault", "Elder Force Index()", true, 0, (b) => barSeries(new ElderForceIndexRTIndicator(), b, { ready })),
+  subject("elderForceIndex5", "Elder Force Index(5)", true, 0, (b) => barSeries(new ElderForceIndexRTIndicator(5), b, { ready })),
+  subject("elderForceIndex1", "Elder Force Index(1)", false, 0, (b) => barSeries(new ElderForceIndexRTIndicator(1), b, { ready })),
+  subject("klingerOscillator", "Klinger Oscillator", true, 0, (b) =>
+    barSeries(new KlingerOscillatorRTIndicator(), b, { signal: (i) => i.getSignal(), ready }),
+  ),
+  subject("negativeVolumeIndex", "Negative Volume Index", true, 0, (b) => barSeries(new NegativeVolumeIndexRTIndicator(), b, { ready })),
+  subject("pvt", "PVT", true, 0, (b) => barSeries(new PvtRTIndicator(), b, { ready })),
 ];
 
 /** The bars of a bar edge: a field that is a string in the fixture (NaN, Infinity, -Infinity) is that number. */

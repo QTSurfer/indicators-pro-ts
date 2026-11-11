@@ -38,16 +38,18 @@ belong on a kline group: on a ticker those are the exchange's 24-hour statistics
 
 ## Ported
 
-59 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF,
-Ichimoku, MFI, OBV, SuperTrend, VWAP) and the fifty-two that came after it (Kurtosis, Skewness, Z-Score,
-Value at Risk, Autocorrelation, the Hurst exponent, the linear regression slope, the simple linear regression,
-the rolling percentile, the Calmar, Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index,
-the EWMA and realized volatilities, the four OHLC volatility estimators, the ALMA, DEMA, FRAMA, least squares and
-McGinley Dynamic moving averages, the envelopes, Momentum, ROC, the Chande momentum and forecast oscillators, the
-detrended price oscillator, Connors RSI, the Coppock curve, the Fisher and adaptive Fisher transforms, Know sure
-thing, TRIX, the true strength index, Aroon, the Chande Kroll stop, the Chandelier exit, the Donchian channel, the
-efficiency ratio, the Parabolic SAR, Vortex, the Choppiness index, the Keltner channel, the Mass index, NATR and the
-relative volatility index). ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is compared with the
+74 of the 82 pro indicators of the Java module: every factory of the Java engine's `Pro` (ADX, CMF, Ichimoku, MFI, OBV,
+SuperTrend, VWAP) and the sixty-seven that came after it (Kurtosis, Skewness, Z-Score, Value at Risk, Autocorrelation,
+the Hurst exponent, the linear regression slope, the simple linear regression, the rolling percentile, the Calmar,
+Omega, Sharpe, Sortino and tail ratios, the maximum drawdown, the Ulcer index, the EWMA and realized volatilities, the
+four OHLC volatility estimators, the ALMA, DEMA, FRAMA, least squares and McGinley Dynamic moving averages, the
+envelopes, Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the
+Coppock curve, the Fisher and adaptive Fisher transforms, Know sure thing, TRIX, the true strength index, Aroon, the
+Chande Kroll stop, the Chandelier exit, the Donchian channel, the efficiency ratio, the Parabolic SAR, Vortex, the
+Choppiness index, the Keltner channel, the Mass index, NATR, the relative volatility index, the Accelerator, Awesome,
+Stochastic, Ultimate, Chaikin and Klinger oscillators, Balance of Power, Bull Bear Power, the Relative Vigor Index,
+Williams %R, the accumulation/distribution line, Ease of Movement, the Elder Force Index, the Negative Volume Index and
+the Price Volume Trend). ATR is not here: it is a free indicator of `@qtsurfer/indicators`. Each is compared with the
 Java engine, value by value, on a seeded dataset and on the same one with values that are not finite, and on short
 synthetic series that reach the guards the dataset does not (see below).
 
@@ -73,8 +75,8 @@ the last bit. That holds the maximum drawdown and the Ulcer index to the last bi
 no logarithm or exponential (among them the DEMA, the envelopes, the least squares and McGinley Dynamic averages,
 Momentum, ROC, the Chande momentum and forecast oscillators, the detrended price oscillator, Connors RSI, the Coppock
 curve, Know sure thing, TRIX, the true strength index, Aroon, the Chande Kroll stop, the Chandelier exit, the Donchian
-channel, the efficiency ratio, the Parabolic SAR, Vortex, the Keltner channel, the Mass index, NATR and the relative
-volatility index). The indicators that take logarithms or an exponential (the four OHLC volatility estimators, the EWMA
+channel, the efficiency ratio, the Parabolic SAR, Vortex, the Keltner channel, the Mass index, NATR, the relative
+volatility index, and the fifteen momentum and volume indicators that read whole bars). The indicators that take logarithms or an exponential (the four OHLC volatility estimators, the EWMA
 and realized volatilities, Autocorrelation, the Hurst exponent, Value at Risk, the Calmar, Omega, Sharpe, Sortino and
 tail ratios, ALMA, FRAMA, the Choppiness index and the Fisher and adaptive Fisher transforms) are held to a relative
 1e-12, because engines do not all round a logarithm the way Java does. Measured on the
@@ -97,14 +99,14 @@ the tail ratio on the collapse, which are within 3e-16 in V8, those of FRAMA, wh
 in JavaScriptCore, and those of the Fisher and adaptive Fisher transforms, which are within 3e-16 and 3e-15 in V8 and
 equal in JavaScriptCore.
 
-`tests/barEdges.test.ts` does the same for every indicator that reads whole bars (the eleven ported earlier, ATR, which
-several of them build on, and the ten new ones, each with the variants of its constructor). The series of bars are
-written into the fixture as inputs: a rising and a falling series with the high and the low around the close, flat
-bars, bars with no range, gaps, a high below a low, no volume at all and no volume for a stretch, a price that collapses
-to 1e-8 and comes back, five bars (fewer than any window), the smallest positive price, a bar of zeros, a negative
-price, a range and prices near the largest double, and each field in turn of one bar set to NaN, Infinity and -Infinity,
-in the middle of a series and as its first bar. The values are equal to Java's to the last bit, except those of the
-Choppiness index, which are within 5e-16 in V8 and 2e-16 in JavaScriptCore, and of Parkinson and Garman-Klass
+`tests/barEdges.test.ts` does the same for every indicator that reads whole bars (the eleven ported first, ATR, which
+several of them build on, and the twenty-five ported since, each with the variants of its constructor). The series of
+bars are written into the fixture as inputs: a rising and a falling series with the high and the low around the close,
+flat bars, bars with no range, gaps, a high below a low, no volume at all and no volume for a stretch, a price that
+collapses to 1e-8 and comes back, five bars (fewer than any window), the smallest positive price, a bar of zeros, a
+negative price, a range and prices near the largest double, and each field in turn of one bar set to NaN, Infinity and
+-Infinity, in the middle of a series and as its first bar. The values are equal to Java's to the last bit, except those
+of the Choppiness index, which are within 5e-16 in V8 and 2e-16 in JavaScriptCore, and of Parkinson and Garman-Klass
 volatility, which are within 5e-16 in V8 (the four OHLC estimators are equal in JavaScriptCore).
 
 ## Develop

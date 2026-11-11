@@ -23,13 +23,13 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 | Group | Indicators |
 |---|---:|
 | Trend | 10 |
-| Volume | 4 |
+| Volume | 11 |
 | Statistics | 9 |
 | Risk and performance ratios | 7 |
 | Volatility estimators | 6 |
 | Volatility | 5 |
 | Averages | 6 |
-| Momentum | 12 |
+| Momentum | 20 |
 
 ## Trend
 
@@ -52,11 +52,21 @@ maximum has no decimal part in the id (`chand22_3`, `psar1_2`).
 
 ## Volume
 
+ADL, Chaikin Oscillator, Ease of Movement, Elder Force Index, Klinger Oscillator, Negative Volume Index and PVT have no
+`Pro` call yet: register them with `group.add(name, new Class(…))`. All read whole bars.
+
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
+| ADL | `AdlRTIndicator` | — | | | yes | Accumulation/Distribution Line: a running total of the volume weighted by where the close sits in the range of the bar, from -1 (the low) to 1 (the high) |
+| Chaikin Oscillator | `ChaikinOscillatorRTIndicator` | — | | | yes | a fast EMA of the ADL less a slow one; 3 and 10 periods by default; the fast period is not required to be below the slow one, and the class is ready when both EMAs are |
 | CMF | `CmfRTIndicator` | `cmf()` | `cmf20` | | yes | Chaikin Money Flow |
+| Ease of Movement | `EaseOfMovementRTIndicator` | — | | | yes | moving average of the distance moved by the midpoint of the bar over the volume per unit of range; 14 periods by default |
+| Elder Force Index | `ElderForceIndexRTIndicator` | — | | | yes | EMA of the change of the close times the volume; 13 periods by default |
+| Klinger Oscillator | `KlingerOscillatorRTIndicator` | — | | | yes | volume weighted by the trend of the price, as the gap between EMAs of 34 and 55 periods; the value is the KVO, the class also gives its 13-period signal line |
 | MFI | `MfiRTIndicator` | `mfi()` | `mfi14` | | yes | Money Flow Index |
+| Negative Volume Index | `NegativeVolumeIndexRTIndicator` | — | | | yes | follows the price only on the bars where the volume fell from the bar before; starts at 1000, and reads 0 until its first bar |
 | OBV | `ObvRTIndicator` | `obv()` | `obv` | | yes | On-Balance Volume |
+| PVT | `PvtRTIndicator` | — | | | yes | Price Volume Trend: a running total of the volume weighted by the percentage change of the close |
 | VWAP | `VwapRTIndicator` | `vwap()` | `vwap` | | yes | volume-weighted average price |
 
 ## Statistics
@@ -137,13 +147,20 @@ no default period, so they take one.
 
 ## Momentum
 
-Each reads the group's price, so it works on a ticker feed too. Each call also takes the parameters of the class, with
-or without a name (`roc(5)`, `roc("r", 5)`), and builds the id from them. Know sure thing takes its arrays only with a
-name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
+Twelve of them read the group's price, so they work on a ticker feed too. Each call also takes the parameters of the
+class, with or without a name (`roc(5)`, `roc("r", 5)`), and builds the id from them. Know sure thing takes its arrays
+only with a name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`. The eight that read whole bars (Accelerator
+Oscillator, Awesome Oscillator, Balance of Power, Bull Bear Power, Relative Vigor Index, Stochastic Oscillator, Ultimate
+Oscillator and Williams %R) belong on a kline group, and have no `Pro` call yet: register them with
+`group.add(name, new Class(…))`.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
+| Accelerator Oscillator | `AcceleratorOscillatorRTIndicator` | — | | | yes | how fast the Awesome Oscillator is changing: the AO less its 5-period average; the value is that difference, the class also gives the AO |
 | Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | `adaptiveFisherTransform()` | `afisher10_5_20` |  | | Fisher transform whose window follows the efficiency ratio; the class also gives the ratio and the window, which are not outputs; 10, 5 and 20 periods by default |
+| Awesome Oscillator | `AwesomeOscillatorRTIndicator` | — | | | yes | a fast average of the midpoint of the bar less a slow one; 5 and 34 periods by default; the fast period is not required to be below the slow one, and the class is ready when both averages are |
+| Balance of Power | `BalanceOfPowerRTIndicator` | — | | | yes | the move from the open to the close as a share of the range of the bar, from -1 to 1; 0 when the bar has no range |
+| Bull Bear Power | `BullBearPowerRTIndicator` | — | | | yes | Elder's Bull Power and Bear Power, the high and the low less an EMA of the close; the value is their sum, the class also gives the two parts; 13 periods by default |
 | Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | `chandeForecastOscillator()` | `cfo14` |  | | percentage deviation of the price from its least squares average, which is not an output; 14 periods by default |
 | Chande momentum oscillator | `CmoRTIndicator` | `cmo()` | `cmo14` |  | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
 | Connors RSI | `ConnorsRsiRTIndicator` | `connorsRsi()` | `crsi3_2_100` |  | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
@@ -153,8 +170,12 @@ name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
 | Know sure thing | `KnowSureThingRTIndicator` | `knowSureThing()` | `kst` | `Signal` | | weighted sum of four smoothed rates of change; the signal, an average of the KST, is the `Signal` output; Pring's periods and weights by default |
 | Momentum | `MomentumRTIndicator` | `momentum()` | `mom10` |  | | the price less the price n ticks ago; 10 periods by default |
 | Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
+| Relative Vigor Index | `RelativeVigorIndexRTIndicator` | — | | | yes | how firmly the close follows the open compared with the range of the bar, over the last four bars and then smoothed; 10 periods by default |
+| Stochastic Oscillator | `StochasticOscillatorRTIndicator` | — | | | yes | where the close is between the lowest low and the highest high of the window; the value is %K, the class also gives %D; 14, 3 and 3 periods by default (window, %K smoothing, %D smoothing) |
 | TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
 | True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
+| Ultimate Oscillator | `UltimateOscillatorRTIndicator` | — | | | yes | buying pressure over the true range, over windows of 7, 14 and 28 bars, from 0 to 100 |
+| Williams %R | `WilliamsRRTIndicator` | — | | | yes | how far the close is below the highest high of the window, from 0 to -100; 14 periods by default |
 
 ## Not in this package
 

@@ -10,7 +10,11 @@ import com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndi
 import com.wualabs.qtsurfer.engine.core.MarketSnapshot;
 import com.wualabs.qtsurfer.engine.indicators.core.RichRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.helpers.group.InstrumentGroupRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AcceleratorOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AdaptiveFisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AwesomeOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.BalanceOfPowerRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.BullBearPowerRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ChandeForecastOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ConnorsRsiRTIndicator;
@@ -19,9 +23,13 @@ import com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscilla
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.FisherTransformRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.KnowSureThingRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.MomentumRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RelativeVigorIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.StochasticOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrueStrengthIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.UltimateOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.WilliamsRRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.pro.Pro;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.AutocorrelationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.HurstExponentRTIndicator;
@@ -63,9 +71,16 @@ import com.wualabs.qtsurfer.engine.indicators.volatility.pro.KeltnerChannelRTInd
 import com.wualabs.qtsurfer.engine.indicators.volatility.pro.MassIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volatility.pro.NatrRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volatility.pro.RelativeVolatilityIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.AdlRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.ChaikinOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.CmfRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.EaseOfMovementRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.ElderForceIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.KlingerOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.MfiRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.NegativeVolumeIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.ObvRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.PvtRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.VwapRTIndicator;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -1094,6 +1109,144 @@ public class Oracle {
     }));
     list.add(new BarSubject("natr3", true, b -> {
       var i = new NatrRTIndicator(3);
+      return runBars(b, i, ready(i));
+    }));
+
+    // the momentum and volume indicators that read whole bars
+    list.add(new BarSubject("acceleratorOscillator", true, b -> {
+      var i = new AcceleratorOscillatorRTIndicator();
+      return runBars(b, i, read("ao", i::getAO), ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillatorDefault", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator3_8", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(3, 8);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator8_3", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(8, 3);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator1_1", false, b -> {
+      var i = new AwesomeOscillatorRTIndicator(1, 1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("balanceOfPower", true, b -> {
+      var i = new BalanceOfPowerRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("bullBearPowerDefault", true, b -> {
+      var i = new BullBearPowerRTIndicator();
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("bullBearPower5", true, b -> {
+      var i = new BullBearPowerRTIndicator(5);
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("bullBearPower1", false, b -> {
+      var i = new BullBearPowerRTIndicator(1);
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndexDefault", true, b -> {
+      var i = new RelativeVigorIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndex5", true, b -> {
+      var i = new RelativeVigorIndexRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndex1", false, b -> {
+      var i = new RelativeVigorIndexRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillatorDefault", true, b -> {
+      var i = new StochasticOscillatorRTIndicator();
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator5_2_4", true, b -> {
+      var i = new StochasticOscillatorRTIndicator(5, 2, 4);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator3_5_2", false, b -> {
+      var i = new StochasticOscillatorRTIndicator(3, 5, 2);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator1_1_1", false, b -> {
+      var i = new StochasticOscillatorRTIndicator(1, 1, 1);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("ultimateOscillator", true, b -> {
+      var i = new UltimateOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsRDefault", true, b -> {
+      var i = new WilliamsRRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsR5", true, b -> {
+      var i = new WilliamsRRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsR1", false, b -> {
+      var i = new WilliamsRRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("adl", true, b -> {
+      var i = new AdlRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillatorDefault", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator2_5", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator(2, 5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator8_3", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator(8, 3);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator1_1", false, b -> {
+      var i = new ChaikinOscillatorRTIndicator(1, 1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovementDefault", true, b -> {
+      var i = new EaseOfMovementRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovement5", true, b -> {
+      var i = new EaseOfMovementRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovement1", false, b -> {
+      var i = new EaseOfMovementRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndexDefault", true, b -> {
+      var i = new ElderForceIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndex5", true, b -> {
+      var i = new ElderForceIndexRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndex1", false, b -> {
+      var i = new ElderForceIndexRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("klingerOscillator", true, b -> {
+      var i = new KlingerOscillatorRTIndicator();
+      return runBars(b, i, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new BarSubject("negativeVolumeIndex", true, b -> {
+      var i = new NegativeVolumeIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("pvt", true, b -> {
+      var i = new PvtRTIndicator();
       return runBars(b, i, ready(i));
     }));
     return list;
