@@ -1,6 +1,6 @@
 {
   "name": "@qtsurfer/indicators-pro",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "QTSurfer pro real-time streaming indicators",
   "license": "AGPL-3.0-only OR LicenseRef-Wualabs-Commercial",
