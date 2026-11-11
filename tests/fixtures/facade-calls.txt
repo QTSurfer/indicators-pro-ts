@@ -1,9 +1,9 @@
 # One call of Pro.on(group) per line: the method, then its arguments. A name is in double quotes, a whole number
-# is an integer, and a number with a decimal point is a double. An array is in brackets, without spaces, like
-# [10,15,20,30]: it is an int[], or a double[] when any of its numbers has a decimal point; [] is an int[]. The Java
-# engine's Pro runs each call on an empty group (tools/java-oracle) and tests/facade.test.ts runs the same call here:
-# they must register the same names, with the same display hint and metadata. Add the line of every factory and
-# overload you add.
+# is an integer, and a number with a decimal point is a double. The words true and false are booleans. An array is in
+# brackets, without spaces, like [10,15,20,30]: it is an int[], or a double[] when any of its numbers has a decimal
+# point; [] is an int[]. The Java engine's Pro runs each call on an empty group (tools/java-oracle) and
+# tests/facade.test.ts runs the same call here: they must register the same names, with the same display hint and
+# metadata. Add the line of every factory and overload you add.
 adx
 adx 7
 adx "trend" 21
@@ -173,6 +173,120 @@ knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9
 knowSureThing "k2" [5,10] [5,5] [1,2] 5
 knowSureThing "k3" [8] [4] [1.5] 3
 knowSureThing "k4" [10,15] [10,10] [0.5,-1.0] 4
+aroon
+aroon 10
+aroon "a"
+aroon "a" 7
+chandeKrollStop
+chandeKrollStop 5 2.5 4 3
+chandeKrollStop 10 2.0 9 9
+chandeKrollStop 10 0.0 9 9
+chandeKrollStop "s"
+chandeKrollStop "s" 7 1.5 6 5
+chandelierExit
+chandelierExit 14 2.5
+chandelierExit 10 2.0
+chandelierExit 10 0.0
+chandelierExit 10 1.0E19
+chandelierExit "x"
+chandelierExit "x" 10 2.0
+donchianChannel
+donchianChannel 10
+donchianChannel "d"
+donchianChannel "d" 15
+efficiencyRatio
+efficiencyRatio 5
+efficiencyRatio "e"
+efficiencyRatio "e" 7
+parabolicSar
+parabolicSar 0.05 0.5
+parabolicSar 1.0 2.0
+parabolicSar 0.0001 0.2
+parabolicSar "p"
+parabolicSar "p" 0.03 0.3
+vortex
+vortex 7
+vortex "v"
+vortex "v" 10
+choppinessIndex
+choppinessIndex 7
+choppinessIndex "c"
+choppinessIndex "c" 10
+keltnerChannel
+keltnerChannel 10 5 2.0
+keltnerChannel 10 5 2.5
+keltnerChannel 10 5 0.0
+keltnerChannel "k"
+keltnerChannel "k" 15 7 1.0
+massIndex
+massIndex 10 4
+massIndex "m"
+massIndex "m" 12 5
+natr 14
+natr 3
+natr "n" 7
+relativeVolatilityIndex
+relativeVolatilityIndex 5 7
+relativeVolatilityIndex "r"
+relativeVolatilityIndex "r" 8 10
+acceleratorOscillator
+acceleratorOscillator "a"
+awesomeOscillator
+awesomeOscillator 8 21
+awesomeOscillator "ao"
+awesomeOscillator "ao" 3 13
+awesomeOscillator 8 3
+balanceOfPower
+balanceOfPower "b"
+bullBearPower
+bullBearPower 20
+bullBearPower "bb"
+bullBearPower "bb" 8
+relativeVigorIndex
+relativeVigorIndex 5
+relativeVigorIndex "rv"
+relativeVigorIndex "rv" 7
+stochasticOscillator
+stochasticOscillator 5 3 2
+stochasticOscillator "s"
+stochasticOscillator "s" 9 4 4
+ultimateOscillator
+ultimateOscillator "u"
+williamsR
+williamsR 7
+williamsR "w"
+williamsR "w" 21
+adl
+adl "a"
+chaikinOscillator
+chaikinOscillator 5 20
+chaikinOscillator "c"
+chaikinOscillator "c" 2 8
+chaikinOscillator 10 3
+easeOfMovement
+easeOfMovement 7
+easeOfMovement "e"
+easeOfMovement "e" 20
+elderForceIndex
+elderForceIndex 21
+elderForceIndex "f"
+elderForceIndex "f" 8
+klingerOscillator
+klingerOscillator "k"
+negativeVolumeIndex
+negativeVolumeIndex "n"
+pvt
+pvt "p"
+exactStdDev 20
+exactStdDev 5
+exactStdDev "sd" 14
+exactStdDev "sd" 14 true
+exactStdDev "sd" 14 false
+exactVariance 20
+exactVariance 5
+exactVariance "var" 14
+exactVariance "var" 14 true
+exactVariance "var" 14 false
 # a number in an id is written as the Java engine writes it: 1.0E-4 and not 0.0001
 superTrend 10 0.0001
 superTrend 10 2.5E-5
@@ -224,3 +338,58 @@ knowSureThing "k" [] [] [] 9
 knowSureThing "k" [0,15] [10,10] [1,2] 9
 knowSureThing "k" [10,15] [0,10] [1,2] 9
 knowSureThing "k" [10,15] [10,10] [1,2] 0
+aroon 0
+aroon "a" 0
+chandeKrollStop 0 1.0 9 9
+chandeKrollStop 10 -1.0 9 9
+chandeKrollStop 10 1.0 0 9
+chandeKrollStop 10 1.0 9 0
+chandeKrollStop "s" 10 1.0 9 0
+chandelierExit 0 3.0
+chandelierExit 22 -1.0
+donchianChannel 0
+efficiencyRatio 0
+parabolicSar 0.0 0.2
+parabolicSar 0.02 0.0
+parabolicSar -0.02 0.2
+vortex 0
+choppinessIndex 0
+keltnerChannel 0 10 1.5
+keltnerChannel 20 0 1.5
+keltnerChannel 20 10 -1.0
+massIndex 0 9
+massIndex 25 0
+natr 0
+natr "n" 0
+relativeVolatilityIndex 1 14
+relativeVolatilityIndex 10 0
+awesomeOscillator 0 34
+awesomeOscillator 5 0
+awesomeOscillator "a" 0 34
+bullBearPower 0
+bullBearPower "b" 0
+relativeVigorIndex 0
+stochasticOscillator 0 3 3
+stochasticOscillator 14 0 3
+stochasticOscillator 14 3 0
+stochasticOscillator "s" 14 3 0
+williamsR 0
+williamsR "w" 0
+chaikinOscillator 0 10
+chaikinOscillator 3 0
+chaikinOscillator "c" 3 0
+easeOfMovement 0
+elderForceIndex 0
+elderForceIndex -3
+exactStdDev 0
+exactStdDev -1
+exactStdDev "sd" 0
+exactStdDev "sd" -1
+exactStdDev "sd" 0 true
+exactStdDev "sd" -1 false
+exactVariance 0
+exactVariance -1
+exactVariance "var" 0
+exactVariance "var" -1
+exactVariance "var" 0 true
+exactVariance "var" -1 false

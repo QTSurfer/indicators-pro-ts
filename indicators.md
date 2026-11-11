@@ -8,9 +8,10 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 
 - **Class** — the class exported by `@qtsurfer/indicators-pro`.
 - **Call** — the call of `Pro.on(group)` that registers it with the default id. The statistics, the volatility
-  estimators, ALMA and DEMA have no default period: the call shows 20. `—` when the class is ported and the Java engine
-  has no `Pro` factory for it yet: it is added with `group.add(name, new Class(…))`, and the Id, Outputs and Bars columns
-  are empty.
+  estimators, ALMA, DEMA and NATR have no default period: the call shows 20. `—` when the class has no `Pro` call (every
+  class has one today): a class ported before the Java engine's `Pro` has a factory for it is added with
+  `group.add(name, new Class(…))`. The Id and Outputs columns are then empty (the Bars column still says whether the
+  class reads whole bars).
 - **Id** — the name it registers under; the id of every output is this name plus the suffix.
 - **Outputs** — the suffixes of the other values an indicator with several outputs registers beside it. The indicator
   itself is its main output.
@@ -22,35 +23,64 @@ does not exist, or the id, the outputs or the bar flag differ from what the faca
 
 | Group | Indicators |
 |---|---:|
-| Trend | 3 |
-| Volume | 4 |
-| Statistics | 9 |
+| Trend | 10 |
+| Volume | 11 |
+| Statistics | 11 |
 | Risk and performance ratios | 7 |
 | Volatility estimators | 6 |
+| Volatility | 5 |
 | Averages | 6 |
-| Momentum | 12 |
+| Momentum | 20 |
 
 ## Trend
+
+Efficiency ratio reads the group's price; the others read whole bars. Each call also takes the parameters of the class,
+with or without a name (`aroon(10)`, `aroon("a", 10)`), and builds the id from them; a whole multiplier, step or
+maximum has no decimal part in the id (`chand22_3`, `psar1_2`).
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
 | ADX | `AdxRTIndicator` | `adx()` | `adx14` | `PlusDI`, `MinusDI` | yes | the main output is the ADX |
+| Aroon | `AroonRTIndicator` | `aroon()` | `aroon25` | `Up`, `Down` | yes | how many bars ago the highest high and the lowest low of the window were; the main output is the oscillator (Aroon Up less Aroon Down, from -100 to 100), `Up` and `Down` are the two lines, from 0 to 100; 25 periods by default |
+| Chande Kroll stop | `ChandeKrollStopRTIndicator` | `chandeKrollStop()` | `cks10_1_9_9` | `StopShort` | yes | stop built on the ATR and the extremes of the close; the main output is the stop of a long position, `StopShort` the one of a short position; 10 ATR periods, a multiplier of 1, and 9 and 9 periods by default |
+| Chandelier exit | `ChandelierExitRTIndicator` | `chandelierExit()` | `chand22_3` | `ShortExit` | yes | trailing stop an ATR multiple from the highest high; the main output is the long exit, `ShortExit` the short exit; 22 periods and a multiplier of 3 by default |
+| Donchian channel | `DonchianChannelRTIndicator` | `donchianChannel()` | `donch20` | `Upper`, `Lower` | yes | highest high and lowest low of the window; the main output is the middle line, `Upper` and `Lower` the two boundaries; 20 periods by default |
+| Efficiency ratio | `EfficiencyRatioRTIndicator` | `efficiencyRatio()` | `er10` | | | how much of the movement of the group's price over the window was in one direction, from 0 to 1; the class also gives the direction and the volatility, which are not outputs; 10 periods by default |
 | Ichimoku | `IchimokuRTIndicator` | `ichimoku()` | `ichi9_26_52` | `Kijun`, `SenkouA`, `SenkouB`, `Chikou` | yes | the main output is the Tenkan-sen |
+| Parabolic SAR | `ParabolicSarRTIndicator` | `parabolicSar()` | `psar0.02_0.2` | | yes | Wilder's stop and reverse; the value is the SAR, the class also gives the direction of the trend, which is not an output; a step of 0.02 and a maximum of 0.2 by default |
 | SuperTrend | `SuperTrendRTIndicator` | `superTrend()` | `st10_3` | `Upper`, `Lower` | yes | a whole multiplier has no decimal part in the id |
+| Vortex | `VortexRTIndicator` | `vortex()` | `vortex14` | `ViPlus`, `ViMinus` | yes | the main output is VI+ less VI-; `ViPlus` and `ViMinus` are the two lines; 14 periods by default |
 
 ## Volume
 
+All read whole bars, so they belong on a kline group. Chaikin Oscillator, Ease of Movement and Elder Force Index also
+take the parameters of the class, with or without a name (`chaikinOscillator(2, 8)`, `chaikinOscillator("c", 2, 8)`), and
+build the id from them. OBV, VWAP, ADL, Klinger Oscillator, Negative Volume Index and PVT have no parameters: their calls
+take only an optional name (`pvt("p")`).
+
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
+| ADL | `AdlRTIndicator` | `adl()` | `adl` | | yes | Accumulation/Distribution Line: a running total of the volume weighted by where the close sits in the range of the bar, from -1 (the low) to 1 (the high) |
+| Chaikin Oscillator | `ChaikinOscillatorRTIndicator` | `chaikinOscillator()` | `chaikin3_10` | | yes | a fast EMA of the ADL less a slow one; 3 and 10 periods by default; the fast period is not required to be below the slow one, and the class is ready when both EMAs are |
 | CMF | `CmfRTIndicator` | `cmf()` | `cmf20` | | yes | Chaikin Money Flow |
+| Ease of Movement | `EaseOfMovementRTIndicator` | `easeOfMovement()` | `eom14` | | yes | moving average of the distance moved by the midpoint of the bar over the volume per unit of range; 14 periods by default |
+| Elder Force Index | `ElderForceIndexRTIndicator` | `elderForceIndex()` | `efi13` | | yes | EMA of the change of the close times the volume; 13 periods by default |
+| Klinger Oscillator | `KlingerOscillatorRTIndicator` | `klingerOscillator()` | `klinger` | `Signal` | yes | volume weighted by the trend of the price, as the gap between EMAs of 34 and 55 periods; the main output is the KVO, `Signal` its 13-period signal line |
 | MFI | `MfiRTIndicator` | `mfi()` | `mfi14` | | yes | Money Flow Index |
+| Negative Volume Index | `NegativeVolumeIndexRTIndicator` | `negativeVolumeIndex()` | `nvi` | | yes | follows the price only on the bars where the volume fell from the bar before; starts at 1000, and reads 0 until its first bar |
 | OBV | `ObvRTIndicator` | `obv()` | `obv` | | yes | On-Balance Volume |
+| PVT | `PvtRTIndicator` | `pvt()` | `pvt` | | yes | Price Volume Trend: a running total of the volume weighted by the percentage change of the close |
 | VWAP | `VwapRTIndicator` | `vwap()` | `vwap` | | yes | volume-weighted average price |
 
 ## Statistics
 
-Every statistics indicator here has a `Pro` call. Variance is the building block of Z-Score: it is a class of the
-source tree, but not exported, without a call, and not counted in the Summary.
+Every statistics indicator here has a `Pro` call and reads the group's price, so it works on a ticker feed too. Standard
+deviation and Variance are the pro classes, worked out from the window on every tick and registered as `xstd` and
+`xvar` plus the periods. They differ from the `stdDev` and `variance` of `@qtsurfer/indicators` (and from the classes of
+the same name there) in their default: the free ones give the sample form (Bessel's correction) and these give the
+population form. Each takes the form as a third argument, `exactVariance("v", 20, true)`; with `true` it gives the same
+values as the free one once the window is full, except on a window of identical prices, where these give exactly 0 and
+the free ones can leave a tiny rounding residue. The Z-Score builds on the pro variance.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
@@ -61,8 +91,9 @@ source tree, but not exported, without a call, and not counted in the Summary.
 | Rolling percentile | `RollingPercentileRTIndicator` | `rollingPercentile(20, 0.95)` | `pctl20_0.95` | `Median`, `Min`, `Max` |  | percentile of the window, interpolated between ranks; also the median, the minimum and the maximum |
 | Simple linear regression | `SimpleLinearRegressionRTIndicator` | `simpleLinearRegression(20)` | `slr20` | `Intercept`, `RSquared`, `StandardError` |  | slope of the least-squares line; also the intercept, R squared, the standard error and a forecast |
 | Skewness | `SkewnessRTIndicator` | `skewness(20)` | `skew20` |  |  | sample skewness of the group's price |
+| Standard deviation | `StandardDeviationRTIndicator` | `exactStdDev(20)` | `xstd20` |  |  | square root of the variance of the window; the population deviation by default, the sample deviation with `true`; the class also gives the mean and the variance, which are not outputs |
 | Value at Risk | `ValueAtRiskRTIndicator` | `valueAtRisk(20)` | `valRisk20` |  |  | parametric (Gaussian) Value at Risk of the log returns; 95% confidence by default |
-| Variance | `VarianceRTIndicator` | — | | | | rolling variance of the window; an internal building block that is not exported |
+| Variance | `VarianceRTIndicator` | `exactVariance(20)` | `xvar20` |  |  | variance of the window; the population variance by default, the sample variance with `true`; the class also gives the mean, which is not an output |
 | Z-Score | `ZScoreRTIndicator` | `zScore(20)` | `zscore20` |  |  | distance of the group's price from the mean of the window, in standard deviations |
 
 ## Risk and performance ratios
@@ -94,6 +125,20 @@ on every class.
 | EWMA volatility | `EwmaVolatilityRTIndicator` | `ewmaVolatility()` | `ewma0.94` |  |  | exponentially weighted volatility of the log returns of the group's price; lambda 0.94 by default |
 | Realized volatility | `RealizedVolatilityRTIndicator` | `realizedVolatility(20)` | `rvol20` |  |  | standard deviation of the log returns of the group's price over a window |
 
+## Volatility
+
+The relative volatility index reads the group's price; the others read whole bars. Each call also takes the parameters
+of the class, with or without a name (`keltnerChannel(10, 5, 2)`, `keltnerChannel("k", 10, 5, 2)`), and builds the id
+from them. NATR has no default period, so it takes one: `natr(14)` or `natr("n", 14)`.
+
+| Indicator | Class | Call | Id | Outputs | Bars | Notes |
+|---|---|---|---|---|---|---|
+| Choppiness index | `ChoppinessIndexRTIndicator` | `choppinessIndex()` | `chop14` | | yes | whether the market trends or ranges, from 0 to 100: 100 times the base 10 logarithm of the sum of the true ranges over the range of the window, over the logarithm of the periods; 14 periods by default |
+| Keltner channel | `KeltnerChannelRTIndicator` | `keltnerChannel()` | `kc20_10_1.5` | `Upper`, `Lower` | yes | an EMA of the close, the main output, with a band above and below at an ATR multiple, the `Upper` and `Lower` outputs; 20 EMA periods, 10 ATR periods and a multiplier of 1.5 by default; a whole multiplier has no decimal part in the id |
+| Mass index | `MassIndexRTIndicator` | `massIndex()` | `mass25_9` | | yes | sum of the ratio of an EMA of the high-low range to the EMA of that EMA; 25 and 9 periods by default |
+| NATR | `NatrRTIndicator` | `natr(20)` | `natr20` | | yes | the ATR as a percentage of the close, to compare instruments |
+| Relative volatility index | `RelativeVolatilityIndexRTIndicator` | `relativeVolatilityIndex()` | `rvi10_14` | | | the RSI applied to the standard deviation of the group's price, from 0 to 100; 10 and 14 periods by default |
+
 ## Averages
 
 Each reads the group's price, so it works on a ticker feed too. Each call also takes the parameters of the class, with
@@ -111,13 +156,21 @@ no default period, so they take one.
 
 ## Momentum
 
-Each reads the group's price, so it works on a ticker feed too. Each call also takes the parameters of the class, with
-or without a name (`roc(5)`, `roc("r", 5)`), and builds the id from them. Know sure thing takes its arrays only with a
-name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
+Twelve of them read the group's price, so they work on a ticker feed too. Each call also takes the parameters of the
+class, with or without a name (`roc(5)`, `roc("r", 5)`), and builds the id from them. Know sure thing takes its arrays
+only with a name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`. The eight that read whole bars (Accelerator
+Oscillator, Awesome Oscillator, Balance of Power, Bull Bear Power, Relative Vigor Index, Stochastic Oscillator, Ultimate
+Oscillator and Williams %R) belong on a kline group, and take their parameters the same way
+(`stochasticOscillator(5, 3, 2)`); Accelerator Oscillator, Balance of Power and Ultimate Oscillator have none, so their
+calls take only an optional name (`balanceOfPower("b")`).
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
+| Accelerator Oscillator | `AcceleratorOscillatorRTIndicator` | `acceleratorOscillator()` | `acc` | | yes | how fast the Awesome Oscillator is changing: the AO less its 5-period average; the value is that difference, the class also gives the AO, which is not an output |
 | Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | `adaptiveFisherTransform()` | `afisher10_5_20` |  | | Fisher transform whose window follows the efficiency ratio; the class also gives the ratio and the window, which are not outputs; 10, 5 and 20 periods by default |
+| Awesome Oscillator | `AwesomeOscillatorRTIndicator` | `awesomeOscillator()` | `ao5_34` | | yes | a fast average of the midpoint of the bar less a slow one; 5 and 34 periods by default; the fast period is not required to be below the slow one, and the class is ready when both averages are |
+| Balance of Power | `BalanceOfPowerRTIndicator` | `balanceOfPower()` | `bop` | | yes | the move from the open to the close as a share of the range of the bar, from -1 to 1; 0 when the bar has no range |
+| Bull Bear Power | `BullBearPowerRTIndicator` | `bullBearPower()` | `bbp13` | `Bull`, `Bear` | yes | Elder's Bull Power and Bear Power, the high and the low less an EMA of the close; the main output is their sum, `Bull` and `Bear` are the two parts; 13 periods by default |
 | Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | `chandeForecastOscillator()` | `cfo14` |  | | percentage deviation of the price from its least squares average, which is not an output; 14 periods by default |
 | Chande momentum oscillator | `CmoRTIndicator` | `cmo()` | `cmo14` |  | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
 | Connors RSI | `ConnorsRsiRTIndicator` | `connorsRsi()` | `crsi3_2_100` |  | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
@@ -127,5 +180,19 @@ name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`.
 | Know sure thing | `KnowSureThingRTIndicator` | `knowSureThing()` | `kst` | `Signal` | | weighted sum of four smoothed rates of change; the signal, an average of the KST, is the `Signal` output; Pring's periods and weights by default |
 | Momentum | `MomentumRTIndicator` | `momentum()` | `mom10` |  | | the price less the price n ticks ago; 10 periods by default |
 | Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
+| Relative Vigor Index | `RelativeVigorIndexRTIndicator` | `relativeVigorIndex()` | `rvgi10` | | yes | how firmly the close follows the open compared with the range of the bar, over the last four bars and then smoothed; 10 periods by default |
+| Stochastic Oscillator | `StochasticOscillatorRTIndicator` | `stochasticOscillator()` | `stoch14_3_3` | `D` | yes | where the close is between the lowest low and the highest high of the window; the main output is %K, `D` is %D; 14, 3 and 3 periods by default (window, %K smoothing, %D smoothing) |
 | TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
 | True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
+| Ultimate Oscillator | `UltimateOscillatorRTIndicator` | `ultimateOscillator()` | `uo` | | yes | buying pressure over the true range, over windows of 7, 14 and 28 bars, from 0 to 100 |
+| Williams %R | `WilliamsRRTIndicator` | `williamsR()` | `willr14` | | yes | how far the close is below the highest high of the window, from 0 to -100; 14 periods by default |
+
+## Not in this package
+
+Six classes of the Java engine's pro module have no TypeScript class and no `Pro` call, on purpose. Adding any of them later
+is a minor change, not a breaking one.
+
+| Java class | Why |
+|---|---|
+| `Smma` | An alias of `Mma` (Wilder's smoothing), which `@qtsurfer/indicators` already has: SMMA is its `mma`. |
+| `Beta`, `Correlation`, `Covariance`, `InformationRatio`, `TreynorRatio` | Each needs two series, an asset and a benchmark, and a group has no way yet to feed a second series to an indicator. They wait for a design of pairs between instruments. |

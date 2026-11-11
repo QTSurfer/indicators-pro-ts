@@ -23,6 +23,7 @@ import { ObvRTIndicator } from "$volume/ObvRTIndicator";
 import { VwapRTIndicator } from "$volume/VwapRTIndicator";
 import { expectSeries, LOG_TOLERANCE } from "./compare";
 import { inputsOf, klines, reference, seriesOf, type Expected } from "./fixtures";
+import { barSubjects, expectBarSubject } from "./barSubjects";
 import { expectSubject, subjects } from "./subjects";
 
 // Each ported indicator against the Java engine's values on the same data: the arithmetic of + - * /
@@ -186,6 +187,13 @@ describe.each(["clean", "corrupt"] as const)("the %s scenario", (scenario) => {
     "%s, with everything it exposes, equals Java's",
     (_, subject) => {
       expectSubject(subject, inputs.price, seriesOf(expected, subject.key), subject.key);
+    },
+  );
+
+  it.each(barSubjects.filter((subject) => subject.scenarios).map((subject) => [subject.label, subject] as const))(
+    "%s, with everything it exposes, equals Java's",
+    (_, subject) => {
+      expectBarSubject(subject, bars, seriesOf(expected, subject.key), subject.key);
     },
   );
 

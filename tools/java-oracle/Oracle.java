@@ -7,8 +7,14 @@ import com.wualabs.qtsurfer.engine.indicators.averages.pro.EnvelopesRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.averages.pro.FramaRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.averages.pro.LeastSquaresMovingAverageRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.averages.pro.McGinleyDynamicRTIndicator;
+import com.wualabs.qtsurfer.engine.core.MarketSnapshot;
+import com.wualabs.qtsurfer.engine.indicators.core.RichRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.helpers.group.InstrumentGroupRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AcceleratorOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AdaptiveFisherTransformRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.AwesomeOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.BalanceOfPowerRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.BullBearPowerRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ChandeForecastOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.CmoRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.ConnorsRsiRTIndicator;
@@ -17,9 +23,13 @@ import com.wualabs.qtsurfer.engine.indicators.momentum.pro.DetrendedPriceOscilla
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.FisherTransformRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.KnowSureThingRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.MomentumRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RelativeVigorIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.RocRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.StochasticOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrueStrengthIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.UltimateOscillatorRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.momentum.pro.WilliamsRRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.pro.Pro;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.AutocorrelationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.HurstExponentRTIndicator;
@@ -28,6 +38,7 @@ import com.wualabs.qtsurfer.engine.indicators.statistics.pro.LinearRegressionSlo
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.RollingPercentileRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.SimpleLinearRegressionRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.SkewnessRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.statistics.pro.StandardDeviationRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.ValueAtRiskRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.VarianceRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.ZScoreRTIndicator;
@@ -46,12 +57,31 @@ import com.wualabs.qtsurfer.engine.indicators.statistics.pro.volatility.Realized
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.volatility.RogersSatchellVolatilityRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.statistics.pro.volatility.YangZhangVolatilityRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.trend.pro.AdxRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.AroonRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.ChandeKrollStopRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.ChandelierExitRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.DonchianChannelRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.EfficiencyRatioRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.trend.pro.IchimokuRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.ParabolicSarRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.trend.pro.SuperTrendRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.trend.pro.VortexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volatility.AtrRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volatility.pro.ChoppinessIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volatility.pro.KeltnerChannelRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volatility.pro.MassIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volatility.pro.NatrRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volatility.pro.RelativeVolatilityIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.AdlRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.ChaikinOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.CmfRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.EaseOfMovementRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.ElderForceIndexRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.KlingerOscillatorRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.MfiRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.NegativeVolumeIndexRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.ObvRTIndicator;
+import com.wualabs.qtsurfer.engine.indicators.volume.pro.PvtRTIndicator;
 import com.wualabs.qtsurfer.engine.indicators.volume.pro.VwapRTIndicator;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -67,7 +97,10 @@ import java.util.Random;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.function.DoubleSupplier;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.Supplier;
 
@@ -82,6 +115,13 @@ import java.util.function.Supplier;
  * <p>Besides the two scenarios it writes {@code edges}: short synthetic price series (a flat one, ramps,
  * a zig-zag, one shorter than the window, a collapse of the price, zero and negative prices) with the
  * series every price-fed indicator gives on each. The scenarios never reach those branches.
+ *
+ * <p>{@code barEdges} does the same for the indicators that read whole bars: synthetic series of
+ * open, high, low, close and volume (rising, falling, flat, zero-range and inverted bars, gaps, zero
+ * volume, a collapse, a series shorter than any window, a bar of zeros, a negative price, prices near
+ * the largest double, and a bar with one field at a time set to NaN, +Infinity and -Infinity, in the
+ * middle of a series and as the first bar), written as inputs, with the series every bar-fed
+ * indicator gives on each.
  */
 public class Oracle {
   static final int N = 600;
@@ -104,7 +144,12 @@ public class Oracle {
 
   static double[] prices, open, high, low, close, volume;
 
+  /** Usage: {@code Oracle.java <output.json> <facade-calls.txt>}: writes one JSON document to the first path. */
   public static void main(String[] args) throws Exception {
+    if (args.length != 2) {
+      System.err.println("usage: Oracle.java <output.json> <facade-calls.txt>");
+      System.exit(2);
+    }
     dataset();
     StringBuilder out = new StringBuilder();
     out.append("{\n  \"bars\": ").append(N).append(",\n");
@@ -126,7 +171,8 @@ public class Oracle {
     out.append("    \"clean\": ").append(scenario(false)).append(",\n");
     out.append("    \"corrupt\": ").append(scenario(true)).append("\n  },\n");
     out.append("  \"edges\": ").append(edges()).append(",\n");
-    out.append("  \"facade\": ").append(facade(Path.of(args[0]).resolveSibling("facade-calls.txt"))).append("\n}\n");
+    out.append("  \"barEdges\": ").append(barEdges()).append(",\n");
+    out.append("  \"facade\": ").append(facade(Path.of(args[1]))).append("\n}\n");
     Files.writeString(Path.of(args[0]), out.toString());
   }
 
@@ -327,7 +373,8 @@ public class Oracle {
         .append(array(varMean)).append("},\n");
     s.append("      \"sampleVariance20\": {\"value\": ").append(array(sampleVarV))
         .append(", \"mean\": ").append(array(sampleVarMean)).append("},\n");
-    s.append(subjectLines(p, false, "      ")).append("\n    }");
+    s.append(subjectLines(p, false, "      ")).append(",\n");
+    s.append(barSubjectLines(new Bars(o, h, l, c, v), false, "      ")).append("\n    }");
     return s.toString();
   }
 
@@ -384,6 +431,11 @@ public class Oracle {
   /** Whether the indicator reports itself ready, as 1 or 0. */
   static Read ready(RTIndicator indicator) {
     return read("ready", () -> indicator.isReady() ? 1.0 : 0.0);
+  }
+
+  /** A boolean read after each tick, as 1 or 0. */
+  static Read flag(String name, BooleanSupplier supplier) {
+    return read(name, () -> supplier.getAsBoolean() ? 1.0 : 0.0);
   }
 
   /** What an indicator gives on a price series: {@code value} (each update) and each extra reading. */
@@ -454,6 +506,16 @@ public class Oracle {
     list.add(new Subject("sampleVariance20", true, () -> {
       var i = new VarianceRTIndicator(20).withSampleVariance(true);
       return run(p, i::update, read("mean", i::getMean));
+    }));
+    list.add(new Subject("standardDeviation20", false, () -> {
+      var i = new StandardDeviationRTIndicator(20);
+      return run(p, i::update, read("mean", i::getMean),
+          read("variance", () -> i.getVariance().getValue()), ready(i));
+    }));
+    list.add(new Subject("sampleStandardDeviation20", false, () -> {
+      var i = new StandardDeviationRTIndicator(20).withSampleVariance(true);
+      return run(p, i::update, read("mean", i::getMean),
+          read("variance", () -> i.getVariance().getValue()), ready(i));
     }));
 
     list.add(new Subject("calmarRatio20", false, () -> {
@@ -689,6 +751,77 @@ public class Oracle {
       var i = new TrueStrengthIndexRTIndicator(5, 3);
       return run(p, i::update, ready(i));
     }));
+
+    list.add(new Subject("efficiencyRatioDefault", false, () -> {
+      var i = new EfficiencyRatioRTIndicator();
+      return run(p, i::update, read("direction", i::getDirection), read("volatility", i::getVolatility),
+          ready(i));
+    }));
+    list.add(new Subject("efficiencyRatio3", false, () -> {
+      var i = new EfficiencyRatioRTIndicator(3);
+      return run(p, i::update, read("direction", i::getDirection), read("volatility", i::getVolatility),
+          ready(i));
+    }));
+    list.add(new Subject("efficiencyRatio1", false, () -> {
+      var i = new EfficiencyRatioRTIndicator(1);
+      return run(p, i::update, read("direction", i::getDirection), read("volatility", i::getVolatility),
+          ready(i));
+    }));
+    list.add(new Subject("relativeVolatilityIndexDefault", false, () -> {
+      var i = new RelativeVolatilityIndexRTIndicator();
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("relativeVolatilityIndex5_3", false, () -> {
+      var i = new RelativeVolatilityIndexRTIndicator(5, 3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("relativeVolatilityIndex2_1", false, () -> {
+      var i = new RelativeVolatilityIndexRTIndicator(2, 1);
+      return run(p, i::update, ready(i));
+    }));
+
+    // The indicators that read whole bars, fed a price through update(double): the bar has every field
+    // equal to the price (the Mass Index takes the price as the range itself)
+    list.add(new Subject("aroon5AsPrice", false, () -> {
+      var i = new AroonRTIndicator(5);
+      return run(p, i::update, read("up", i::getAroonUp), read("down", i::getAroonDown), ready(i));
+    }));
+    list.add(new Subject("chandeKrollStop5AsPrice", false, () -> {
+      var i = new ChandeKrollStopRTIndicator(4, 1.5, 3, 2);
+      return run(p, i::update, read("stopShort", i::getStopShort), ready(i));
+    }));
+    list.add(new Subject("chandelierExit5AsPrice", false, () -> {
+      var i = new ChandelierExitRTIndicator(5, 2.0);
+      return run(p, i::update, read("shortExit", i::getShortExit), ready(i));
+    }));
+    list.add(new Subject("donchianChannel5AsPrice", false, () -> {
+      var i = new DonchianChannelRTIndicator(5);
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("parabolicSarDefaultAsPrice", false, () -> {
+      var i = new ParabolicSarRTIndicator();
+      return run(p, i::update, flag("upTrend", i::isUpTrend), ready(i));
+    }));
+    list.add(new Subject("vortex5AsPrice", false, () -> {
+      var i = new VortexRTIndicator(5);
+      return run(p, i::update, read("viPlus", i::getVIPlus), read("viMinus", i::getVIMinus), ready(i));
+    }));
+    list.add(new Subject("choppinessIndex5AsPrice", false, () -> {
+      var i = new ChoppinessIndexRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("keltnerChannel5_3_2AsPrice", false, () -> {
+      var i = new KeltnerChannelRTIndicator(5, 3, 2.0);
+      return run(p, i::update, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new Subject("massIndex5_3AsPrice", false, () -> {
+      var i = new MassIndexRTIndicator(5, 3);
+      return run(p, i::update, ready(i));
+    }));
+    list.add(new Subject("natr5AsPrice", false, () -> {
+      var i = new NatrRTIndicator(5);
+      return run(p, i::update, ready(i));
+    }));
     return list;
   }
 
@@ -773,6 +906,575 @@ public class Oracle {
                     + subjectLines(p, true, "        ") + "\n      }\n    }"));
     return edges.toString();
   }
+  // ---- the bar-fed indicators: the same classes and parameters on the scenarios and on the bar edges ----
+
+  /** A series of bars: the five fields, one value per bar. */
+  record Bars(double[] open, double[] high, double[] low, double[] close, double[] volume) {
+    int length() {
+      return close.length;
+    }
+
+    KlineSnapshot at(int i) {
+      return new KlineSnapshot(
+          INSTRUMENT, KlineInterval.m1, i * 60_000L, open[i], high[i], low[i], close[i], volume[i],
+          volume[i] * close[i], i * 60_000L + 59_999L, 5L, true);
+    }
+  }
+
+  /**
+   * A bar-fed indicator with its parameters. {@code scenarios} says whether the two scenarios run it
+   * (the ones ported earlier have their own series there, and a few variants only matter
+   * on the edge cases); the bar edges run all of them.
+   */
+  record BarSubject(String key, boolean scenarios, Function<Bars, Map<String, double[]>> run) {}
+
+  /** What a bar-fed indicator gives on a series of bars: {@code value} (after each bar) and each extra reading. */
+  static Map<String, double[]> runBars(
+      Bars bars, RichRTIndicator<MarketSnapshot> indicator, Read... reads) {
+    int n = bars.length();
+    Map<String, double[]> series = new LinkedHashMap<>();
+    double[] value = new double[n];
+    double[][] extra = new double[reads.length][n];
+    for (int i = 0; i < n; i++) {
+      indicator.updateFrom(bars.at(i));
+      value[i] = indicator.getValue();
+      for (int r = 0; r < reads.length; r++) {
+        extra[r][i] = reads[r].supplier().getAsDouble();
+      }
+    }
+    series.put("value", value);
+    for (int r = 0; r < reads.length; r++) {
+      series.put(reads[r].name(), extra[r]);
+    }
+    return series;
+  }
+
+  static List<BarSubject> barSubjects() {
+    List<BarSubject> list = new ArrayList<>();
+    // ported earlier (and ATR, which several of the new ones build on): only the bar edges run them
+    list.add(new BarSubject("adx14", false, b -> {
+      var i = new AdxRTIndicator(14);
+      return runBars(b, i, read("plusDI", i::getPlusDI), read("minusDI", i::getMinusDI), ready(i));
+    }));
+    list.add(new BarSubject("ichimoku9_26_52", false, b -> {
+      var i = new IchimokuRTIndicator(9, 26, 52);
+      return runBars(b, i, read("kijun", i::getKijunSen), read("senkouA", i::getSenkouSpanA),
+          read("senkouB", i::getSenkouSpanB), read("chikou", i::getChikouSpan),
+          flag("tenkanKijunReady", i::isTenkanKijunReady), ready(i));
+    }));
+    list.add(new BarSubject("superTrend10_3", false, b -> {
+      var i = new SuperTrendRTIndicator(10, 3.0);
+      return runBars(b, i, read("upper", i::getUpperBand), read("lower", i::getLowerBand),
+          flag("upTrend", i::isUpTrend), ready(i));
+    }));
+    list.add(new BarSubject("atr14", false, b -> {
+      var i = new AtrRTIndicator(14);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("cmf20", false, b -> {
+      var i = new CmfRTIndicator(20);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("mfi14", false, b -> {
+      var i = new MfiRTIndicator(14);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("obv", false, b -> {
+      var i = new ObvRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("vwap", false, b -> {
+      var i = new VwapRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("parkinson20", false, b -> {
+      var i = new ParkinsonVolatilityRTIndicator(20);
+      return runBars(b, i, read("variance", i::getParkinsonVariance), ready(i));
+    }));
+    list.add(new BarSubject("garmanKlass20", false, b -> {
+      var i = new GarmanKlassVolatilityRTIndicator(20);
+      return runBars(b, i, read("variance", i::getGarmanKlassVariance), ready(i));
+    }));
+    list.add(new BarSubject("rogersSatchell20", false, b -> {
+      var i = new RogersSatchellVolatilityRTIndicator(20);
+      return runBars(b, i, read("variance", i::getRogersSatchellVariance), ready(i));
+    }));
+    list.add(new BarSubject("yangZhang20", false, b -> {
+      var i = new YangZhangVolatilityRTIndicator(20);
+      return runBars(b, i, read("variance", i::getYangZhangVariance), ready(i));
+    }));
+
+    list.add(new BarSubject("aroonDefault", true, b -> {
+      var i = new AroonRTIndicator();
+      return runBars(b, i, read("up", i::getAroonUp), read("down", i::getAroonDown), ready(i));
+    }));
+    list.add(new BarSubject("aroon5", true, b -> {
+      var i = new AroonRTIndicator(5);
+      return runBars(b, i, read("up", i::getAroonUp), read("down", i::getAroonDown), ready(i));
+    }));
+    list.add(new BarSubject("chandeKrollStopDefault", true, b -> {
+      var i = new ChandeKrollStopRTIndicator();
+      return runBars(b, i, read("stopLong", i::getStopLong), read("stopShort", i::getStopShort), ready(i));
+    }));
+    list.add(new BarSubject("chandeKrollStop5_2_5_4_3", true, b -> {
+      var i = new ChandeKrollStopRTIndicator(5, 2.5, 4, 3);
+      return runBars(b, i, read("stopLong", i::getStopLong), read("stopShort", i::getStopShort), ready(i));
+    }));
+    list.add(new BarSubject("chandeKrollStopMultiplier0", false, b -> {
+      var i = new ChandeKrollStopRTIndicator(3, 0.0, 4, 2);
+      return runBars(b, i, read("stopLong", i::getStopLong), read("stopShort", i::getStopShort), ready(i));
+    }));
+    list.add(new BarSubject("chandeKrollStopHugeMultiplier", false, b -> {
+      var i = new ChandeKrollStopRTIndicator(3, 1e308, 4, 2);
+      return runBars(b, i, read("stopLong", i::getStopLong), read("stopShort", i::getStopShort), ready(i));
+    }));
+    list.add(new BarSubject("chandelierExitDefault", true, b -> {
+      var i = new ChandelierExitRTIndicator();
+      return runBars(b, i, read("longExit", i::getLongExit), read("shortExit", i::getShortExit), ready(i));
+    }));
+    list.add(new BarSubject("chandelierExit5_1_5", true, b -> {
+      var i = new ChandelierExitRTIndicator(5, 1.5);
+      return runBars(b, i, read("longExit", i::getLongExit), read("shortExit", i::getShortExit), ready(i));
+    }));
+    list.add(new BarSubject("chandelierExitMultiplier0", false, b -> {
+      var i = new ChandelierExitRTIndicator(4, 0.0);
+      return runBars(b, i, read("longExit", i::getLongExit), read("shortExit", i::getShortExit), ready(i));
+    }));
+    list.add(new BarSubject("chandelierExitHugeMultiplier", false, b -> {
+      var i = new ChandelierExitRTIndicator(3, 1e308);
+      return runBars(b, i, read("longExit", i::getLongExit), read("shortExit", i::getShortExit), ready(i));
+    }));
+    list.add(new BarSubject("donchianChannelDefault", true, b -> {
+      var i = new DonchianChannelRTIndicator();
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower),
+          read("middle", i::getMiddle), ready(i));
+    }));
+    list.add(new BarSubject("donchianChannel5", true, b -> {
+      var i = new DonchianChannelRTIndicator(5);
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new BarSubject("parabolicSarDefault", true, b -> {
+      var i = new ParabolicSarRTIndicator();
+      return runBars(b, i, flag("upTrend", i::isUpTrend), ready(i));
+    }));
+    list.add(new BarSubject("parabolicSar005_05", true, b -> {
+      var i = new ParabolicSarRTIndicator(0.05, 0.5);
+      return runBars(b, i, flag("upTrend", i::isUpTrend), ready(i));
+    }));
+    list.add(new BarSubject("parabolicSarMaxBelowStep", false, b -> {
+      var i = new ParabolicSarRTIndicator(0.1, 0.05);
+      return runBars(b, i, flag("upTrend", i::isUpTrend), ready(i));
+    }));
+    list.add(new BarSubject("vortexDefault", true, b -> {
+      var i = new VortexRTIndicator();
+      return runBars(b, i, read("viPlus", i::getVIPlus), read("viMinus", i::getVIMinus), ready(i));
+    }));
+    list.add(new BarSubject("vortex3", true, b -> {
+      var i = new VortexRTIndicator(3);
+      return runBars(b, i, read("viPlus", i::getVIPlus), read("viMinus", i::getVIMinus), ready(i));
+    }));
+    list.add(new BarSubject("choppinessIndexDefault", true, b -> {
+      var i = new ChoppinessIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("choppinessIndex5", true, b -> {
+      var i = new ChoppinessIndexRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("choppinessIndex1", false, b -> {
+      var i = new ChoppinessIndexRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("keltnerChannelDefault", true, b -> {
+      var i = new KeltnerChannelRTIndicator();
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower),
+          read("middle", i::getMiddle), ready(i));
+    }));
+    list.add(new BarSubject("keltnerChannel5_3_2", true, b -> {
+      var i = new KeltnerChannelRTIndicator(5, 3, 2.0);
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new BarSubject("keltnerChannelMultiplier0", false, b -> {
+      var i = new KeltnerChannelRTIndicator(5, 3, 0.0);
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new BarSubject("keltnerChannelHugeMultiplier", false, b -> {
+      var i = new KeltnerChannelRTIndicator(3, 3, 1e308);
+      return runBars(b, i, read("upper", i::getUpper), read("lower", i::getLower), ready(i));
+    }));
+    list.add(new BarSubject("massIndexDefault", true, b -> {
+      var i = new MassIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("massIndex5_3", true, b -> {
+      var i = new MassIndexRTIndicator(5, 3);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("massIndex1_1", false, b -> {
+      var i = new MassIndexRTIndicator(1, 1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("natr14", true, b -> {
+      var i = new NatrRTIndicator(14);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("natr3", true, b -> {
+      var i = new NatrRTIndicator(3);
+      return runBars(b, i, ready(i));
+    }));
+
+    // the momentum and volume indicators that read whole bars
+    list.add(new BarSubject("acceleratorOscillator", true, b -> {
+      var i = new AcceleratorOscillatorRTIndicator();
+      return runBars(b, i, read("ao", i::getAO), ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillatorDefault", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator3_8", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(3, 8);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator8_3", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(8, 3);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator1_1", false, b -> {
+      var i = new AwesomeOscillatorRTIndicator(1, 1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("balanceOfPower", true, b -> {
+      var i = new BalanceOfPowerRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("bullBearPowerDefault", true, b -> {
+      var i = new BullBearPowerRTIndicator();
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("bullBearPower5", true, b -> {
+      var i = new BullBearPowerRTIndicator(5);
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("bullBearPower1", false, b -> {
+      var i = new BullBearPowerRTIndicator(1);
+      return runBars(b, i, read("bull", i::getBullPower), read("bear", i::getBearPower), ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndexDefault", true, b -> {
+      var i = new RelativeVigorIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndex5", true, b -> {
+      var i = new RelativeVigorIndexRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndex1", false, b -> {
+      var i = new RelativeVigorIndexRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillatorDefault", true, b -> {
+      var i = new StochasticOscillatorRTIndicator();
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator5_2_4", true, b -> {
+      var i = new StochasticOscillatorRTIndicator(5, 2, 4);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator3_5_2", false, b -> {
+      var i = new StochasticOscillatorRTIndicator(3, 5, 2);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillator1_1_1", false, b -> {
+      var i = new StochasticOscillatorRTIndicator(1, 1, 1);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
+    }));
+    list.add(new BarSubject("ultimateOscillator", true, b -> {
+      var i = new UltimateOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsRDefault", true, b -> {
+      var i = new WilliamsRRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsR5", true, b -> {
+      var i = new WilliamsRRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("williamsR1", false, b -> {
+      var i = new WilliamsRRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("adl", true, b -> {
+      var i = new AdlRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillatorDefault", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator2_5", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator(2, 5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator8_3", true, b -> {
+      var i = new ChaikinOscillatorRTIndicator(8, 3);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("chaikinOscillator1_1", false, b -> {
+      var i = new ChaikinOscillatorRTIndicator(1, 1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovementDefault", true, b -> {
+      var i = new EaseOfMovementRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovement5", true, b -> {
+      var i = new EaseOfMovementRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("easeOfMovement1", false, b -> {
+      var i = new EaseOfMovementRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndexDefault", true, b -> {
+      var i = new ElderForceIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndex5", true, b -> {
+      var i = new ElderForceIndexRTIndicator(5);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("elderForceIndex1", false, b -> {
+      var i = new ElderForceIndexRTIndicator(1);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("klingerOscillator", true, b -> {
+      var i = new KlingerOscillatorRTIndicator();
+      return runBars(b, i, read("signal", i::getSignal), ready(i));
+    }));
+    list.add(new BarSubject("negativeVolumeIndex", true, b -> {
+      var i = new NegativeVolumeIndexRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("pvt", true, b -> {
+      var i = new PvtRTIndicator();
+      return runBars(b, i, ready(i));
+    }));
+    return list;
+  }
+
+  /**
+   * The series of the bar-fed indicators on {@code bars}, one JSON line each, joined by commas. The
+   * scenarios write only the indicators marked {@code scenarios}; the bar edges write all of them, and
+   * one that throws is written as {@code {"throws": "<message>"}}.
+   */
+  static String barSubjectLines(Bars bars, boolean edge, String indent) {
+    StringJoiner lines = new StringJoiner(",\n");
+    for (BarSubject subject : barSubjects()) {
+      if (!subject.scenarios() && !edge) {
+        continue;
+      }
+      String body;
+      try {
+        StringJoiner outputs = new StringJoiner(", ", "{", "}");
+        subject.run().apply(bars).forEach(
+            (name, series) -> outputs.add("\"" + name + "\": " + exactArray(series)));
+        body = outputs.toString();
+      } catch (RuntimeException e) {
+        if (!edge) {
+          throw e;
+        }
+        String message = (e.getClass().getSimpleName() + ": " + e.getMessage()).replace("\\", "\\\\").replace("\"", "\\\"");
+        body = "{\"throws\": \"" + message + "\"}";
+      }
+      lines.add(indent + "\"" + subject.key() + "\": " + body);
+    }
+    return lines.toString();
+  }
+
+  // ---- the bar edges ----
+
+  static final String[] FIELDS = {"open", "high", "low", "close", "volume"};
+
+  /** A series of {@code n} bars; {@code bar} gives the open, high, low, close and volume of bar i. */
+  static Bars series(int n, IntFunction<double[]> bar) {
+    double[][] f = new double[5][n];
+    for (int i = 0; i < n; i++) {
+      double[] b = bar.apply(i);
+      for (int k = 0; k < 5; k++) {
+        f[k][i] = b[k];
+      }
+    }
+    return new Bars(f[0], f[1], f[2], f[3], f[4]);
+  }
+
+  /** A copy of the bars with the field {@code field} of bar {@code bar} set to {@code value}. */
+  static Bars with(Bars b, int bar, int field, double value) {
+    double[][] f = {b.open().clone(), b.high().clone(), b.low().clone(), b.close().clone(), b.volume().clone()};
+    f[field][bar] = value;
+    return new Bars(f[0], f[1], f[2], f[3], f[4]);
+  }
+
+  static double waveClose(int i) {
+    return 100.0 + 5.0 * Math.sin(0.4 * i) + 0.1 * i;
+  }
+
+  /** An ordinary bar: a wave with a drift, the high and low a little outside the open and the close. */
+  static double[] waveBar(int i) {
+    double o = i == 0 ? 100.0 : waveClose(i - 1);
+    double c = waveClose(i);
+    double h = Math.max(o, c) + 0.5 + 0.25 * Math.abs(Math.sin(1.3 * i));
+    double l = Math.min(o, c) - 0.5 - 0.25 * Math.abs(Math.cos(1.1 * i));
+    return new double[] {o, h, l, c, 1000.0 + 100.0 * Math.cos(0.7 * i)};
+  }
+
+  static double gapClose(int i) {
+    int level = (i / 12) % 3;
+    return 100.0 + (level == 1 ? 25.0 : level == 2 ? -20.0 : 0.0) + 2.0 * Math.sin(0.5 * i);
+  }
+
+  static double nearMaxClose(int i) {
+    return 1.7e308 * (1.0 - 0.0005 * (i % 9));
+  }
+
+  /** Synthetic series of bars that reach the branches the seeded dataset never does. */
+  static Map<String, Bars> barEdgeInputs() {
+    Map<String, Bars> edges = new LinkedHashMap<>();
+    // a steady rise and a steady fall, the high and the low a fixed distance around the close
+    edges.put("rising", series(70, i -> {
+      double c = 100.0 + 0.5 * i;
+      return new double[] {c - 0.25, c + 0.3, c - 0.3, c, 1000.0 + 10.0 * i};
+    }));
+    edges.put("falling", series(70, i -> {
+      double c = 150.0 - 0.5 * i;
+      return new double[] {c + 0.25, c + 0.3, c - 0.3, c, 1000.0 + 10.0 * i};
+    }));
+    // the ordinary wave, as it is
+    edges.put("wave", series(80, Oracle::waveBar));
+    // flat bars: open = high = low = close
+    edges.put("flat", series(60, i -> new double[] {100.0, 100.0, 100.0, 100.0, 1000.0}));
+    // zero-range bars (high = low = close) among ordinary ones
+    edges.put("zeroRange", series(70, i -> {
+      double[] b = waveBar(i);
+      if (i % 4 == 2) {
+        b[1] = b[3];
+        b[2] = b[3];
+      }
+      return b;
+    }));
+    // gaps: the level jumps up by 25 and down by 45 between bars
+    edges.put("gaps", series(72, i -> {
+      double c = gapClose(i);
+      double o = i == 0 ? 100.0 : gapClose(i - 1);
+      return new double[] {o, Math.max(o, c) + 0.4, Math.min(o, c) - 0.4, c, 1000.0 + 5.0 * i};
+    }));
+    // bars whose high is below their low, the first one and a stretch in the middle
+    edges.put("highBelowLow", series(70, i -> {
+      double[] b = waveBar(i);
+      if (i == 0 || (i >= 30 && i < 35)) {
+        double high = b[1];
+        b[1] = b[2] - 1.0;
+        b[2] = high + 1.0;
+      }
+      return b;
+    }));
+    // no volume at all, and no volume for a stretch longer than the windows
+    edges.put("zeroVolume", series(60, i -> {
+      double[] b = waveBar(i);
+      b[4] = 0.0;
+      return b;
+    }));
+    edges.put("zeroVolumeStretch", series(70, i -> {
+      double[] b = waveBar(i);
+      if (i >= 10 && i < 50) {
+        b[4] = 0.0;
+      }
+      return b;
+    }));
+    // the price collapses to a very small positive value, stays there, then recovers
+    edges.put("collapse", series(60, i -> {
+      double c = i < 30 || i >= 45 ? 100.0 + 2.0 * Math.sin(0.7 * i) : 1e-8 * (1.0 + 0.1 * (i - 30));
+      double pc = i == 0 ? 100.0 : (i - 1 < 30 || i - 1 >= 45 ? 100.0 + 2.0 * Math.sin(0.7 * (i - 1)) : 1e-8 * (1.0 + 0.1 * (i - 31)));
+      double o = i == 0 ? 100.0 : pc;
+      return new double[] {o, Math.max(o, c) * 1.005, Math.min(o, c) * 0.995, c, 1000.0};
+    }));
+    // fewer bars than any window
+    edges.put("short", series(5, i -> {
+      double[] closes = {100.0, 101.0, 99.5, 100.5, 102.0};
+      double o = i == 0 ? 100.0 : closes[i - 1];
+      return new double[] {o, closes[i] + 0.5, closes[i] - 0.5, closes[i], 1000.0};
+    }));
+    // the smallest positive price, as a whole bar
+    edges.put("smallestPrice", series(40, i -> {
+      double c = i == 20 ? Double.MIN_VALUE : 100.0 + 0.1 * i;
+      double o = i == 0 ? 100.0 : i - 1 == 20 ? Double.MIN_VALUE : 100.0 + 0.1 * (i - 1);
+      if (i == 20) {
+        return new double[] {c, c, c, c, 1000.0};
+      }
+      return new double[] {o, Math.max(o, c) + 0.2, Math.min(o, c) - 0.2, c, 1000.0};
+    }));
+    // a bar of zeros in the middle, a bar of zeros at the start, and a negative price in the middle
+    edges.put("zeroBar", series(40, i -> i == 10 ? new double[] {0.0, 0.0, 0.0, 0.0, 1000.0} : waveBar(i)));
+    edges.put("zeroFirstBar", series(40, i -> i == 0 ? new double[] {0.0, 0.0, 0.0, 0.0, 1000.0} : waveBar(i)));
+    edges.put("negativePrice", series(40, i -> i == 10 ? new double[] {-5.0, -4.0, -6.0, -5.0, 1000.0} : waveBar(i)));
+    // a range that overflows: high = the largest double and low = its opposite, for three bars
+    edges.put("overflowRange", series(40, i -> {
+      double[] b = waveBar(i);
+      if (i >= 20 && i < 23) {
+        b[1] = Double.MAX_VALUE;
+        b[2] = -Double.MAX_VALUE;
+      }
+      return b;
+    }));
+    // prices near the largest double: the sums and distances that overflow
+    edges.put("nearMax", series(40, i -> {
+      double c = nearMaxClose(i);
+      double o = i == 0 ? 1.7e308 : nearMaxClose(i - 1);
+      return new double[] {o, Math.max(o, c) * 1.0001, Math.min(o, c) * 0.9999, c, 1000.0};
+    }));
+    edges.put("nearMaxAlternating", series(40, i -> {
+      double sign = i % 2 == 0 ? 1.0 : -1.0;
+      double c = sign * nearMaxClose(i);
+      double o = i == 0 ? 100.0 : -sign * nearMaxClose(i - 1);
+      return new double[] {o, 1.7e308 * 1.0001, -1.7e308 * 1.0001, c, 1000.0};
+    }));
+
+    // each field in turn set to NaN, +Infinity and -Infinity: in the middle of an ordinary series, and as its first bar
+    Bars wave = series(50, Oracle::waveBar);
+    Bars waveStart = series(30, Oracle::waveBar);
+    String[] kinds = {"NaN", "Infinity", "NegInfinity"};
+    double[] values = {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+    for (int field = 0; field < 5; field++) {
+      String name = Character.toUpperCase(FIELDS[field].charAt(0)) + FIELDS[field].substring(1);
+      for (int k = 0; k < 3; k++) {
+        edges.put("poison" + name + kinds[k], with(wave, 25, field, values[k]));
+      }
+    }
+    for (int field = 0; field < 5; field++) {
+      String name = Character.toUpperCase(FIELDS[field].charAt(0)) + FIELDS[field].substring(1);
+      for (int k = 0; k < 3; k++) {
+        edges.put("poisonFirst" + name + kinds[k], with(waveStart, 0, field, values[k]));
+      }
+    }
+    return edges;
+  }
+
+  static String barEdges() {
+    StringJoiner edges = new StringJoiner(",\n", "{\n", "\n  }");
+    barEdgeInputs().forEach(
+        (name, b) ->
+            edges.add(
+                "    \"" + name + "\": {\n"
+                    + "      \"open\": " + exactArray(b.open()) + ",\n"
+                    + "      \"high\": " + exactArray(b.high()) + ",\n"
+                    + "      \"low\": " + exactArray(b.low()) + ",\n"
+                    + "      \"close\": " + exactArray(b.close()) + ",\n"
+                    + "      \"volume\": " + exactArray(b.volume()) + ",\n"
+                    + "      \"series\": {\n"
+                    + barSubjectLines(b, true, "        ") + "\n      }\n    }"));
+    return edges.toString();
+  }
+
   /**
    * What each call of {@code facade-calls.txt} registers on an empty group through the engine's {@link Pro}: the
    * name, display hint and metadata of every indicator, or that the call throws, or that this build of the
@@ -799,6 +1501,8 @@ public class Oracle {
         args.add(token.substring(1, token.length() - 1));
       } else if (token.startsWith("[")) {
         args.add(facadeArray(token));
+      } else if (token.equals("true") || token.equals("false")) {
+        args.add(Boolean.valueOf(token));
       } else if (token.contains(".")) {
         args.add(Double.valueOf(token));
       } else {
@@ -868,7 +1572,8 @@ public class Oracle {
 
   /**
    * An integer argument also fits a double parameter, as it does in a Java call, and an {@code int[]} a {@code
-   * double[]} one, so that a line can write {@code [1,2]} for weights.
+   * double[]} one, so that a line can write {@code [1,2]} for weights. {@code true} and {@code false} fit a {@code
+   * boolean} parameter.
    */
   static boolean accepts(Class<?>[] types, List<Object> args) {
     for (int i = 0; i < types.length; i++) {
@@ -879,11 +1584,13 @@ public class Oracle {
               ? arg instanceof String
               : type == int.class
                   ? arg instanceof Integer
-                  : type == double.class
-                      ? arg instanceof Double || arg instanceof Integer
-                      : type == int[].class
-                          ? arg instanceof int[]
-                          : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
+                  : type == boolean.class
+                      ? arg instanceof Boolean
+                      : type == double.class
+                          ? arg instanceof Double || arg instanceof Integer
+                          : type == int[].class
+                              ? arg instanceof int[]
+                              : type == double[].class && (arg instanceof double[] || arg instanceof int[]);
       if (!fits) {
         return false;
       }

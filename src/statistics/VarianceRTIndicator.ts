@@ -4,7 +4,13 @@ import { copyWindow, isFlat, mean, sumSquaredDeviations } from "./WindowMath";
 /**
  * Rolling variance, worked out from a single window on every tick: the mean first, then the squared
  * deviations from it, oldest value first. Population variance by default; `withSampleVariance(true)`
- * applies Bessel's correction. An internal building block (Z-Score composes it): not exported by the package.
+ * applies Bessel's correction.
+ *
+ * This is the pro class, not the `VarianceRTIndicator` of `@qtsurfer/indicators`, which has the same simple name. The
+ * two differ in their default: the free one gives the sample variance, and this one the population variance. With
+ * `withSampleVariance(true)` this one gives the same value as the free one once the window is full, except on a window
+ * of identical prices, where this one gives exactly 0 and the free one can leave a tiny rounding residue. The Z-Score
+ * and the standard deviation of this package are built on it.
  * Port of com.wualabs.qtsurfer.engine.indicators.statistics.pro.VarianceRTIndicator
  */
 export class VarianceRTIndicator extends AbstractWindowSeriesRTIndicator {
@@ -13,7 +19,7 @@ export class VarianceRTIndicator extends AbstractWindowSeriesRTIndicator {
   private sampleVariance = false;
 
   constructor(periods: number) {
-    super(periods);
+    super(checkPeriods(periods));
     this.scratch = new Float64Array(periods);
   }
 
@@ -50,4 +56,12 @@ export class VarianceRTIndicator extends AbstractWindowSeriesRTIndicator {
     }
     return this.setValue(variance);
   }
+}
+
+/** Runs before the window is created, which would fail with its own text: a period below 1 is rejected as in the Java class. */
+function checkPeriods(periods: number): number {
+  if (periods < 1) {
+    throw new RangeError(`Periods must be >= 1, got: ${periods}`);
+  }
+  return periods;
 }

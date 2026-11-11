@@ -6,7 +6,11 @@ import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
 import { FramaRTIndicator } from "$averages/FramaRTIndicator";
 import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
 import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { AcceleratorOscillatorRTIndicator } from "$momentum/AcceleratorOscillatorRTIndicator";
 import { AdaptiveFisherTransformRTIndicator } from "$momentum/AdaptiveFisherTransformRTIndicator";
+import { AwesomeOscillatorRTIndicator } from "$momentum/AwesomeOscillatorRTIndicator";
+import { BalanceOfPowerRTIndicator } from "$momentum/BalanceOfPowerRTIndicator";
+import { BullBearPowerRTIndicator } from "$momentum/BullBearPowerRTIndicator";
 import { ChandeForecastOscillatorRTIndicator } from "$momentum/ChandeForecastOscillatorRTIndicator";
 import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
 import { ConnorsRsiRTIndicator } from "$momentum/ConnorsRsiRTIndicator";
@@ -15,9 +19,13 @@ import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOsc
 import { FisherTransformRTIndicator } from "$momentum/FisherTransformRTIndicator";
 import { KnowSureThingRTIndicator } from "$momentum/KnowSureThingRTIndicator";
 import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
+import { RelativeVigorIndexRTIndicator } from "$momentum/RelativeVigorIndexRTIndicator";
 import { RocRTIndicator } from "$momentum/RocRTIndicator";
+import { StochasticOscillatorRTIndicator } from "$momentum/StochasticOscillatorRTIndicator";
 import { TrixRTIndicator } from "$momentum/TrixRTIndicator";
 import { TrueStrengthIndexRTIndicator } from "$momentum/TrueStrengthIndexRTIndicator";
+import { UltimateOscillatorRTIndicator } from "$momentum/UltimateOscillatorRTIndicator";
+import { WilliamsRRTIndicator } from "$momentum/WilliamsRRTIndicator";
 import { AutocorrelationRTIndicator } from "$statistics/AutocorrelationRTIndicator";
 import { HurstExponentRTIndicator } from "$statistics/HurstExponentRTIndicator";
 import { KurtosisRTIndicator } from "$statistics/KurtosisRTIndicator";
@@ -25,7 +33,9 @@ import { LinearRegressionSlopeRTIndicator } from "$statistics/LinearRegressionSl
 import { RollingPercentileRTIndicator } from "$statistics/RollingPercentileRTIndicator";
 import { SimpleLinearRegressionRTIndicator } from "$statistics/SimpleLinearRegressionRTIndicator";
 import { SkewnessRTIndicator } from "$statistics/SkewnessRTIndicator";
+import { StandardDeviationRTIndicator } from "$statistics/StandardDeviationRTIndicator";
 import { ValueAtRiskRTIndicator } from "$statistics/ValueAtRiskRTIndicator";
+import { VarianceRTIndicator } from "$statistics/VarianceRTIndicator";
 import { ZScoreRTIndicator } from "$statistics/ZScoreRTIndicator";
 import { CalmarRatioRTIndicator } from "$statistics/ratios/CalmarRatioRTIndicator";
 import { MaxDrawdownRTIndicator } from "$statistics/ratios/MaxDrawdownRTIndicator";
@@ -41,11 +51,30 @@ import { ParkinsonVolatilityRTIndicator } from "$statistics/volatility/Parkinson
 import { RogersSatchellVolatilityRTIndicator } from "$statistics/volatility/RogersSatchellVolatilityRTIndicator";
 import { YangZhangVolatilityRTIndicator } from "$statistics/volatility/YangZhangVolatilityRTIndicator";
 import { AdxRTIndicator } from "$trend/AdxRTIndicator";
+import { AroonRTIndicator } from "$trend/AroonRTIndicator";
+import { ChandeKrollStopRTIndicator } from "$trend/ChandeKrollStopRTIndicator";
+import { ChandelierExitRTIndicator } from "$trend/ChandelierExitRTIndicator";
+import { DonchianChannelRTIndicator } from "$trend/DonchianChannelRTIndicator";
+import { EfficiencyRatioRTIndicator } from "$trend/EfficiencyRatioRTIndicator";
 import { IchimokuRTIndicator } from "$trend/IchimokuRTIndicator";
+import { ParabolicSarRTIndicator } from "$trend/ParabolicSarRTIndicator";
 import { SuperTrendRTIndicator } from "$trend/SuperTrendRTIndicator";
+import { VortexRTIndicator } from "$trend/VortexRTIndicator";
+import { ChoppinessIndexRTIndicator } from "$volatility/ChoppinessIndexRTIndicator";
+import { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator";
+import { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
+import { NatrRTIndicator } from "$volatility/NatrRTIndicator";
+import { RelativeVolatilityIndexRTIndicator } from "$volatility/RelativeVolatilityIndexRTIndicator";
+import { AdlRTIndicator } from "$volume/AdlRTIndicator";
+import { ChaikinOscillatorRTIndicator } from "$volume/ChaikinOscillatorRTIndicator";
 import { CmfRTIndicator } from "$volume/CmfRTIndicator";
+import { EaseOfMovementRTIndicator } from "$volume/EaseOfMovementRTIndicator";
+import { ElderForceIndexRTIndicator } from "$volume/ElderForceIndexRTIndicator";
+import { KlingerOscillatorRTIndicator } from "$volume/KlingerOscillatorRTIndicator";
 import { MfiRTIndicator } from "$volume/MfiRTIndicator";
+import { NegativeVolumeIndexRTIndicator } from "$volume/NegativeVolumeIndexRTIndicator";
 import { ObvRTIndicator } from "$volume/ObvRTIndicator";
+import { PvtRTIndicator } from "$volume/PvtRTIndicator";
 import { VwapRTIndicator } from "$volume/VwapRTIndicator";
 import { ProOutput } from "./ProOutput";
 
@@ -57,17 +86,17 @@ import { ProOutput } from "./ProOutput";
  * Pro.on(group).adx().vwap().yangZhang(20).ichimoku();
  * ```
  *
- * The bar readers here read whole bars (high, low, volume): they belong on a kline group. On a
- * ticker those values are the exchange's 24-hour statistics and the output stops meaning what its
- * name says. The statistics (`kurtosis`, `autocorrelation`, `hurstExponent`, `linearRegressionSlope`,
- * `rollingPercentile`, `simpleLinearRegression`, `skewness`, `valueAtRisk` and `zScore`), the risk
- * ones (`calmarRatio`, `maxDrawdown`, `omegaRatio`, `sharpeRatio`, `sortinoRatio`, `tailRatio`,
- * `ulcerIndex`, `ewmaVolatility` and `realizedVolatility`), and the averages and oscillators that
- * follow them (`alma`, `dema`, `envelopes`, `frama`, `leastSquaresMovingAverage`, `mcGinleyDynamic`,
- * `momentum`, `roc`, `cmo`, `detrendedPriceOscillator`, `chandeForecastOscillator`, `connorsRsi`,
- * `coppockCurve`, `fisherTransform`, `adaptiveFisherTransform`, `knowSureThing`, `trix` and
- * `trueStrengthIndex`) read the group's price, as the base indicators do: they work on a ticker feed
- * too.
+ * Most of them read whole bars (high, low, close, volume) and belong on a kline group: on a ticker those
+ * values are the exchange's 24-hour statistics and the output stops meaning what its name says. A group fed
+ * from a ticker raises a notice for each of them. The exceptions read only the group's price, as the base
+ * indicators do, and work on a ticker feed too: the statistics (`kurtosis`, `autocorrelation`,
+ * `hurstExponent`, `linearRegressionSlope`, `rollingPercentile`, `simpleLinearRegression`, `skewness`,
+ * `valueAtRisk`, `zScore`, `exactStdDev` and `exactVariance`), the risk ones (`calmarRatio`, `maxDrawdown`,
+ * `omegaRatio`, `sharpeRatio`, `sortinoRatio`, `tailRatio`, `ulcerIndex`, `ewmaVolatility` and
+ * `realizedVolatility`), the averages and oscillators that follow them (`alma`, `dema`, `envelopes`, `frama`, `leastSquaresMovingAverage`,
+ * `mcGinleyDynamic`, `momentum`, `roc`, `cmo`, `detrendedPriceOscillator`, `chandeForecastOscillator`,
+ * `connorsRsi`, `coppockCurve`, `fisherTransform`, `adaptiveFisherTransform`, `knowSureThing`, `trix` and
+ * `trueStrengthIndex`), and `efficiencyRatio` and `relativeVolatilityIndex`.
  */
 export class Pro {
   /**
@@ -91,6 +120,15 @@ export class Pro {
   static readonly SUFFIX_STANDARD_ERROR = "StandardError";
   static readonly SUFFIX_CURRENT = "Current";
   static readonly SUFFIX_SIGNAL = "Signal";
+  static readonly SUFFIX_UP = "Up";
+  static readonly SUFFIX_DOWN = "Down";
+  static readonly SUFFIX_STOP_SHORT = "StopShort";
+  static readonly SUFFIX_SHORT_EXIT = "ShortExit";
+  static readonly SUFFIX_VI_PLUS = "ViPlus";
+  static readonly SUFFIX_VI_MINUS = "ViMinus";
+  static readonly SUFFIX_BULL = "Bull";
+  static readonly SUFFIX_BEAR = "Bear";
+  static readonly SUFFIX_D = "D";
 
   private constructor(private readonly target: InstrumentGroupRTIndicator) {}
 
@@ -182,6 +220,175 @@ export class Pro {
     );
   }
 
+  /**
+   * Aroon over 25 periods, registered as `aroon25`. The indicator itself is the oscillator, Aroon Up minus
+   * Aroon Down, in [-100, 100]; the two lines it comes from, each in [0, 100], are its other outputs. All
+   * three are percentages. `periods` is at least 1.
+   */
+  aroon(): this;
+  aroon(periods: number): this;
+  aroon(name: string): this;
+  aroon(name: string, periods: number): this;
+  aroon(...args: [] | [number] | [string] | [string, number]): this {
+    return this.shaped(
+      args,
+      [25],
+      (periods) => `aroon${periods}`,
+      (name, periods) => {
+        const aroon = new AroonRTIndicator(periods);
+        aroon.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT);
+        this.withOutputs(
+          name,
+          aroon,
+          output(Pro.SUFFIX_UP, () => aroon.getAroonUp(), aroon, DisplayHint.PERCENT),
+          output(Pro.SUFFIX_DOWN, () => aroon.getAroonDown(), aroon, DisplayHint.PERCENT),
+        );
+      },
+    );
+  }
+
+  /**
+   * Chande Kroll stop with the class defaults, registered as `cks10_1_9_9`: an ATR period of 10, a multiplier of
+   * 1, a stop period of 9 and a final period of 9. The id is `cks` + ATR period + `_` + multiplier + `_` + stop
+   * period + `_` + final period, and a whole multiplier drops its decimal part. The indicator itself is the stop
+   * for long positions; the stop for short positions is its other output. `atrPeriod`, `stopPeriod` and
+   * `finalPeriod` are at least 1; `multiplier` is finite and at least 0.
+   */
+  chandeKrollStop(): this;
+  chandeKrollStop(atrPeriod: number, multiplier: number, stopPeriod: number, finalPeriod: number): this;
+  chandeKrollStop(name: string): this;
+  chandeKrollStop(name: string, atrPeriod: number, multiplier: number, stopPeriod: number, finalPeriod: number): this;
+  chandeKrollStop(...args: [] | [string] | [number, number, number, number] | [string, number, number, number, number]): this {
+    return this.shaped(
+      args,
+      [10, 1.0, 9, 9],
+      (atrPeriod, multiplier, stopPeriod, finalPeriod) =>
+        `cks${atrPeriod}_${numberName(multiplier)}_${stopPeriod}_${finalPeriod}`,
+      (name, atrPeriod, multiplier, stopPeriod, finalPeriod) => {
+        const stop = new ChandeKrollStopRTIndicator(atrPeriod, multiplier, stopPeriod, finalPeriod);
+        stop
+          .withMeta("atrPeriod", atrPeriod)
+          .withMeta("multiplier", multiplier)
+          .withMeta("stopPeriod", stopPeriod)
+          .withMeta("finalPeriod", finalPeriod);
+        // Both stops are price levels
+        this.withOutputs(name, stop, output(Pro.SUFFIX_STOP_SHORT, () => stop.getStopShort(), stop, DisplayHint.ABSOLUTE));
+      },
+    );
+  }
+
+  /**
+   * Chandelier exit with the standard (22, 3) parameters, registered as `chand22_3`, or as `chand` + periods +
+   * `_` + multiplier (a whole multiplier drops its decimal part). The indicator itself is the exit for long
+   * positions; the exit for short positions is its other output. `periods` is at least 1; `multiplier` is finite
+   * and at least 0.
+   */
+  chandelierExit(): this;
+  chandelierExit(periods: number, multiplier: number): this;
+  chandelierExit(name: string): this;
+  chandelierExit(name: string, periods: number, multiplier: number): this;
+  chandelierExit(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [22, 3.0],
+      (periods, multiplier) => `chand${periods}_${numberName(multiplier)}`,
+      (name, periods, multiplier) => {
+        const exit = new ChandelierExitRTIndicator(periods, multiplier);
+        exit.withMeta("periods", periods).withMeta("multiplier", multiplier);
+        // Both exits are price levels
+        this.withOutputs(name, exit, output(Pro.SUFFIX_SHORT_EXIT, () => exit.getShortExit(), exit, DisplayHint.ABSOLUTE));
+      },
+    );
+  }
+
+  /**
+   * Donchian channel over 20 periods, registered as `donch20`. The indicator itself is the middle line; the upper
+   * and the lower bands, the highest high and the lowest low of the window, are its other outputs. `periods` is at
+   * least 1.
+   */
+  donchianChannel(): this;
+  donchianChannel(periods: number): this;
+  donchianChannel(name: string): this;
+  donchianChannel(name: string, periods: number): this;
+  donchianChannel(...args: [] | [number] | [string] | [string, number]): this {
+    return this.shaped(
+      args,
+      [20],
+      (periods) => `donch${periods}`,
+      (name, periods) => {
+        const donchian = new DonchianChannelRTIndicator(periods);
+        donchian.withMeta("periods", periods);
+        // The indicator itself is the middle line; the bands are price levels
+        this.withOutputs(
+          name,
+          donchian,
+          output(Pro.SUFFIX_UPPER, () => donchian.getUpper(), donchian, DisplayHint.ABSOLUTE),
+          output(Pro.SUFFIX_LOWER, () => donchian.getLower(), donchian, DisplayHint.ABSOLUTE),
+        );
+      },
+    );
+  }
+
+  /**
+   * Kaufman efficiency ratio of the group's price over 10 periods, registered as `er10`: the net move of the
+   * window over the sum of its steps, from 0 (pure noise) to 1 (a straight line). The net move and the sum of
+   * the steps it works from are diagnostics of the class, not outputs. `periods` is at least 1.
+   */
+  efficiencyRatio(): this;
+  efficiencyRatio(periods: number): this;
+  efficiencyRatio(name: string): this;
+  efficiencyRatio(name: string, periods: number): this;
+  efficiencyRatio(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "er", 10, (periods) => new EfficiencyRatioRTIndicator(periods));
+  }
+
+  /**
+   * Parabolic SAR with the standard (0.02, 0.2) parameters, registered as `psar0.02_0.2`, or as `psar` +
+   * acceleration step + `_` + maximum acceleration (a whole value drops its decimal part). Whether the trend is
+   * up is a diagnostic of the class, not an output. `afStep` and `afMax` are finite and positive.
+   */
+  parabolicSar(): this;
+  parabolicSar(afStep: number, afMax: number): this;
+  parabolicSar(name: string): this;
+  parabolicSar(name: string, afStep: number, afMax: number): this;
+  parabolicSar(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [0.02, 0.2],
+      (afStep, afMax) => `psar${numberName(afStep)}_${numberName(afMax)}`,
+      (name, afStep, afMax) => {
+        this.target.add(name, new ParabolicSarRTIndicator(afStep, afMax).withMeta("afStep", afStep).withMeta("afMax", afMax));
+      },
+    );
+  }
+
+  /**
+   * Vortex indicator over 14 periods, registered as `vortex14`. The indicator itself is the positive line minus
+   * the negative one; the two lines are its other outputs. `periods` is at least 1.
+   */
+  vortex(): this;
+  vortex(periods: number): this;
+  vortex(name: string): this;
+  vortex(name: string, periods: number): this;
+  vortex(...args: [] | [number] | [string] | [string, number]): this {
+    return this.shaped(
+      args,
+      [14],
+      (periods) => `vortex${periods}`,
+      (name, periods) => {
+        const vortex = new VortexRTIndicator(periods);
+        vortex.withMeta("periods", periods);
+        // Ratios of the range, on no price axis and in no fixed band: no hint, which is ABSOLUTE
+        this.withOutputs(
+          name,
+          vortex,
+          output(Pro.SUFFIX_VI_PLUS, () => vortex.getVIPlus(), vortex, DisplayHint.ABSOLUTE),
+          output(Pro.SUFFIX_VI_MINUS, () => vortex.getVIMinus(), vortex, DisplayHint.ABSOLUTE),
+        );
+      },
+    );
+  }
+
   // --- Volume ---
 
   /** On-Balance Volume, registered as `obv` or under the given name. It is volume-denominated. */
@@ -221,6 +428,96 @@ export class Pro {
       return this.cmf(`cmf${p}`, p);
     }
     this.target.add(nameOrPeriods, new CmfRTIndicator(periods!).withMeta("periods", periods));
+    return this;
+  }
+
+  /**
+   * Accumulation/distribution line, registered as `adl` or under the given name: the running sum of the volume
+   * weighted by where the close sits in the range of the bar. It has no parameters. It is volume-denominated.
+   */
+  adl(name = "adl"): this {
+    this.target.add(name, new AdlRTIndicator().withDisplayHint(DisplayHint.VOLUME));
+    return this;
+  }
+
+  /**
+   * Chaikin oscillator with the standard (3, 10) parameters, registered as `chaikin3_10`, or as `chaikin` + fast
+   * period + `_` + slow period: the fast EMA of the accumulation/distribution line minus the slow one. It is
+   * volume-denominated. `fastPeriod` and `slowPeriod` are at least 1; the fast one is not required to be below the
+   * slow one.
+   */
+  chaikinOscillator(): this;
+  chaikinOscillator(fastPeriod: number, slowPeriod: number): this;
+  chaikinOscillator(name: string): this;
+  chaikinOscillator(name: string, fastPeriod: number, slowPeriod: number): this;
+  chaikinOscillator(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [3, 10],
+      (fastPeriod, slowPeriod) => `chaikin${fastPeriod}_${slowPeriod}`,
+      (name, fastPeriod, slowPeriod) => {
+        this.target.add(
+          name,
+          new ChaikinOscillatorRTIndicator(fastPeriod, slowPeriod)
+            .withMeta("fastPeriod", fastPeriod)
+            .withMeta("slowPeriod", slowPeriod)
+            .withDisplayHint(DisplayHint.VOLUME),
+        );
+      },
+    );
+  }
+
+  /**
+   * Ease of movement over 14 periods, registered as `eom14`: the SMA of how far the middle of the bar moved per unit
+   * of volume. `periods` is at least 1.
+   */
+  easeOfMovement(): this;
+  easeOfMovement(periods: number): this;
+  easeOfMovement(name: string): this;
+  easeOfMovement(name: string, periods: number): this;
+  easeOfMovement(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "eom", 14, (periods) => new EaseOfMovementRTIndicator(periods));
+  }
+
+  /**
+   * Elder force index over 13 periods, registered as `efi13`: the EMA of the change of the close times the volume.
+   * It is volume-denominated. `periods` is at least 1.
+   */
+  elderForceIndex(): this;
+  elderForceIndex(periods: number): this;
+  elderForceIndex(name: string): this;
+  elderForceIndex(name: string, periods: number): this;
+  elderForceIndex(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "efi", 13, (periods) => new ElderForceIndexRTIndicator(periods).withDisplayHint(DisplayHint.VOLUME));
+  }
+
+  /**
+   * Klinger volume oscillator, registered as `klinger` or under the given name: the EMA of 34 periods of the volume
+   * force minus the one of 55. The indicator itself is the oscillator; its signal line, an EMA of 13 periods of it,
+   * is the other output. Both are volume-denominated. The periods are fixed by the class, so there are none to pass.
+   */
+  klingerOscillator(name = "klinger"): this {
+    const klinger = new KlingerOscillatorRTIndicator();
+    klinger.withDisplayHint(DisplayHint.VOLUME);
+    // Nothing to record as meta: the class has no parameter. The signal line is on the same scale
+    return this.withOutputs(name, klinger, output(Pro.SUFFIX_SIGNAL, () => klinger.getSignal(), klinger, DisplayHint.VOLUME));
+  }
+
+  /**
+   * Negative volume index, registered as `nvi` or under the given name: an index that starts at 1000 and moves only
+   * on the bars whose volume fell. It has no parameters, and it is an index level, so it has no display hint.
+   */
+  negativeVolumeIndex(name = "nvi"): this {
+    this.target.add(name, new NegativeVolumeIndexRTIndicator());
+    return this;
+  }
+
+  /**
+   * Price volume trend, registered as `pvt` or under the given name: the running sum of the volume weighted by the
+   * relative change of the close. It has no parameters. It is volume-denominated.
+   */
+  pvt(name = "pvt"): this {
+    this.target.add(name, new PvtRTIndicator().withDisplayHint(DisplayHint.VOLUME));
     return this;
   }
 
@@ -381,6 +678,56 @@ export class Pro {
       return this.zScore(`zscore${nameOrPeriods}`, nameOrPeriods);
     }
     this.target.add(nameOrPeriods, new ZScoreRTIndicator(periods!).withMeta("periods", periods));
+    return this;
+  }
+
+  /**
+   * Standard deviation of the group's price over `periods`, worked out exactly from the window on every tick,
+   * registered as `xstd` + periods. The short forms give the population deviation, the default of the class. The
+   * free `stdDev` of `@qtsurfer/indicators` is the sample deviation (Bessel's correction), so it is
+   * `sqrt(periods / (periods - 1))` times this one; `exactStdDev(name, periods, true)` is the form that equals it
+   * (but on a window of identical prices, where this one gives exactly 0). The mean and the variance of the window are
+   * diagnostics, not outputs. `periods` is at least 1.
+   */
+  exactStdDev(periods: number): this;
+  exactStdDev(name: string, periods: number): this;
+  exactStdDev(name: string, periods: number, sample: boolean): this;
+  exactStdDev(nameOrPeriods: string | number, periods?: number, sample?: boolean): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.exactStdDev(`xstd${nameOrPeriods}`, nameOrPeriods);
+    }
+    const stdDev = new StandardDeviationRTIndicator(periods!);
+    if (sample === undefined) {
+      // The class default (population variance), left as it is
+      this.target.add(nameOrPeriods, stdDev.withMeta("periods", periods).withMeta("sample", false));
+    } else {
+      this.target.add(nameOrPeriods, stdDev.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+    }
+    return this;
+  }
+
+  /**
+   * Variance of the group's price over `periods`, worked out exactly from the window on every tick, registered as
+   * `xvar` + periods. The short forms give the population variance, the default of the class. The free `variance` of
+   * `@qtsurfer/indicators` is the sample variance (Bessel's correction), so it is `periods / (periods - 1)` times
+   * this one; `exactVariance(name, periods, true)` is the form that equals it (but on a window of identical
+   * prices, where this one gives exactly 0). The mean of the window is a diagnostic, not an output. `periods` is at
+   * least 1.
+   */
+  exactVariance(periods: number): this;
+  exactVariance(name: string, periods: number): this;
+  exactVariance(name: string, periods: number, sample: boolean): this;
+  exactVariance(nameOrPeriods: string | number, periods?: number, sample?: boolean): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.exactVariance(`xvar${nameOrPeriods}`, nameOrPeriods);
+    }
+    const variance = new VarianceRTIndicator(periods!);
+    if (sample === undefined) {
+      // The class default (population variance), left as it is
+      this.target.add(nameOrPeriods, variance.withMeta("periods", periods).withMeta("sample", false));
+    } else {
+      this.target.add(nameOrPeriods, variance.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+    }
     return this;
   }
 
@@ -579,6 +926,259 @@ export class Pro {
     const rogersSatchell = new RogersSatchellVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
     this.target.add(nameOrPeriods, rogersSatchell.withMeta("periods", periods));
     return this;
+  }
+
+  // --- Volatility: all but the relative volatility index read whole bars ---
+
+  /**
+   * Choppiness index over 14 periods, registered as `chop14`: how much of the range of the window the true
+   * ranges fill, in [0, 100]. `periods` is at least 1.
+   */
+  choppinessIndex(): this;
+  choppinessIndex(periods: number): this;
+  choppinessIndex(name: string): this;
+  choppinessIndex(name: string, periods: number): this;
+  choppinessIndex(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "chop", 14, (periods) => new ChoppinessIndexRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
+  }
+
+  /**
+   * Keltner channel with the standard (20, 10, 1.5) parameters, registered as `kc20_10_1.5`, or as `kc` + EMA
+   * period + `_` + ATR period + `_` + multiplier (a whole multiplier drops its decimal part): an EMA of the close
+   * with a band of the ATR times the multiplier above and below it. The indicator itself is the middle line; the
+   * upper and the lower bands are its other outputs. `emaPeriod` and `atrPeriod` are at least 1; `multiplier` is
+   * finite and at least 0.
+   */
+  keltnerChannel(): this;
+  keltnerChannel(emaPeriod: number, atrPeriod: number, multiplier: number): this;
+  keltnerChannel(name: string): this;
+  keltnerChannel(name: string, emaPeriod: number, atrPeriod: number, multiplier: number): this;
+  keltnerChannel(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+    return this.shaped(
+      args,
+      [20, 10, 1.5],
+      (emaPeriod, atrPeriod, multiplier) => `kc${emaPeriod}_${atrPeriod}_${numberName(multiplier)}`,
+      (name, emaPeriod, atrPeriod, multiplier) => {
+        const keltner = new KeltnerChannelRTIndicator(emaPeriod, atrPeriod, multiplier);
+        keltner.withMeta("emaPeriod", emaPeriod).withMeta("atrPeriod", atrPeriod).withMeta("multiplier", multiplier);
+        // The indicator itself is the middle line; the bands are price levels
+        this.withOutputs(
+          name,
+          keltner,
+          output(Pro.SUFFIX_UPPER, () => keltner.getUpper(), keltner, DisplayHint.ABSOLUTE),
+          output(Pro.SUFFIX_LOWER, () => keltner.getLower(), keltner, DisplayHint.ABSOLUTE),
+        );
+      },
+    );
+  }
+
+  /**
+   * Mass index with the standard (25, 9) parameters, registered as `mass25_9`, or as `mass` + sum period + `_` +
+   * EMA period: the sum over the sum period of the ratio of an EMA of the range of the bar to an EMA of that
+   * EMA. `sumPeriod` and `emaPeriod` are at least 1.
+   */
+  massIndex(): this;
+  massIndex(sumPeriod: number, emaPeriod: number): this;
+  massIndex(name: string): this;
+  massIndex(name: string, sumPeriod: number, emaPeriod: number): this;
+  massIndex(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [25, 9],
+      (sumPeriod, emaPeriod) => `mass${sumPeriod}_${emaPeriod}`,
+      (name, sumPeriod, emaPeriod) => {
+        this.target.add(
+          name,
+          new MassIndexRTIndicator(sumPeriod, emaPeriod).withMeta("sumPeriod", sumPeriod).withMeta("emaPeriod", emaPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * Normalized ATR over `periods` (at least 1), registered as `natr` + periods: the ATR as a percentage of the
+   * close. The class has no default periods, so there is no form without them.
+   */
+  natr(periods: number): this;
+  natr(name: string, periods: number): this;
+  natr(nameOrPeriods: string | number, periods?: number): this {
+    if (typeof nameOrPeriods === "number") {
+      return this.natr(`natr${nameOrPeriods}`, nameOrPeriods);
+    }
+    const natr = new NatrRTIndicator(periods!);
+    this.target.add(nameOrPeriods, natr.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT));
+    return this;
+  }
+
+  /**
+   * Relative volatility index of the group's price with the standard (10, 14) periods, registered as `rvi10_14`,
+   * or as `rvi` + standard deviation period + `_` + RSI period: an RSI of the standard deviation instead of the
+   * price, in [0, 100]. `stdPeriod` is the window of the standard deviation of the price, at least 2; `rsiPeriod`
+   * the Wilder smoothing period of the up and down moves of that deviation, at least 1.
+   */
+  relativeVolatilityIndex(): this;
+  relativeVolatilityIndex(stdPeriod: number, rsiPeriod: number): this;
+  relativeVolatilityIndex(name: string): this;
+  relativeVolatilityIndex(name: string, stdPeriod: number, rsiPeriod: number): this;
+  relativeVolatilityIndex(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [10, 14],
+      (stdPeriod, rsiPeriod) => `rvi${stdPeriod}_${rsiPeriod}`,
+      (name, stdPeriod, rsiPeriod) => {
+        this.target.add(
+          name,
+          new RelativeVolatilityIndexRTIndicator(stdPeriod, rsiPeriod)
+            .withMeta("stdPeriod", stdPeriod)
+            .withMeta("rsiPeriod", rsiPeriod)
+            .withDisplayHint(DisplayHint.PERCENT),
+        );
+      },
+    );
+  }
+
+  // --- Momentum oscillators that read whole bars ---
+
+  /**
+   * Accelerator oscillator, registered as `acc` or under the given name: the awesome oscillator minus its SMA of 5
+   * periods. It has no parameters; the awesome oscillator it works from is a diagnostic of the class, not an output.
+   * It is a difference of prices, so it has no display hint.
+   */
+  acceleratorOscillator(name = "acc"): this {
+    this.target.add(name, new AcceleratorOscillatorRTIndicator());
+    return this;
+  }
+
+  /**
+   * Awesome oscillator with the standard (5, 34) parameters, registered as `ao5_34`, or as `ao` + fast period + `_` +
+   * slow period: the fast SMA of the middle of the bar minus the slow one. `fastPeriod` and `slowPeriod` are at least
+   * 1; the fast one is not required to be below the slow one.
+   */
+  awesomeOscillator(): this;
+  awesomeOscillator(fastPeriod: number, slowPeriod: number): this;
+  awesomeOscillator(name: string): this;
+  awesomeOscillator(name: string, fastPeriod: number, slowPeriod: number): this;
+  awesomeOscillator(...args: [] | [string] | [number, number] | [string, number, number]): this {
+    return this.shaped(
+      args,
+      [5, 34],
+      (fastPeriod, slowPeriod) => `ao${fastPeriod}_${slowPeriod}`,
+      (name, fastPeriod, slowPeriod) => {
+        this.target.add(
+          name,
+          new AwesomeOscillatorRTIndicator(fastPeriod, slowPeriod)
+            .withMeta("fastPeriod", fastPeriod)
+            .withMeta("slowPeriod", slowPeriod),
+        );
+      },
+    );
+  }
+
+  /**
+   * Balance of power, registered as `bop` or under the given name: the close minus the open over the range of the bar,
+   * in [-1, 1]. It has no parameters, and it is a ratio and not a 0-100 percentage, so it has no display hint.
+   */
+  balanceOfPower(name = "bop"): this {
+    this.target.add(name, new BalanceOfPowerRTIndicator());
+    return this;
+  }
+
+  /**
+   * Elder's bull and bear power over 13 periods, registered as `bbp13`. The indicator itself is the total power, the
+   * sum of the two; the bull power (the high over the EMA) and the bear power (the low over it) are its other
+   * outputs. `period` is at least 1.
+   */
+  bullBearPower(): this;
+  bullBearPower(period: number): this;
+  bullBearPower(name: string): this;
+  bullBearPower(name: string, period: number): this;
+  bullBearPower(...args: [] | [number] | [string] | [string, number]): this {
+    return this.shaped(
+      args,
+      [13],
+      (period) => `bbp${period}`,
+      (name, period) => {
+        const power = new BullBearPowerRTIndicator(period);
+        power.withMeta("period", period);
+        // The total and both powers are distances from the EMA, in price units
+        this.withOutputs(
+          name,
+          power,
+          output(Pro.SUFFIX_BULL, () => power.getBullPower(), power, DisplayHint.ABSOLUTE),
+          output(Pro.SUFFIX_BEAR, () => power.getBearPower(), power, DisplayHint.ABSOLUTE),
+        );
+      },
+    );
+  }
+
+  /**
+   * Relative vigor index over 10 periods, registered as `rvgi10` (`rvi` is the relative volatility index). `period`
+   * is at least 1.
+   */
+  relativeVigorIndex(): this;
+  relativeVigorIndex(period: number): this;
+  relativeVigorIndex(name: string): this;
+  relativeVigorIndex(name: string, period: number): this;
+  relativeVigorIndex(...args: [] | [number] | [string] | [string, number]): this {
+    return this.shaped(
+      args,
+      [10],
+      (period) => `rvgi${period}`,
+      (name, period) => {
+        this.target.add(name, new RelativeVigorIndexRTIndicator(period).withMeta("period", period));
+      },
+    );
+  }
+
+  /**
+   * Stochastic oscillator with the standard (14, 3, 3) parameters, registered as `stoch14_3_3`, or as `stoch` + %K
+   * period + `_` + %K smoothing + `_` + %D smoothing. The indicator itself is %K; %D, the SMA of %K, is its other
+   * output. Both are in [0, 100], so both are percentages. `kPeriod`, `kSmooth` and `dSmooth` are at least 1.
+   */
+  stochasticOscillator(): this;
+  stochasticOscillator(kPeriod: number, kSmooth: number, dSmooth: number): this;
+  stochasticOscillator(name: string): this;
+  stochasticOscillator(name: string, kPeriod: number, kSmooth: number, dSmooth: number): this;
+  stochasticOscillator(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+    return this.shaped(
+      args,
+      [14, 3, 3],
+      (kPeriod, kSmooth, dSmooth) => `stoch${kPeriod}_${kSmooth}_${dSmooth}`,
+      (name, kPeriod, kSmooth, dSmooth) => {
+        const stochastic = new StochasticOscillatorRTIndicator(kPeriod, kSmooth, dSmooth);
+        stochastic
+          .withMeta("kPeriod", kPeriod)
+          .withMeta("kSmooth", kSmooth)
+          .withMeta("dSmooth", dSmooth)
+          .withDisplayHint(DisplayHint.PERCENT);
+        this.withOutputs(
+          name,
+          stochastic,
+          output(Pro.SUFFIX_D, () => stochastic.getPercentD(), stochastic, DisplayHint.PERCENT),
+        );
+      },
+    );
+  }
+
+  /**
+   * Ultimate oscillator, registered as `uo` or under the given name: the buying pressure over the true range, on 7,
+   * 14 and 28 bars, in [0, 100]. The periods are fixed by the class, so there are none to pass.
+   */
+  ultimateOscillator(name = "uo"): this {
+    this.target.add(name, new UltimateOscillatorRTIndicator().withDisplayHint(DisplayHint.PERCENT));
+    return this;
+  }
+
+  /**
+   * Williams %R over 14 periods, registered as `willr14`: where the close sits between the highest high and the
+   * lowest low of the window, from 0 to -100. `periods` is at least 1.
+   */
+  williamsR(): this;
+  williamsR(periods: number): this;
+  williamsR(name: string): this;
+  williamsR(name: string, periods: number): this;
+  williamsR(...args: [] | [number] | [string] | [string, number]): this {
+    return this.periodic(args, "willr", 14, (periods) => new WilliamsRRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
   }
 
   // --- Averages and oscillators: they read the group's price ---

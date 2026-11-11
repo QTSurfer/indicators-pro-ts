@@ -1,14 +1,17 @@
 #!/usr/bin/env node
-// Rewrites tests/fixtures/reference.json from the Java engine: the values every ported indicator must give.
+// Rewrites the gzip files of tests/fixtures/reference/ from the Java engine: the values every ported indicator must give.
 //
 //   QTS_JAVA_ENGINE=/path/to/java-engine node tools/java-oracle/regenerate.mjs
 //
 // The Java engine checkout is built as it stands (mvn test-compile in its pro module), uncommitted
-// changes included, and its test classpath runs Oracle.java.
+// changes included, and its test classpath runs Oracle.java. The oracle writes one JSON document to a temporary
+// file, which is deleted afterwards; reference-files.mjs splits it into the files of the repository.
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeReference } from "./reference-files.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
@@ -38,7 +41,10 @@ run(
   engine,
 );
 const classpath = [join(pro, "target/test-classes"), join(pro, "target/classes"), readFileSync(classpathFile, "utf8").trim()].join(delimiter);
-mkdirSync(join(root, "tests/fixtures"), { recursive: true });
-const out = join(root, "tests/fixtures/reference.json");
-run("java", ["-cp", classpath, join(here, "Oracle.java"), out], root);
-console.error(`wrote ${out}`);
+const scratch = mkdtempSync(join(tmpdir(), "indicators-pro-oracle-"));
+process.on("exit", () => rmSync(scratch, { recursive: true, force: true }));
+const document = join(scratch, "oracle-output.json");
+run("java", ["-cp", classpath, join(here, "Oracle.java"), document, join(root, "tests/fixtures/facade-calls.txt")], root);
+const directory = join(root, "tests/fixtures/reference");
+const written = writeReference(directory, JSON.parse(readFileSync(document, "utf8")));
+console.error(written.length === 0 ? `${directory} is up to date` : `wrote ${written.join(", ")} in ${directory}`);

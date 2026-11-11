@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
 import type { Kline } from "@qtsurfer/core";
 
 /** The expected values of the ported indicators, written by the Java engine (tools/java-oracle). */
@@ -9,6 +10,8 @@ export interface Reference {
   scenarios: Record<"clean" | "corrupt", Expected>;
   /** Short synthetic price series, and what every price-fed indicator gives on each. */
   edges: Record<string, EdgeExpected>;
+  /** Synthetic series of bars, and what every indicator that reads whole bars gives on each. */
+  barEdges: Record<string, BarEdgeExpected>;
   /** What each call of `facade-calls.txt` registers on an empty group through the Java engine's `Pro`. */
   facade: Record<string, FacadeExpected>;
 }
@@ -32,6 +35,17 @@ export type SeriesSet = Record<string, Encoded[]>;
 
 export interface EdgeExpected {
   price: number[];
+  /** By the key of the indicator and its parameters; `{ throws }` when the Java indicator threw. */
+  series: Record<string, SeriesSet | { throws: string }>;
+}
+
+/** A synthetic series of bars, written as inputs (a field that is not finite is a string), and the series of the bar-fed indicators on it. */
+export interface BarEdgeExpected {
+  open: Encoded[];
+  high: Encoded[];
+  low: Encoded[];
+  close: Encoded[];
+  volume: Encoded[];
   /** By the key of the indicator and its parameters; `{ throws }` when the Java indicator threw. */
   series: Record<string, SeriesSet | { throws: string }>;
 }
@@ -77,11 +91,27 @@ export interface Expected {
 /** The series of a price-fed indicator of a scenario that the oracle writes with the key `key`. */
 export function seriesOf(expected: Expected, key: string): SeriesSet {
   const series = (expected as unknown as Record<string, SeriesSet | undefined>)[key];
-  if (!series) throw new Error(`reference.json has no series ${key}`);
+  if (!series) throw new Error(`the reference has no series ${key}`);
   return series;
 }
 
-export const reference: Reference = JSON.parse(readFileSync(new URL("./fixtures/reference.json", import.meta.url), "utf8"));
+/** The files of `tests/fixtures/reference/` (written by tools/java-oracle), each with some of the top-level keys of `Reference`. */
+const REFERENCE_FILES = ["base", "scenarios", "edges", "barEdges", "facade"];
+
+function loadReference(): Reference {
+  const document: Record<string, unknown> = {};
+  for (const name of REFERENCE_FILES) {
+    const bytes = readFileSync(new URL(`./fixtures/reference/${name}.json.gz`, import.meta.url));
+    const part = JSON.parse(gunzipSync(bytes).toString("utf8")) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(part)) {
+      if (Object.hasOwn(document, key)) throw new Error(`the reference has the key ${key} in more than one file`);
+      document[key] = value;
+    }
+  }
+  return document as unknown as Reference;
+}
+
+export const reference: Reference = loadReference();
 
 const POISON_VALUES = { NaN, Infinity, "-Infinity": -Infinity } as const;
 

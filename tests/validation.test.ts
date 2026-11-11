@@ -5,7 +5,11 @@ import { EnvelopesRTIndicator } from "$averages/EnvelopesRTIndicator";
 import { FramaRTIndicator } from "$averages/FramaRTIndicator";
 import { LeastSquaresMovingAverageRTIndicator } from "$averages/LeastSquaresMovingAverageRTIndicator";
 import { McGinleyDynamicRTIndicator } from "$averages/McGinleyDynamicRTIndicator";
+import { AcceleratorOscillatorRTIndicator } from "$momentum/AcceleratorOscillatorRTIndicator";
 import { AdaptiveFisherTransformRTIndicator } from "$momentum/AdaptiveFisherTransformRTIndicator";
+import { AwesomeOscillatorRTIndicator } from "$momentum/AwesomeOscillatorRTIndicator";
+import { BalanceOfPowerRTIndicator } from "$momentum/BalanceOfPowerRTIndicator";
+import { BullBearPowerRTIndicator } from "$momentum/BullBearPowerRTIndicator";
 import { ChandeForecastOscillatorRTIndicator } from "$momentum/ChandeForecastOscillatorRTIndicator";
 import { CmoRTIndicator } from "$momentum/CmoRTIndicator";
 import { ConnorsRsiRTIndicator } from "$momentum/ConnorsRsiRTIndicator";
@@ -14,9 +18,13 @@ import { DetrendedPriceOscillatorRTIndicator } from "$momentum/DetrendedPriceOsc
 import { FisherTransformRTIndicator } from "$momentum/FisherTransformRTIndicator";
 import { KnowSureThingRTIndicator } from "$momentum/KnowSureThingRTIndicator";
 import { MomentumRTIndicator } from "$momentum/MomentumRTIndicator";
+import { RelativeVigorIndexRTIndicator } from "$momentum/RelativeVigorIndexRTIndicator";
 import { RocRTIndicator } from "$momentum/RocRTIndicator";
+import { StochasticOscillatorRTIndicator } from "$momentum/StochasticOscillatorRTIndicator";
 import { TrixRTIndicator } from "$momentum/TrixRTIndicator";
 import { TrueStrengthIndexRTIndicator } from "$momentum/TrueStrengthIndexRTIndicator";
+import { UltimateOscillatorRTIndicator } from "$momentum/UltimateOscillatorRTIndicator";
+import { WilliamsRRTIndicator } from "$momentum/WilliamsRRTIndicator";
 import { CalmarRatioRTIndicator } from "$statistics/ratios/CalmarRatioRTIndicator";
 import { MaxDrawdownRTIndicator } from "$statistics/ratios/MaxDrawdownRTIndicator";
 import { OmegaRatioRTIndicator } from "$statistics/ratios/OmegaRatioRTIndicator";
@@ -26,7 +34,27 @@ import { TailRatioRTIndicator } from "$statistics/ratios/TailRatioRTIndicator";
 import { UlcerIndexRTIndicator } from "$statistics/ratios/UlcerIndexRTIndicator";
 import { EwmaVolatilityRTIndicator } from "$statistics/volatility/EwmaVolatilityRTIndicator";
 import { RealizedVolatilityRTIndicator } from "$statistics/volatility/RealizedVolatilityRTIndicator";
-import { reference } from "./fixtures";
+import { AroonRTIndicator } from "$trend/AroonRTIndicator";
+import { ChandeKrollStopRTIndicator } from "$trend/ChandeKrollStopRTIndicator";
+import { ChandelierExitRTIndicator } from "$trend/ChandelierExitRTIndicator";
+import { DonchianChannelRTIndicator } from "$trend/DonchianChannelRTIndicator";
+import { EfficiencyRatioRTIndicator } from "$trend/EfficiencyRatioRTIndicator";
+import { ParabolicSarRTIndicator } from "$trend/ParabolicSarRTIndicator";
+import { SuperTrendRTIndicator } from "$trend/SuperTrendRTIndicator";
+import { VortexRTIndicator } from "$trend/VortexRTIndicator";
+import { ChoppinessIndexRTIndicator } from "$volatility/ChoppinessIndexRTIndicator";
+import { KeltnerChannelRTIndicator } from "$volatility/KeltnerChannelRTIndicator";
+import { MassIndexRTIndicator } from "$volatility/MassIndexRTIndicator";
+import { NatrRTIndicator } from "$volatility/NatrRTIndicator";
+import { RelativeVolatilityIndexRTIndicator } from "$volatility/RelativeVolatilityIndexRTIndicator";
+import { AdlRTIndicator } from "$volume/AdlRTIndicator";
+import { ChaikinOscillatorRTIndicator } from "$volume/ChaikinOscillatorRTIndicator";
+import { EaseOfMovementRTIndicator } from "$volume/EaseOfMovementRTIndicator";
+import { ElderForceIndexRTIndicator } from "$volume/ElderForceIndexRTIndicator";
+import { KlingerOscillatorRTIndicator } from "$volume/KlingerOscillatorRTIndicator";
+import { NegativeVolumeIndexRTIndicator } from "$volume/NegativeVolumeIndexRTIndicator";
+import { PvtRTIndicator } from "$volume/PvtRTIndicator";
+import { inputsOf, klines, reference } from "./fixtures";
 
 // The guards of the constructors and of the options, with the messages of the Java engine (a number with no
 // decimal part is the one difference: Java prints a double as 1.0), and reset(): none of them is reached by the
@@ -534,5 +562,458 @@ describe("reset() of the indicators with more than one output", () => {
     adaptive.reset();
     expect(adaptive.getEfficiencyRatio()).toBe(0);
     expect(adaptive.getAdaptivePeriod()).toBe(20);
+  });
+});
+
+// The limits of the constructors of the trend and volatility indicators added with the bar readers, with the messages of
+// the Java engine. The first check that fails speaks, and every check runs before any window, array or inner indicator
+// is built: a negative number of periods is reported with the class's message and not with the one of a window of size -1.
+
+describe("the limits of the constructors of the trend and volatility indicators", () => {
+  it("Aroon, Donchian channel, Efficiency ratio, Vortex, Choppiness index and NATR take no fewer than 1 period", () => {
+    for (const make of [
+      (periods: number) => new AroonRTIndicator(periods),
+      (periods: number) => new DonchianChannelRTIndicator(periods),
+      (periods: number) => new EfficiencyRatioRTIndicator(periods),
+      (periods: number) => new VortexRTIndicator(periods),
+      (periods: number) => new ChoppinessIndexRTIndicator(periods),
+      (periods: number) => new NatrRTIndicator(periods),
+    ]) {
+      accepts(() => make(1));
+      accepts(() => make(2));
+      rejects("Periods must be >= 1, got: 0", () => make(0));
+      rejects("Periods must be >= 1, got: -1", () => make(-1));
+      rejects("Periods must be >= 1, got: -250", () => make(-250));
+    }
+  });
+
+  it("Chande Kroll stop", () => {
+    accepts(() => new ChandeKrollStopRTIndicator());
+    accepts(() => new ChandeKrollStopRTIndicator(1, 0.0, 1, 1)); // a multiplier of 0 is accepted: both stops sit on the closes
+    accepts(() => new ChandeKrollStopRTIndicator(2, 1e308, 2, 2)); // a huge but finite multiplier is accepted
+    rejects("AtrPeriod must be >= 1, got: 0", () => new ChandeKrollStopRTIndicator(0, 1, 1, 1));
+    rejects("AtrPeriod must be >= 1, got: -4", () => new ChandeKrollStopRTIndicator(-4, 1, 1, 1));
+    rejects("Multiplier must be finite and >= 0, got: -1.0", () => new ChandeKrollStopRTIndicator(1, -1, 1, 1));
+    rejects("Multiplier must be finite and >= 0, got: -1.0E200", () => new ChandeKrollStopRTIndicator(1, -1e200, 1, 1));
+    rejects("Multiplier must be finite and >= 0, got: NaN", () => new ChandeKrollStopRTIndicator(1, NaN, 1, 1));
+    rejects("Multiplier must be finite and >= 0, got: Infinity", () => new ChandeKrollStopRTIndicator(1, Infinity, 1, 1));
+    rejects("Multiplier must be finite and >= 0, got: -Infinity", () => new ChandeKrollStopRTIndicator(1, -Infinity, 1, 1));
+    rejects("StopPeriod must be >= 1, got: 0", () => new ChandeKrollStopRTIndicator(1, 1, 0, 1));
+    rejects("StopPeriod must be >= 1, got: -1", () => new ChandeKrollStopRTIndicator(1, 1, -1, 1));
+    rejects("FinalPeriod must be >= 1, got: 0", () => new ChandeKrollStopRTIndicator(1, 1, 1, 0));
+    rejects("FinalPeriod must be >= 1, got: -7", () => new ChandeKrollStopRTIndicator(1, 1, 1, -7));
+  });
+
+  it("Chande Kroll stop checks the ATR period, then the multiplier, then the stop period, then the final period", () => {
+    rejects("AtrPeriod must be >= 1, got: 0", () => new ChandeKrollStopRTIndicator(0, NaN, 0, 0));
+    rejects("Multiplier must be finite and >= 0, got: -2.5", () => new ChandeKrollStopRTIndicator(1, -2.5, 0, 0));
+    rejects("StopPeriod must be >= 1, got: 0", () => new ChandeKrollStopRTIndicator(1, 2.5, 0, 0));
+    rejects("FinalPeriod must be >= 1, got: -3", () => new ChandeKrollStopRTIndicator(1, 2.5, 1, -3));
+  });
+
+  it("Chandelier exit checks the periods, then the multiplier", () => {
+    accepts(() => new ChandelierExitRTIndicator());
+    accepts(() => new ChandelierExitRTIndicator(1, 0.0));
+    rejects("Periods must be >= 1, got: 0", () => new ChandelierExitRTIndicator(0, 3));
+    rejects("Periods must be >= 1, got: -9", () => new ChandelierExitRTIndicator(-9, NaN));
+    rejects("Multiplier must be finite and >= 0, got: -0.5", () => new ChandelierExitRTIndicator(22, -0.5));
+    rejects("Multiplier must be finite and >= 0, got: NaN", () => new ChandelierExitRTIndicator(22, NaN));
+    rejects("Multiplier must be finite and >= 0, got: Infinity", () => new ChandelierExitRTIndicator(22, Infinity));
+    rejects("Multiplier must be finite and >= 0, got: -Infinity", () => new ChandelierExitRTIndicator(22, -Infinity));
+    rejects("Multiplier must be finite and >= 0, got: -1.0E-5", () => new ChandelierExitRTIndicator(22, -1e-5));
+  });
+
+  it("Parabolic SAR checks the step, then the maximum, and takes a maximum below the step", () => {
+    accepts(() => new ParabolicSarRTIndicator());
+    accepts(() => new ParabolicSarRTIndicator(0.1, 0.05)); // afMax below afStep works
+    accepts(() => new ParabolicSarRTIndicator(Number.MIN_VALUE, Number.MIN_VALUE));
+    rejects("AfStep must be finite and > 0, got: 0.0", () => new ParabolicSarRTIndicator(0, 0.2));
+    rejects("AfStep must be finite and > 0, got: -0.02", () => new ParabolicSarRTIndicator(-0.02, 0.2));
+    rejects("AfStep must be finite and > 0, got: -0.0", () => new ParabolicSarRTIndicator(-0, 0.2));
+    rejects("AfStep must be finite and > 0, got: NaN", () => new ParabolicSarRTIndicator(NaN, 0.2));
+    rejects("AfStep must be finite and > 0, got: Infinity", () => new ParabolicSarRTIndicator(Infinity, 0.2));
+    rejects("AfStep must be finite and > 0, got: 0.0", () => new ParabolicSarRTIndicator(0, NaN));
+    rejects("AfMax must be finite and > 0, got: 0.0", () => new ParabolicSarRTIndicator(0.02, 0));
+    rejects("AfMax must be finite and > 0, got: -0.2", () => new ParabolicSarRTIndicator(0.02, -0.2));
+    rejects("AfMax must be finite and > 0, got: NaN", () => new ParabolicSarRTIndicator(0.02, NaN));
+    rejects("AfMax must be finite and > 0, got: Infinity", () => new ParabolicSarRTIndicator(0.02, Infinity));
+    rejects("AfMax must be finite and > 0, got: -Infinity", () => new ParabolicSarRTIndicator(0.02, -Infinity));
+  });
+
+  it("Keltner channel checks the EMA period, then the ATR period, then the multiplier", () => {
+    accepts(() => new KeltnerChannelRTIndicator());
+    accepts(() => new KeltnerChannelRTIndicator(1, 1, 0.0));
+    rejects("EmaPeriod must be >= 1, got: 0", () => new KeltnerChannelRTIndicator(0, 0, -1));
+    rejects("EmaPeriod must be >= 1, got: -2", () => new KeltnerChannelRTIndicator(-2, 10, 1.5));
+    rejects("AtrPeriod must be >= 1, got: 0", () => new KeltnerChannelRTIndicator(20, 0, -1));
+    rejects("AtrPeriod must be >= 1, got: -3", () => new KeltnerChannelRTIndicator(20, -3, 1.5));
+    rejects("Multiplier must be finite and >= 0, got: -1.5", () => new KeltnerChannelRTIndicator(20, 10, -1.5));
+    rejects("Multiplier must be finite and >= 0, got: NaN", () => new KeltnerChannelRTIndicator(20, 10, NaN));
+    rejects("Multiplier must be finite and >= 0, got: Infinity", () => new KeltnerChannelRTIndicator(20, 10, Infinity));
+    rejects("Multiplier must be finite and >= 0, got: -Infinity", () => new KeltnerChannelRTIndicator(20, 10, -Infinity));
+  });
+
+  it("Mass index checks the sum period, then the EMA period", () => {
+    accepts(() => new MassIndexRTIndicator());
+    accepts(() => new MassIndexRTIndicator(1, 1));
+    rejects("SumPeriod must be >= 1, got: 0", () => new MassIndexRTIndicator(0, 0));
+    rejects("SumPeriod must be >= 1, got: -25", () => new MassIndexRTIndicator(-25, 9));
+    rejects("EmaPeriod must be >= 1, got: 0", () => new MassIndexRTIndicator(25, 0));
+    rejects("EmaPeriod must be >= 1, got: -1", () => new MassIndexRTIndicator(1, -1));
+  });
+
+  it("the relative volatility index checks the standard deviation period, then the RSI period", () => {
+    accepts(() => new RelativeVolatilityIndexRTIndicator());
+    accepts(() => new RelativeVolatilityIndexRTIndicator(2, 1));
+    rejects("StdPeriod must be >= 2, got: 1", () => new RelativeVolatilityIndexRTIndicator(1, 14));
+    rejects("StdPeriod must be >= 2, got: 0", () => new RelativeVolatilityIndexRTIndicator(0, 0));
+    rejects("StdPeriod must be >= 2, got: -10", () => new RelativeVolatilityIndexRTIndicator(-10, -10));
+    rejects("RsiPeriod must be >= 1, got: 0", () => new RelativeVolatilityIndexRTIndicator(10, 0));
+    rejects("RsiPeriod must be >= 1, got: -14", () => new RelativeVolatilityIndexRTIndicator(2, -14));
+  });
+
+  it("NATR has no constructor without periods", () => {
+    // @ts-expect-error the Java class has only NatrRTIndicator(int periods)
+    const withoutPeriods = () => new NatrRTIndicator();
+    expect(typeof withoutPeriods).toBe("function");
+  });
+
+  it("the Choppiness index of one period is 0 for every bar", () => {
+    const chop = new ChoppinessIndexRTIndicator(1);
+    for (const kline of klines(inputsOf("clean")).slice(0, 40)) {
+      chop.updateFrom(kline);
+      expect(chop.getValue()).toBe(0);
+    }
+    expect(chop.isReady()).toBe(true);
+  });
+
+  it("the periods and the parameters are what the constructor was given, and the default of each class is Java's", () => {
+    expect([new AroonRTIndicator().periods, new AroonRTIndicator(7).periods]).toEqual([25, 7]);
+    const kroll = new ChandeKrollStopRTIndicator();
+    expect([kroll.getAtrPeriod(), kroll.getMultiplier(), kroll.getStopPeriod(), kroll.getFinalPeriod()]).toEqual([10, 1.0, 9, 9]);
+    const krollOther = new ChandeKrollStopRTIndicator(5, 2.5, 4, 3);
+    expect([krollOther.getAtrPeriod(), krollOther.getMultiplier(), krollOther.getStopPeriod(), krollOther.getFinalPeriod()]).toEqual([5, 2.5, 4, 3]);
+    const chandelier = new ChandelierExitRTIndicator();
+    expect([chandelier.periods, chandelier.getMultiplier()]).toEqual([22, 3.0]);
+    expect([new ChandelierExitRTIndicator(5, 1.5).periods, new ChandelierExitRTIndicator(5, 1.5).getMultiplier()]).toEqual([5, 1.5]);
+    expect([new DonchianChannelRTIndicator().periods, new DonchianChannelRTIndicator(7).periods]).toEqual([20, 7]);
+    expect([new EfficiencyRatioRTIndicator().periods, new EfficiencyRatioRTIndicator(7).periods]).toEqual([10, 7]);
+    const sar = new ParabolicSarRTIndicator();
+    expect([sar.getAfStep(), sar.getAfMax()]).toEqual([0.02, 0.2]);
+    const sarOther = new ParabolicSarRTIndicator(0.05, 0.5);
+    expect([sarOther.getAfStep(), sarOther.getAfMax()]).toEqual([0.05, 0.5]);
+    expect([new VortexRTIndicator().periods, new VortexRTIndicator(7).periods]).toEqual([14, 7]);
+    expect([new ChoppinessIndexRTIndicator().periods, new ChoppinessIndexRTIndicator(7).periods]).toEqual([14, 7]);
+    expect(new NatrRTIndicator(9).periods).toBe(9);
+    const keltner = new KeltnerChannelRTIndicator();
+    expect([keltner.getEmaPeriod(), keltner.getAtrPeriod(), keltner.getMultiplier()]).toEqual([20, 10, 1.5]);
+    const keltnerOther = new KeltnerChannelRTIndicator(5, 3, 2.0);
+    expect([keltnerOther.getEmaPeriod(), keltnerOther.getAtrPeriod(), keltnerOther.getMultiplier()]).toEqual([5, 3, 2.0]);
+    const mass = new MassIndexRTIndicator();
+    expect([mass.getSumPeriod(), mass.getEmaPeriod()]).toEqual([25, 9]);
+    const massOther = new MassIndexRTIndicator(5, 3);
+    expect([massOther.getSumPeriod(), massOther.getEmaPeriod()]).toEqual([5, 3]);
+    const rvi = new RelativeVolatilityIndexRTIndicator();
+    expect([rvi.getStdPeriod(), rvi.getRsiPeriod()]).toEqual([10, 14]);
+    const rviOther = new RelativeVolatilityIndexRTIndicator(5, 3);
+    expect([rviOther.getStdPeriod(), rviOther.getRsiPeriod()]).toEqual([5, 3]);
+  });
+
+  it("the classes built with no argument are the long form with Java's defaults", () => {
+    const bars = klines(inputsOf("clean")).slice(0, 150);
+    const same = [
+      ["Aroon", new AroonRTIndicator(), new AroonRTIndicator(25)],
+      ["Chande Kroll", new ChandeKrollStopRTIndicator(), new ChandeKrollStopRTIndicator(10, 1.0, 9, 9)],
+      ["Chandelier", new ChandelierExitRTIndicator(), new ChandelierExitRTIndicator(22, 3.0)],
+      ["Donchian", new DonchianChannelRTIndicator(), new DonchianChannelRTIndicator(20)],
+      ["Parabolic SAR", new ParabolicSarRTIndicator(), new ParabolicSarRTIndicator(0.02, 0.2)],
+      ["Vortex", new VortexRTIndicator(), new VortexRTIndicator(14)],
+      ["Choppiness", new ChoppinessIndexRTIndicator(), new ChoppinessIndexRTIndicator(14)],
+      ["Keltner", new KeltnerChannelRTIndicator(), new KeltnerChannelRTIndicator(20, 10, 1.5)],
+      ["Mass index", new MassIndexRTIndicator(), new MassIndexRTIndicator(25, 9)],
+    ] as const;
+    for (const [label, byDefault, explicit] of same) {
+      for (const bar of bars) {
+        byDefault.updateFrom(bar);
+        explicit.updateFrom(bar);
+        expect(byDefault.getValue(), label).toBe(explicit.getValue());
+        expect(byDefault.isReady(), label).toBe(explicit.isReady());
+      }
+    }
+    const price = [new EfficiencyRatioRTIndicator(), new EfficiencyRatioRTIndicator(10)] as const;
+    const rvi = [new RelativeVolatilityIndexRTIndicator(), new RelativeVolatilityIndexRTIndicator(10, 14)] as const;
+    for (const p of reference.inputs.price.slice(0, 150)) {
+      expect(price[0].update(p)).toBe(price[1].update(p));
+      expect(rvi[0].update(p)).toBe(rvi[1].update(p));
+    }
+  });
+
+  it("the trend flag of the Parabolic SAR and of SuperTrend is false until the first bar and true after reset(), as in Java", () => {
+    const sar = new ParabolicSarRTIndicator();
+    const superTrend = new SuperTrendRTIndicator();
+    expect([sar.isUpTrend(), superTrend.isUpTrend()]).toEqual([false, false]);
+    for (const bar of klines(inputsOf("clean")).slice(0, 5)) {
+      sar.updateFrom(bar);
+      superTrend.updateFrom(bar);
+    }
+    sar.reset();
+    superTrend.reset();
+    expect([sar.isUpTrend(), superTrend.isUpTrend()]).toEqual([true, true]);
+  });
+
+  it("the Mass index takes the argument of the scalar update as the range", () => {
+    const viaScalar = new MassIndexRTIndicator(5, 3);
+    const viaBars = new MassIndexRTIndicator(5, 3);
+    for (const range of [2, 3, 2.5, 4, 3.5, 5, 4.5, 6]) {
+      expect(viaScalar.update(range)).toBe(viaBars.updateHL(range, 0));
+    }
+    expect(viaScalar.getValue()).toBeGreaterThan(0);
+  });
+});
+
+describe("reset() of the trend and volatility indicators", () => {
+  const bars = klines(inputsOf("clean"));
+  const first = bars.slice(0, 120);
+  const others = bars.slice(300, 420);
+  const prices = reference.inputs.price;
+
+  it.each([
+    ["Aroon", () => new AroonRTIndicator(), (i: AroonRTIndicator) => [i.getAroonUp(), i.getAroonDown()]],
+    ["Chande Kroll stop", () => new ChandeKrollStopRTIndicator(), (i: ChandeKrollStopRTIndicator) => [i.getStopLong(), i.getStopShort()]],
+    ["Chandelier exit", () => new ChandelierExitRTIndicator(), (i: ChandelierExitRTIndicator) => [i.getLongExit(), i.getShortExit()]],
+    ["Donchian channel", () => new DonchianChannelRTIndicator(), (i: DonchianChannelRTIndicator) => [i.getUpper(), i.getLower(), i.getMiddle()]],
+    ["Parabolic SAR", () => new ParabolicSarRTIndicator(), (i: ParabolicSarRTIndicator) => [i.isUpTrend() ? 1 : 0]],
+    ["Vortex", () => new VortexRTIndicator(), (i: VortexRTIndicator) => [i.getVIPlus(), i.getVIMinus()]],
+    ["Choppiness index", () => new ChoppinessIndexRTIndicator(), () => []],
+    ["Keltner channel", () => new KeltnerChannelRTIndicator(), (i: KeltnerChannelRTIndicator) => [i.getUpper(), i.getLower(), i.getMiddle()]],
+    ["Mass index", () => new MassIndexRTIndicator(), () => []],
+    ["NATR", () => new NatrRTIndicator(14), () => []],
+  ] as const)("%s starts again as a new one after it", (_, make, parts) => {
+    const used = make();
+    const fresh = make();
+    for (const bar of first) used.updateFrom(bar);
+    expect(used.isReady()).toBe(true);
+    used.reset();
+    expect(used.getValue()).toBe(0);
+    expect(used.isReady()).toBe(false);
+    for (const bar of others) {
+      used.updateFrom(bar);
+      fresh.updateFrom(bar);
+      expect(used.getValue()).toBe(fresh.getValue());
+      expect(used.isReady()).toBe(fresh.isReady());
+      expect((parts as (i: typeof used) => number[])(used)).toEqual((parts as (i: typeof fresh) => number[])(fresh));
+    }
+  });
+
+  it("Donchian channel puts its boundaries back at -Infinity and Infinity", () => {
+    const donchian = new DonchianChannelRTIndicator(5);
+    for (const bar of first) donchian.updateFrom(bar);
+    expect(Number.isFinite(donchian.getUpper())).toBe(true);
+    donchian.reset();
+    expect([donchian.getUpper(), donchian.getLower()]).toEqual([-Infinity, Infinity]);
+  });
+
+  it.each([
+    ["Efficiency ratio", () => new EfficiencyRatioRTIndicator(), (i: EfficiencyRatioRTIndicator) => [i.getDirection(), i.getVolatility()]],
+    ["Relative volatility index", () => new RelativeVolatilityIndexRTIndicator(), () => []],
+  ] as const)("%s starts again as a new one after it", (_, make, parts) => {
+    const used = make();
+    const fresh = make();
+    for (const price of prices.slice(0, 120)) used.update(price);
+    expect(used.isReady()).toBe(true);
+    used.reset();
+    expect(used.getValue()).toBe(0);
+    expect(used.isReady()).toBe(false);
+    for (const price of prices.slice(300, 420)) {
+      expect(used.update(price)).toBe(fresh.update(price));
+      expect(used.isReady()).toBe(fresh.isReady());
+      expect((parts as (i: typeof used) => number[])(used)).toEqual((parts as (i: typeof fresh) => number[])(fresh));
+    }
+  });
+});
+
+// The limits of the constructors of the momentum and volume indicators that read whole bars, with the messages of the Java
+// engine. The first check that fails speaks, and every check runs before any window, array or inner indicator is built: a
+// negative number of periods is reported with the class's message and not with the one of a window of size -1.
+
+describe("the limits of the constructors of the momentum and volume indicators that read whole bars", () => {
+  it("Williams %R, Ease of Movement and Elder Force Index take no fewer than 1 period", () => {
+    for (const make of [
+      (periods: number) => new WilliamsRRTIndicator(periods),
+      (periods: number) => new EaseOfMovementRTIndicator(periods),
+      (periods: number) => new ElderForceIndexRTIndicator(periods),
+    ]) {
+      accepts(() => make(1));
+      accepts(() => make(2));
+      rejects("Periods must be >= 1, got: 0", () => make(0));
+      rejects("Periods must be >= 1, got: -1", () => make(-1));
+      rejects("Periods must be >= 1, got: -250", () => make(-250));
+    }
+  });
+
+  it("Bull Bear Power and Relative Vigor Index take no fewer than 1 period, and call it a period", () => {
+    for (const make of [(period: number) => new BullBearPowerRTIndicator(period), (period: number) => new RelativeVigorIndexRTIndicator(period)]) {
+      accepts(() => make(1));
+      accepts(() => make(2));
+      rejects("Period must be >= 1, got: 0", () => make(0));
+      rejects("Period must be >= 1, got: -1", () => make(-1));
+      rejects("Period must be >= 1, got: -250", () => make(-250));
+    }
+  });
+
+  it.each([
+    ["Awesome Oscillator", (fast: number, slow: number) => new AwesomeOscillatorRTIndicator(fast, slow)],
+    ["Chaikin Oscillator", (fast: number, slow: number) => new ChaikinOscillatorRTIndicator(fast, slow)],
+  ] as const)("%s checks the fast period, then the slow period, and takes a fast period that is not below the slow one", (_, make) => {
+    accepts(() => make(1, 1));
+    accepts(() => make(3, 8));
+    accepts(() => make(8, 3));
+    accepts(() => make(8, 8));
+    rejects("FastPeriod must be >= 1, got: 0", () => make(0, 0));
+    rejects("FastPeriod must be >= 1, got: -1", () => make(-1, 5));
+    rejects("FastPeriod must be >= 1, got: -250", () => make(-250, -250));
+    rejects("SlowPeriod must be >= 1, got: 0", () => make(1, 0));
+    rejects("SlowPeriod must be >= 1, got: -34", () => make(5, -34));
+  });
+
+  it("Stochastic Oscillator checks the %K period, then the %K smoothing, then the %D smoothing", () => {
+    accepts(() => new StochasticOscillatorRTIndicator());
+    accepts(() => new StochasticOscillatorRTIndicator(1, 1, 1));
+    accepts(() => new StochasticOscillatorRTIndicator(3, 5, 2)); // a smoothing longer than the window is accepted
+    rejects("KPeriod must be >= 1, got: 0", () => new StochasticOscillatorRTIndicator(0, 0, 0));
+    rejects("KPeriod must be >= 1, got: -14", () => new StochasticOscillatorRTIndicator(-14, 3, 3));
+    rejects("KPeriod must be >= 1, got: -1", () => new StochasticOscillatorRTIndicator(-1, -1, -1));
+    rejects("KSmooth must be >= 1, got: 0", () => new StochasticOscillatorRTIndicator(1, 0, 0));
+    rejects("KSmooth must be >= 1, got: -3", () => new StochasticOscillatorRTIndicator(14, -3, 3));
+    rejects("DSmooth must be >= 1, got: 0", () => new StochasticOscillatorRTIndicator(1, 1, 0));
+    rejects("DSmooth must be >= 1, got: -2", () => new StochasticOscillatorRTIndicator(14, 3, -2));
+  });
+
+  it("the classes with no parameter have nothing to check", () => {
+    const makes: (() => { update(price: number): number })[] = [
+      () => new AcceleratorOscillatorRTIndicator(),
+      () => new BalanceOfPowerRTIndicator(),
+      () => new UltimateOscillatorRTIndicator(),
+      () => new AdlRTIndicator(),
+      () => new KlingerOscillatorRTIndicator(),
+      () => new NegativeVolumeIndexRTIndicator(),
+      () => new PvtRTIndicator(),
+    ];
+    for (const make of makes) accepts(make);
+  });
+
+  it("Awesome Oscillator, Chaikin Oscillator and Stochastic Oscillator have no constructor with only some of the parameters", () => {
+    // @ts-expect-error the Java class has only the constructor with no argument and the one with both periods
+    const awesome = () => new AwesomeOscillatorRTIndicator(5);
+    // @ts-expect-error the Java class has only the constructor with no argument and the one with both periods
+    const chaikin = () => new ChaikinOscillatorRTIndicator(3);
+    // @ts-expect-error the Java class has only the constructor with no argument and the one with the three parameters
+    const stochastic = () => new StochasticOscillatorRTIndicator(14, 3);
+    expect([typeof awesome, typeof chaikin, typeof stochastic]).toEqual(["function", "function", "function"]);
+  });
+
+  it("the periods are what the constructor was given, and the default of each class is Java's", () => {
+    expect([new WilliamsRRTIndicator().periods, new WilliamsRRTIndicator(7).periods]).toEqual([14, 7]);
+    expect([new EaseOfMovementRTIndicator().periods, new EaseOfMovementRTIndicator(7).periods]).toEqual([14, 7]);
+    expect([new ElderForceIndexRTIndicator().periods, new ElderForceIndexRTIndicator(7).periods]).toEqual([13, 7]);
+    expect([new StochasticOscillatorRTIndicator().getKPeriod(), new StochasticOscillatorRTIndicator(5, 2, 4).getKPeriod()]).toEqual([14, 5]);
+  });
+
+  it("the classes built with no argument are the long form with Java's defaults", () => {
+    const bars = klines(inputsOf("clean")).slice(0, 150);
+    const same = [
+      ["Awesome Oscillator", new AwesomeOscillatorRTIndicator(), new AwesomeOscillatorRTIndicator(5, 34)],
+      ["Bull Bear Power", new BullBearPowerRTIndicator(), new BullBearPowerRTIndicator(13)],
+      ["Relative Vigor Index", new RelativeVigorIndexRTIndicator(), new RelativeVigorIndexRTIndicator(10)],
+      ["Stochastic Oscillator", new StochasticOscillatorRTIndicator(), new StochasticOscillatorRTIndicator(14, 3, 3)],
+      ["Williams %R", new WilliamsRRTIndicator(), new WilliamsRRTIndicator(14)],
+      ["Chaikin Oscillator", new ChaikinOscillatorRTIndicator(), new ChaikinOscillatorRTIndicator(3, 10)],
+      ["Ease of Movement", new EaseOfMovementRTIndicator(), new EaseOfMovementRTIndicator(14)],
+      ["Elder Force Index", new ElderForceIndexRTIndicator(), new ElderForceIndexRTIndicator(13)],
+    ] as const;
+    for (const [label, byDefault, explicit] of same) {
+      for (const bar of bars) {
+        byDefault.updateFrom(bar);
+        explicit.updateFrom(bar);
+        expect(byDefault.getValue(), label).toBe(explicit.getValue());
+        expect(byDefault.isReady(), label).toBe(explicit.isReady());
+      }
+    }
+  });
+});
+
+describe("reset() of the momentum and volume indicators that read whole bars", () => {
+  const bars = klines(inputsOf("clean"));
+  const first = bars.slice(0, 120);
+  const others = bars.slice(300, 420);
+
+  it.each([
+    ["Accelerator Oscillator", () => new AcceleratorOscillatorRTIndicator(), (i: AcceleratorOscillatorRTIndicator) => [i.getAO()]],
+    ["Awesome Oscillator", () => new AwesomeOscillatorRTIndicator(), () => []],
+    ["Balance of Power", () => new BalanceOfPowerRTIndicator(), () => []],
+    ["Bull Bear Power", () => new BullBearPowerRTIndicator(), (i: BullBearPowerRTIndicator) => [i.getBullPower(), i.getBearPower()]],
+    ["Relative Vigor Index", () => new RelativeVigorIndexRTIndicator(), () => []],
+    ["Stochastic Oscillator", () => new StochasticOscillatorRTIndicator(), (i: StochasticOscillatorRTIndicator) => [i.getPercentK(), i.getPercentD()]],
+    ["Ultimate Oscillator", () => new UltimateOscillatorRTIndicator(), () => []],
+    ["Williams %R", () => new WilliamsRRTIndicator(), () => []],
+    ["ADL", () => new AdlRTIndicator(), () => []],
+    ["Chaikin Oscillator", () => new ChaikinOscillatorRTIndicator(), () => []],
+    ["Ease of Movement", () => new EaseOfMovementRTIndicator(), () => []],
+    ["Elder Force Index", () => new ElderForceIndexRTIndicator(), () => []],
+    ["Klinger Oscillator", () => new KlingerOscillatorRTIndicator(), (i: KlingerOscillatorRTIndicator) => [i.getSignal()]],
+    ["Negative Volume Index", () => new NegativeVolumeIndexRTIndicator(), () => []],
+    ["PVT", () => new PvtRTIndicator(), () => []],
+  ] as const)("%s starts again as a new one after it", (_, make, parts) => {
+    const used = make();
+    const fresh = make();
+    for (const bar of first) used.updateFrom(bar);
+    expect(used.isReady()).toBe(true);
+    used.reset();
+    expect(used.getValue()).toBe(0);
+    expect(used.isReady()).toBe(false);
+    expect((parts as (i: typeof used) => number[])(used).every((part) => part === 0)).toBe(true);
+    for (const bar of others) {
+      used.updateFrom(bar);
+      fresh.updateFrom(bar);
+      expect(used.getValue()).toBe(fresh.getValue());
+      expect(used.isReady()).toBe(fresh.isReady());
+      expect((parts as (i: typeof used) => number[])(used)).toEqual((parts as (i: typeof fresh) => number[])(fresh));
+    }
+  });
+
+  it("Balance of Power, ADL, Negative Volume Index and PVT are ready after their first bar that is taken, and not after reset() or a bar that is left out", () => {
+    type Field = "open" | "high" | "low" | "close" | "volume";
+    const readers: [() => BalanceOfPowerRTIndicator | AdlRTIndicator | NegativeVolumeIndexRTIndicator | PvtRTIndicator, Field[]][] = [
+      [() => new BalanceOfPowerRTIndicator(), ["open", "high", "low", "close"]],
+      [() => new AdlRTIndicator(), ["high", "low", "close", "volume"]],
+      [() => new NegativeVolumeIndexRTIndicator(), ["close", "volume"]],
+      [() => new PvtRTIndicator(), ["close", "volume"]],
+    ];
+    for (const [make, reads] of readers) {
+      const left = reads.flatMap((field) => [NaN, Infinity, -Infinity].map((bad) => ({ ...bars[0], [field]: bad })));
+      const indicator = make();
+      expect(indicator.isReady()).toBe(false);
+      for (const bar of left) indicator.updateFrom(bar);
+      expect(indicator.isReady()).toBe(false);
+      expect(indicator.getValue()).toBe(0);
+      indicator.updateFrom(bars[0]);
+      expect(indicator.isReady()).toBe(true);
+      indicator.reset();
+      expect(indicator.isReady()).toBe(false);
+      for (const bar of left) indicator.updateFrom(bar);
+      expect(indicator.isReady()).toBe(false);
+    }
+  });
+
+  it("the Negative Volume Index reads 0 before its first bar and after reset(), and starts at 1000", () => {
+    const nvi = new NegativeVolumeIndexRTIndicator();
+    expect(nvi.getValue()).toBe(0);
+    nvi.updateFrom(bars[0]);
+    expect(nvi.getValue()).toBe(1000);
+    for (const bar of first) nvi.updateFrom(bar);
+    nvi.reset();
+    expect(nvi.getValue()).toBe(0);
+    nvi.updateFrom(bars[1]);
+    expect(nvi.getValue()).toBe(1000);
   });
 });
