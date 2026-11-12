@@ -1,5 +1,11 @@
 # @qtsurfer/indicators-pro
 
+## 0.4.3
+
+### Patch Changes
+
+- [#10](https://github.com/QTSurfer/indicators-pro-ts/pull/10) [`528c24a`](https://github.com/QTSurfer/indicators-pro-ts/commit/528c24a9ab5f7c5eae5b00f9ad7ff191cf9914c2) Thanks [@mrmx](https://github.com/mrmx)! - Skewness: the sample skewness uses the adjusted G1 of Java v2, sqrt(n(n-1)) _ m3 / ((n-2) _ m2^1.5) on population moments. Values change for every window; the reference fixtures are regenerated from that release.
+
 ## 0.4.2
 
 ### Patch Changes
