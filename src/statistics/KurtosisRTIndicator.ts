@@ -54,7 +54,7 @@ export class KurtosisRTIndicator extends AbstractWindowSeriesRTIndicator {
     const n1 = n - 1;
     const n2 = n - 2;
     const n3 = n - 3;
-    const kurtosis = (n * (n + 1) * m4) / (n1 * n2 * n3 * m2 * m2) - (3.0 * n1 * n1) / (n2 * n3);
+    const kurtosis = ((n + 1) * n1 * m4) / (n2 * n3 * m2 * m2) - (3.0 * n1 * n1) / (n2 * n3);
     return this.setValue(kurtosis);
   }
 }

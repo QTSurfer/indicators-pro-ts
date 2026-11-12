@@ -1440,3 +1440,29 @@ describe("the exact statistics factories, as the Java engine's Pro gives them", 
     expect(stdDev.getMean()).toBe(7);
   });
 });
+
+describe("the sample excess kurtosis, as Java v2 alpha.25 gives it", () => {
+  const closeBar = (close: number, timestamp: number): Kline => ({ ...klines(inputsOf("clean"))[0], close, timestamp });
+
+  it("gives -1.2 for the window 1 to 5 through the builder", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group).kurtosis("k", 5);
+    [1, 2, 3, 4, 5].forEach((close, i) => map.updateFrom(closeBar(close, i)));
+    expect(group.getIndicatorValue("k")).toBeCloseTo(-1.2, 12);
+  });
+
+  it("gives Java's value for one outlier in a window of 30 through the builder", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group).kurtosis("k", 30);
+    for (let i = 0; i < 29; i++) map.updateFrom(closeBar(100 + i * 0.01, i));
+    map.updateFrom(closeBar(130, 29));
+    expect(group.getIndicatorValue("k")).toBeCloseTo(29.984359955811478, 10);
+  });
+
+  it("gives the same values through the class", () => {
+    const window = new KurtosisRTIndicator(5);
+    let last = 0;
+    for (const v of [1, 2, 3, 4, 5]) last = window.update(v);
+    expect(last).toBeCloseTo(-1.2, 12);
+  });
+});
