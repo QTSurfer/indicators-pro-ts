@@ -47,7 +47,7 @@ export class SkewnessRTIndicator extends AbstractWindowSeriesRTIndicator {
     }
     const m2 = squares / n;
     const m3 = cubes / n;
-    const skew = (n * n * m3) / ((n - 1) * (n - 2) * m2 * Math.sqrt(m2));
+    const skew = (Math.sqrt(n * (n - 1)) * m3) / ((n - 2) * m2 * Math.sqrt(m2));
     return this.setValue(skew);
   }
 }
