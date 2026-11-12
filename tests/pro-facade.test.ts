@@ -1466,3 +1466,13 @@ describe("the sample excess kurtosis, as Java v2 alpha.25 gives it", () => {
     expect(last).toBeCloseTo(-1.2, 12);
   });
 });
+
+describe("the sample skewness, as Java v2 gives it after the adjusted G1 fix", () => {
+  it("gives Java's value for the window 1, 2, 3, 4, 10 through the builder", () => {
+    const closeBar = (close: number, timestamp: number): Kline => ({ ...klines(inputsOf("clean"))[0], close, timestamp });
+    const { map, group } = klineGroup();
+    Pro.on(group).skewness("s", 5);
+    [1, 2, 3, 4, 10].forEach((close, i) => map.updateFrom(closeBar(close, i)));
+    expect(group.getIndicatorValue("s")).toBeCloseTo(1.6970562748477143, 12);
+  });
+});
