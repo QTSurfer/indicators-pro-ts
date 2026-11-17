@@ -16,7 +16,9 @@ const WEIGHT_SUM = 6.0;
  * ```
  *
  * The weights 1, 2, 2, 1 are applied to the last four bars, and the result is smoothed by the block average of the base
- * module, which changes once per period. 10 periods by default; the value is 0 while the four bars are not in, and
+ * module by default, which changes once per period; the moving averages of the usual definition are the default now
+ * when `discreteSmas` is false, and `discreteSmas` set to true keeps the block averages. 10 periods by default; the value
+ * is 0 while the four bars are not in, and
  * when the average of the denominator is 0. A bar whose open, high, low or close is not finite (NaN or an infinity) is
  * left out: nothing is updated and the last value is returned. So is a bar whose difference of close and open, or of
  * high and low, overflows. A bar whose weighted sums overflow has already entered the four-bar buffers, but neither
@@ -31,13 +33,16 @@ export class RelativeVigorIndexRTIndicator extends AbstractRTIndicator implement
   private bufferIndex = 0;
   private bufferCount = 0;
 
-  constructor(period: number = 10) {
+  constructor();
+  constructor(period: number);
+  constructor(period: number, discreteSmas: boolean);
+  constructor(period: number = 10, discreteSmas: boolean = false) {
     super();
     if (period < 1) {
       throw new RangeError(`Period must be >= 1, got: ${period}`);
     }
-    this.numSma = new SmaRTIndicator(period);
-    this.denSma = new SmaRTIndicator(period);
+    this.numSma = new SmaRTIndicator(period).withDiscreteMode(discreteSmas);
+    this.denSma = new SmaRTIndicator(period).withDiscreteMode(discreteSmas);
   }
 
   override isReady(): boolean {

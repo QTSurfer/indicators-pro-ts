@@ -562,17 +562,17 @@ describe("a value worked out from finite fields that overflows, in the momentum 
   const ao = [(i: AcceleratorOscillatorRTIndicator) => i.getAO()];
 
   it("Accelerator Oscillator holds when the midpoint overflows, and the bar leaves no trace", () => {
-    const rows = play(new AcceleratorOscillatorRTIndicator(), acceleratorMidpointOverflow, ao);
+    const rows = play(new AcceleratorOscillatorRTIndicator(true), acceleratorMidpointOverflow, ao);
     expectRows(rows, acceleratorMidpointOverflow.rows, "Accelerator midpoint overflow");
     expect(rows[5]).toEqual(rows[4]);
     // the bar is not counted by any average: the bars after it give what they give without it
-    const without = play(new AcceleratorOscillatorRTIndicator(), acceleratorMidpointOverflowAbsent, ao);
+    const without = play(new AcceleratorOscillatorRTIndicator(true), acceleratorMidpointOverflowAbsent, ao);
     expectRows(without, acceleratorMidpointOverflowAbsent.rows, "Accelerator without the bar");
     expect(rows.slice(6)).toEqual(without.slice(5));
   });
 
   it("Accelerator Oscillator takes the scalar update as a bar with every field the same: a value whose midpoint overflows is held", () => {
-    const rows = play(new AcceleratorOscillatorRTIndicator(), acceleratorScalar, ao);
+    const rows = play(new AcceleratorOscillatorRTIndicator(true), acceleratorScalar, ao);
     expectRows(rows, acceleratorScalar.rows, "Accelerator scalar");
     // MAX is held, MAX / 2 is not: its midpoint is MAX / 2
     expect(rows[2]).toEqual(rows[1]);
@@ -580,43 +580,43 @@ describe("a value worked out from finite fields that overflows, in the momentum 
   });
 
   it("Awesome Oscillator holds when the midpoint overflows, and a huge but finite range is not a hold", () => {
-    const rows = play(new AwesomeOscillatorRTIndicator(2, 3), awesomeMidpointOverflow);
+    const rows = play(new AwesomeOscillatorRTIndicator(2, 3, true), awesomeMidpointOverflow);
     expectRows(rows, awesomeMidpointOverflow.rows, "Awesome midpoint overflow");
     expect(rows[3]).toEqual(rows[2]); // high and low at MAX: the sum overflows
     // high at MAX and low at -MAX: the midpoint is 0, and the bar counts
-    const without = play(new AwesomeOscillatorRTIndicator(2, 3), awesomeMidpointOverflowAbsent);
+    const without = play(new AwesomeOscillatorRTIndicator(2, 3, true), awesomeMidpointOverflowAbsent);
     expectRows(without, awesomeMidpointOverflowAbsent.rows, "Awesome without the bar");
     expect(rows.slice(4)).toEqual(without.slice(3));
   });
 
   it("Awesome Oscillator takes the argument of the scalar update as the midpoint itself, so it accepts what a bar cannot give", () => {
-    const rows = play(new AwesomeOscillatorRTIndicator(1, 3), awesomeScalar);
+    const rows = play(new AwesomeOscillatorRTIndicator(1, 3, true), awesomeScalar);
     expectRows(rows, awesomeScalar.rows, "Awesome scalar");
     // -MAX then MAX: the fast average is MAX and the slow one still -MAX, so the difference overflows and is returned
     expect(rows[1][0]).toBe(Infinity);
     // a bar with high and low at MAX (or -MAX) has no such midpoint: both are held, and the value stays 0
-    const bar = new AwesomeOscillatorRTIndicator(1, 3);
+    const bar = new AwesomeOscillatorRTIndicator(1, 3, true);
     bar.updateFrom(kline("hl", [-MAX, -MAX], 0));
     bar.updateFrom(kline("hl", [MAX, MAX], 1));
     expect([bar.getValue(), bar.isReady()]).toEqual([0, false]);
-    const scalar = new AwesomeOscillatorRTIndicator(1, 3);
+    const scalar = new AwesomeOscillatorRTIndicator(1, 3, true);
     scalar.update(-MAX);
     scalar.update(MAX);
     expect(scalar.getValue()).toBe(Infinity);
   });
 
   it("Relative Vigor Index holds when a difference overflows, and the bar leaves no trace", () => {
-    const rows = play(new RelativeVigorIndexRTIndicator(2), relativeVigorDifferenceOverflow);
+    const rows = play(new RelativeVigorIndexRTIndicator(2, true), relativeVigorDifferenceOverflow);
     expectRows(rows, relativeVigorDifferenceOverflow.rows, "Relative Vigor difference overflow");
     expect(rows[4]).toEqual(rows[3]); // close - open overflows
     expect(rows[5]).toEqual(rows[3]); // high - low overflows
-    const without = play(new RelativeVigorIndexRTIndicator(2), relativeVigorDifferenceOverflowAbsent);
+    const without = play(new RelativeVigorIndexRTIndicator(2, true), relativeVigorDifferenceOverflowAbsent);
     expectRows(without, relativeVigorDifferenceOverflowAbsent.rows, "Relative Vigor without the bars");
     expect(rows.slice(6)).toEqual(without.slice(4));
   });
 
   it("Relative Vigor Index holds when a weighted sum overflows, but the bar is in the buffers and neither average is fed", () => {
-    const rows = play(new RelativeVigorIndexRTIndicator(2), relativeVigorWeightedSumOverflow);
+    const rows = play(new RelativeVigorIndexRTIndicator(2, true), relativeVigorWeightedSumOverflow);
     expectRows(rows, relativeVigorWeightedSumOverflow.rows, "Relative Vigor weighted sum overflow");
     // the fourth and fifth bars fill the buffers and are held: the value is the 0 of the bars before
     expect(rows.slice(0, 6).map((row) => row[0])).toEqual([0, 0, 0, 0, 0, 0]);
@@ -627,10 +627,10 @@ describe("a value worked out from finite fields that overflows, in the momentum 
 
   it("Stochastic Oscillator holds when the raw %K overflows, though the bar is in the windows: it can be ready with nothing computed", () => {
     const parts = [(i: StochasticOscillatorRTIndicator) => i.getPercentK(), (i: StochasticOscillatorRTIndicator) => i.getPercentD()];
-    const first = play(new StochasticOscillatorRTIndicator(1, 1, 1), stochasticRawKFirstBar, parts);
+    const first = play(new StochasticOscillatorRTIndicator(1, 1, 1, true), stochasticRawKFirstBar, parts);
     expectRows(first, stochasticRawKFirstBar.rows, "Stochastic raw %K overflow on the first bar");
     expect(first[0]).toEqual([0, 1, 0, 0]); // ready, and both lines still 0
-    const rows = play(new StochasticOscillatorRTIndicator(3, 2, 2), stochasticDistanceOverflow, parts);
+    const rows = play(new StochasticOscillatorRTIndicator(3, 2, 2, true), stochasticDistanceOverflow, parts);
     expectRows(rows, stochasticDistanceOverflow.rows, "Stochastic distance overflow");
     const lines = (row: readonly number[]): number[] => [row[0], ...row.slice(2)];
     expect(lines(rows[2])).toEqual(lines(rows[1])); // the value and both lines are those of the bar before
@@ -640,7 +640,7 @@ describe("a value worked out from finite fields that overflows, in the momentum 
 
   it("Stochastic Oscillator: a range that overflows gives a raw %K of 0 and not a hold", () => {
     const parts = [(i: StochasticOscillatorRTIndicator) => i.getPercentK(), (i: StochasticOscillatorRTIndicator) => i.getPercentD()];
-    const rows = play(new StochasticOscillatorRTIndicator(3, 2, 2), stochasticRangeOverflow, parts);
+    const rows = play(new StochasticOscillatorRTIndicator(3, 2, 2, true), stochasticRangeOverflow, parts);
     expectRows(rows, stochasticRangeOverflow.rows, "Stochastic range overflow");
     assertAllFinite(rows, "Stochastic range overflow");
   });

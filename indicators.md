@@ -162,26 +162,28 @@ only with a name: `knowSureThing("k", [10, 15], [10, 10], [1, 2], 9)`. The eight
 Oscillator, Awesome Oscillator, Balance of Power, Bull Bear Power, Relative Vigor Index, Stochastic Oscillator, Ultimate
 Oscillator and Williams %R) belong on a kline group, and take their parameters the same way
 (`stochasticOscillator(5, 3, 2)`); Accelerator Oscillator, Balance of Power and Ultimate Oscillator have none, so their
-calls take only an optional name (`balanceOfPower("b")`).
+calls take only an optional name (`balanceOfPower("b")`). The averages of Accelerator Oscillator, Awesome Oscillator,
+Know sure thing, Relative Vigor Index and Stochastic Oscillator are moving averages by default, as in the Java engine since
+1.0.0-alpha.27; a last `true` (`awesomeOscillator("ao", 3, 8, true)`) keeps the discrete averages of the earlier versions.
 
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
-| Accelerator Oscillator | `AcceleratorOscillatorRTIndicator` | `acceleratorOscillator()` | `acc` | | yes | how fast the Awesome Oscillator is changing: the AO less its 5-period average; the value is that difference, the class also gives the AO, which is not an output |
+| Accelerator Oscillator | `AcceleratorOscillatorRTIndicator` | `acceleratorOscillator()` | `acc` | | yes | how fast the Awesome Oscillator is changing: the AO less its 5-period average, moving averages by default (`true` as the last argument of the named form: discrete); the value is that difference, the class also gives the AO, which is not an output |
 | Adaptive Fisher transform | `AdaptiveFisherTransformRTIndicator` | `adaptiveFisherTransform()` | `afisher10_5_20` |  | | Fisher transform whose window follows the efficiency ratio; the class also gives the ratio and the window, which are not outputs; 10, 5 and 20 periods by default |
-| Awesome Oscillator | `AwesomeOscillatorRTIndicator` | `awesomeOscillator()` | `ao5_34` | | yes | a fast average of the midpoint of the bar less a slow one; 5 and 34 periods by default; the fast period is not required to be below the slow one, and the class is ready when both averages are |
+| Awesome Oscillator | `AwesomeOscillatorRTIndicator` | `awesomeOscillator()` | `ao5_34` | | yes | a fast average of the midpoint of the bar less a slow one; 5 and 34 periods by default, moving averages by default (a last `true` in the named form: discrete); the fast period is not required to be below the slow one, and the class is ready when both averages are |
 | Balance of Power | `BalanceOfPowerRTIndicator` | `balanceOfPower()` | `bop` | | yes | the move from the open to the close as a share of the range of the bar, from -1 to 1; 0 when the bar has no range |
 | Bull Bear Power | `BullBearPowerRTIndicator` | `bullBearPower()` | `bbp13` | `Bull`, `Bear` | yes | Elder's Bull Power and Bear Power, the high and the low less an EMA of the close; the main output is their sum, `Bull` and `Bear` are the two parts; 13 periods by default |
 | Chande forecast oscillator | `ChandeForecastOscillatorRTIndicator` | `chandeForecastOscillator()` | `cfo14` |  | | percentage deviation of the price from its least squares average, which is not an output; 14 periods by default |
 | Chande momentum oscillator | `CmoRTIndicator` | `cmo()` | `cmo14` |  | | gains less losses over their sum for the last price changes, from -100 to 100; 14 periods by default |
-| Connors RSI | `ConnorsRsiRTIndicator` | `connorsRsi()` | `crsi3_2_100` |  | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change; 3, 2 and 100 periods by default |
+| Connors RSI | `ConnorsRsiRTIndicator` | `connorsRsi()` | `crsi3_2_100` |  | | mean of the RSI of the price, the RSI of its streak and the percent rank of its rate of change, which counts the other values of the window strictly below the current one (0 to 100); 3, 2 and 100 periods by default |
 | Coppock curve | `CoppockCurveRTIndicator` | `coppockCurve()` | `coppock14_11_10` |  | | weighted moving average of the sum of two rates of change; 14, 11 and 10 periods by default |
 | Detrended price oscillator | `DetrendedPriceOscillatorRTIndicator` | `detrendedPriceOscillator()` | `dpo20` |  | | a past price less the simple moving average of the window; 20 periods by default |
 | Fisher transform | `FisherTransformRTIndicator` | `fisherTransform()` | `fisher10` |  | | the price turned into a Gaussian-like variable for sharper turning points; 10 periods by default |
-| Know sure thing | `KnowSureThingRTIndicator` | `knowSureThing()` | `kst` | `Signal` | | weighted sum of four smoothed rates of change; the signal, an average of the KST, is the `Signal` output; Pring's periods and weights by default |
+| Know sure thing | `KnowSureThingRTIndicator` | `knowSureThing()` | `kst` | `Signal` | | weighted sum of four smoothed rates of change; the signal, an average of the KST, is the `Signal` output; Pring's periods and weights by default; moving averages by default (a last `true` in the named form: discrete) |
 | Momentum | `MomentumRTIndicator` | `momentum()` | `mom10` |  | | the price less the price n ticks ago; 10 periods by default |
 | Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
-| Relative Vigor Index | `RelativeVigorIndexRTIndicator` | `relativeVigorIndex()` | `rvgi10` | | yes | how firmly the close follows the open compared with the range of the bar, over the last four bars and then smoothed; 10 periods by default |
-| Stochastic Oscillator | `StochasticOscillatorRTIndicator` | `stochasticOscillator()` | `stoch14_3_3` | `D` | yes | where the close is between the lowest low and the highest high of the window; the main output is %K, `D` is %D; 14, 3 and 3 periods by default (window, %K smoothing, %D smoothing) |
+| Relative Vigor Index | `RelativeVigorIndexRTIndicator` | `relativeVigorIndex()` | `rvgi10` | | yes | how firmly the close follows the open compared with the range of the bar, over the last four bars and then smoothed; 10 periods by default, moving averages by default (a last `true` in the named form: discrete) |
+| Stochastic Oscillator | `StochasticOscillatorRTIndicator` | `stochasticOscillator()` | `stoch14_3_3` | `D` | yes | where the close is between the lowest low and the highest high of the window; the main output is %K, `D` is %D; 14, 3 and 3 periods by default (window, %K smoothing, %D smoothing), moving averages by default (a last `true` in the named form: discrete) |
 | TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
 | True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
 | Ultimate Oscillator | `UltimateOscillatorRTIndicator` | `ultimateOscillator()` | `uo` | | yes | buying pressure over the true range, over windows of 7, 14 and 28 bars, from 0 to 100 |

@@ -1476,3 +1476,19 @@ describe("the sample skewness, as Java v2 gives it after the adjusted G1 fix", (
     expect(group.getIndicatorValue("s")).toBeCloseTo(1.6970562748477143, 12);
   });
 });
+
+describe("the discrete flag of the oscillator factories", () => {
+  it("the named factories pass the flag to the class", () => {
+    const { map, group } = klineGroup();
+    Pro.on(group).awesomeOscillator("ao", 3, 8, true).stochasticOscillator("st", 9, 4, 4, false);
+    const direct = new AwesomeOscillatorRTIndicator(3, 8, true);
+    const stochastic = new StochasticOscillatorRTIndicator(9, 4, 4, false);
+    for (const bar of klines(inputsOf("clean")).slice(0, 120)) {
+      map.updateFrom(bar);
+      direct.updateFrom(bar);
+      stochastic.updateFrom(bar);
+      expect(group.getIndicatorValue("ao")).toBe(direct.getValue());
+      expect(group.getIndicatorValue("st")).toBe(stochastic.getValue());
+    }
+  });
+});

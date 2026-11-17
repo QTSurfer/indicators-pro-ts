@@ -12,17 +12,27 @@ import { barOf } from "$core/Bar";
  * ```
  *
  * The value is the AC; `getAO` gives the Awesome Oscillator it is built on. The averages are the block averages of the
- * base module: each one changes once per period, not on every bar. A bar whose high or low is not finite (NaN or an
+ * usual definition by default; with `discreteSmas` set to true they are the block averages of the base module instead, each
+ * one changing once per period. A bar whose high or low is not finite (NaN or an
  * infinity) is left out: nothing is updated, the last value is returned and `getAO` keeps its last value. So is a bar
  * whose midpoint overflows, which takes a high and a low near the largest double. The class is ready when the slow
  * average and the average of the AO are.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.AcceleratorOscillatorRTIndicator
  */
 export class AcceleratorOscillatorRTIndicator extends AbstractRTIndicator implements RTIndicatorSource<Kline | Ticker> {
-  private readonly fastSma = new SmaRTIndicator(5);
-  private readonly slowSma = new SmaRTIndicator(34);
-  private readonly aoSma = new SmaRTIndicator(5);
+  private readonly fastSma: SmaRTIndicator;
+  private readonly slowSma: SmaRTIndicator;
+  private readonly aoSma: SmaRTIndicator;
   private ao = 0;
+
+  constructor();
+  constructor(discreteSmas: boolean);
+  constructor(discreteSmas: boolean = false) {
+    super();
+    this.fastSma = new SmaRTIndicator(5).withDiscreteMode(discreteSmas);
+    this.slowSma = new SmaRTIndicator(34).withDiscreteMode(discreteSmas);
+    this.aoSma = new SmaRTIndicator(5).withDiscreteMode(discreteSmas);
+  }
 
   /** The Awesome Oscillator, as of the last update. */
   getAO(): number {

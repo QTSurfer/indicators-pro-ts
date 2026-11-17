@@ -735,6 +735,11 @@ public class Oracle {
           new int[] {3, 5, 7}, new int[] {2, 3, 4}, new double[] {1.5, 2.5, 0.5}, 4);
       return run(p, i::update, read("signal", i::getSignal), ready(i));
     }));
+    list.add(new Subject("knowSureThing3WeightedDiscrete", false, () -> {
+      var i = new KnowSureThingRTIndicator(
+          new int[] {3, 5, 7}, new int[] {2, 3, 4}, new double[] {1.5, 2.5, 0.5}, 4, true);
+      return run(p, i::update, read("signal", i::getSignal), ready(i));
+    }));
     list.add(new Subject("trixDefault", false, () -> {
       var i = new TrixRTIndicator();
       return run(p, i::update, ready(i));
@@ -1143,6 +1148,26 @@ public class Oracle {
     list.add(new BarSubject("awesomeOscillator1_1", false, b -> {
       var i = new AwesomeOscillatorRTIndicator(1, 1);
       return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("acceleratorOscillatorDiscrete", true, b -> {
+      var i = new AcceleratorOscillatorRTIndicator(true);
+      return runBars(b, i, read("ao", i::getAO), ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillatorDiscrete", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(5, 34, true);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("awesomeOscillator3_8Discrete", true, b -> {
+      var i = new AwesomeOscillatorRTIndicator(3, 8, true);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("relativeVigorIndexDiscrete", true, b -> {
+      var i = new RelativeVigorIndexRTIndicator(10, true);
+      return runBars(b, i, ready(i));
+    }));
+    list.add(new BarSubject("stochasticOscillatorDiscrete", true, b -> {
+      var i = new StochasticOscillatorRTIndicator(14, 3, 3, true);
+      return runBars(b, i, read("percentK", i::getPercentK), read("percentD", i::getPercentD), ready(i));
     }));
     list.add(new BarSubject("balanceOfPower", true, b -> {
       var i = new BalanceOfPowerRTIndicator();

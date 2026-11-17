@@ -1044,8 +1044,10 @@ export class Pro {
    * periods. It has no parameters; the awesome oscillator it works from is a diagnostic of the class, not an output.
    * It is a difference of prices, so it has no display hint.
    */
-  acceleratorOscillator(name = "acc"): this {
-    this.target.add(name, new AcceleratorOscillatorRTIndicator());
+  acceleratorOscillator(name?: string): this;
+  acceleratorOscillator(name: string, discreteSmas: boolean): this;
+  acceleratorOscillator(name = "acc", discreteSmas = false): this {
+    this.target.add(name, new AcceleratorOscillatorRTIndicator(discreteSmas));
     return this;
   }
 
@@ -1058,15 +1060,20 @@ export class Pro {
   awesomeOscillator(fastPeriod: number, slowPeriod: number): this;
   awesomeOscillator(name: string): this;
   awesomeOscillator(name: string, fastPeriod: number, slowPeriod: number): this;
-  awesomeOscillator(...args: [] | [string] | [number, number] | [string, number, number]): this {
+  awesomeOscillator(name: string, fastPeriod: number, slowPeriod: number, discreteSmas: boolean): this;
+  awesomeOscillator(
+    ...args: [] | [string] | [number, number] | [string, number, number] | [string, number, number, boolean]
+  ): this {
+    const discreteSmas = typeof args[args.length - 1] === "boolean" ? (args[args.length - 1] as boolean) : false;
+    const rest = (typeof args[args.length - 1] === "boolean" ? args.slice(0, -1) : args) as [] | [string] | [number, number] | [string, number, number];
     return this.shaped(
-      args,
+      rest,
       [5, 34],
       (fastPeriod, slowPeriod) => `ao${fastPeriod}_${slowPeriod}`,
       (name, fastPeriod, slowPeriod) => {
         this.target.add(
           name,
-          new AwesomeOscillatorRTIndicator(fastPeriod, slowPeriod)
+          new AwesomeOscillatorRTIndicator(fastPeriod, slowPeriod, discreteSmas)
             .withMeta("fastPeriod", fastPeriod)
             .withMeta("slowPeriod", slowPeriod),
         );
@@ -1119,13 +1126,16 @@ export class Pro {
   relativeVigorIndex(period: number): this;
   relativeVigorIndex(name: string): this;
   relativeVigorIndex(name: string, period: number): this;
-  relativeVigorIndex(...args: [] | [number] | [string] | [string, number]): this {
+  relativeVigorIndex(name: string, period: number, discreteSmas: boolean): this;
+  relativeVigorIndex(...args: [] | [number] | [string] | [string, number] | [string, number, boolean]): this {
+    const discreteSmas = typeof args[args.length - 1] === "boolean" ? (args[args.length - 1] as boolean) : false;
+    const rest = (typeof args[args.length - 1] === "boolean" ? args.slice(0, -1) : args) as [] | [number] | [string] | [string, number];
     return this.shaped(
-      args,
+      rest,
       [10],
       (period) => `rvgi${period}`,
       (name, period) => {
-        this.target.add(name, new RelativeVigorIndexRTIndicator(period).withMeta("period", period));
+        this.target.add(name, new RelativeVigorIndexRTIndicator(period, discreteSmas).withMeta("period", period));
       },
     );
   }
@@ -1139,13 +1149,22 @@ export class Pro {
   stochasticOscillator(kPeriod: number, kSmooth: number, dSmooth: number): this;
   stochasticOscillator(name: string): this;
   stochasticOscillator(name: string, kPeriod: number, kSmooth: number, dSmooth: number): this;
-  stochasticOscillator(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+  stochasticOscillator(name: string, kPeriod: number, kSmooth: number, dSmooth: number, discreteSmas: boolean): this;
+  stochasticOscillator(
+    ...args: [] | [string] | [number, number, number] | [string, number, number, number] | [string, number, number, number, boolean]
+  ): this {
+    const discreteSmas = typeof args[args.length - 1] === "boolean" ? (args[args.length - 1] as boolean) : false;
+    const rest = (typeof args[args.length - 1] === "boolean" ? args.slice(0, -1) : args) as
+      | []
+      | [string]
+      | [number, number, number]
+      | [string, number, number, number];
     return this.shaped(
-      args,
+      rest,
       [14, 3, 3],
       (kPeriod, kSmooth, dSmooth) => `stoch${kPeriod}_${kSmooth}_${dSmooth}`,
       (name, kPeriod, kSmooth, dSmooth) => {
-        const stochastic = new StochasticOscillatorRTIndicator(kPeriod, kSmooth, dSmooth);
+        const stochastic = new StochasticOscillatorRTIndicator(kPeriod, kSmooth, dSmooth, discreteSmas);
         stochastic
           .withMeta("kPeriod", kPeriod)
           .withMeta("kSmooth", kSmooth)
@@ -1492,13 +1511,28 @@ export class Pro {
     signalPeriod: number,
   ): this;
   knowSureThing(
-    ...args: [] | [string] | [string, readonly number[], readonly number[], readonly number[], number]
+    name: string,
+    rocPeriods: readonly number[],
+    smaPeriods: readonly number[],
+    weights: readonly number[],
+    signalPeriod: number,
+    discreteSmas: boolean,
+  ): this;
+  knowSureThing(
+    ...args:
+      | []
+      | [string]
+      | [string, readonly number[], readonly number[], readonly number[], number]
+      | [string, readonly number[], readonly number[], readonly number[], number, boolean]
   ): this {
     const name = args[0] ?? "kst";
+    const long = args.length >= 5;
+    const discreteSmas = args.length === 6 ? (args[5] as boolean) : false;
     // The class defaults (ROC periods, smoothing periods and weights as above, signal period 9), left as they are
-    const kst =
-      args.length === 5 ? new KnowSureThingRTIndicator(args[1], args[2], args[3], args[4]) : new KnowSureThingRTIndicator();
-    kst.withMeta("signalPeriod", args.length === 5 ? args[4] : 9);
+    const kst = long
+      ? new KnowSureThingRTIndicator(args[1] as readonly number[], args[2] as readonly number[], args[3] as readonly number[], args[4] as number, discreteSmas)
+      : new KnowSureThingRTIndicator();
+    kst.withMeta("signalPeriod", long ? (args[4] as number) : 9);
     return this.withOutputs(name, kst, output(Pro.SUFFIX_SIGNAL, () => kst.getSignal(), kst, DisplayHint.ABSOLUTE));
   }
 

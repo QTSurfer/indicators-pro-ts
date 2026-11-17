@@ -16,11 +16,11 @@ const DEFAULT_SIGNAL_PERIOD = 9;
  * signal = SMA(KST, 9)
  * ```
  *
- * The rates of change are the `RocRTIndicator` of this package; the averages are the free `SmaRTIndicator` with its
- * default mode, which refreshes its average once every `periods` ticks and holds it in between. `getSignal` gives the
- * signal line of the last update. The four defaults above are the ones used when no argument is given; the long form
- * takes the periods of the rates of change, the periods of their averages, the weights (one of each per rate of
- * change) and the period of the signal. The weights are copied, so the array given is neither kept nor changed.
+ * The rates of change are the `RocRTIndicator` of this package; the averages are the free `SmaRTIndicator`, moving by
+ * default. With `discreteSmas` set to true they are its block averages, which refresh once every `periods` ticks and
+ * hold in between. `getSignal` gives the signal line of the last update. The four defaults above are the ones used when
+ * no argument is given; the long form takes the periods of the rates of change, the periods of their averages, the
+ * weights (one of each per rate of change), the period of the signal and, last, `discreteSmas`. The weights are copied, so the array given is neither kept nor changed.
  * A value that is not finite (NaN or an infinity) is left out: nothing is updated, the last value is returned and
  * the signal keeps its last value. A rate of change that is an infinity (a base price near zero) is dropped by the
  * guard of the average that reads it.
@@ -39,10 +39,18 @@ export class KnowSureThingRTIndicator extends AbstractRTIndicator {
   constructor();
   constructor(rocPeriods: readonly number[], smaPeriods: readonly number[], weights: readonly number[], signalPeriod: number);
   constructor(
+    rocPeriods: readonly number[],
+    smaPeriods: readonly number[],
+    weights: readonly number[],
+    signalPeriod: number,
+    discreteSmas: boolean,
+  );
+  constructor(
     rocPeriods: readonly number[] = DEFAULT_ROC_PERIODS,
     smaPeriods: readonly number[] = DEFAULT_SMA_PERIODS,
     weights: readonly number[] = DEFAULT_WEIGHTS,
     signalPeriod: number = DEFAULT_SIGNAL_PERIOD,
+    discreteSmas: boolean = false,
   ) {
     super();
     if (rocPeriods == null) {
@@ -79,9 +87,9 @@ export class KnowSureThingRTIndicator extends AbstractRTIndicator {
     this.weights = weights.slice();
     for (let i = 0; i < rocPeriods.length; i++) {
       this.rocs.push(new RocRTIndicator(rocPeriods[i]));
-      this.smas.push(new SmaRTIndicator(smaPeriods[i]));
+      this.smas.push(new SmaRTIndicator(smaPeriods[i]).withDiscreteMode(discreteSmas));
     }
-    this.signalSma = new SmaRTIndicator(signalPeriod);
+    this.signalSma = new SmaRTIndicator(signalPeriod).withDiscreteMode(discreteSmas);
   }
 
   /** The signal line: the average of the KST, as of the last update. */

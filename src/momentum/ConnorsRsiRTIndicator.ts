@@ -9,8 +9,9 @@ import { AbstractRTIndicator, RsiRTIndicator } from "@qtsurfer/indicators";
  * ```
  *
  * The streak counts the consecutive rises and falls of the price: +1, +2, +3... for rises, -1, -2, -3... for
- * falls, and 0 when the price does not change. The percent rank is the share of the last `rankPeriod` one-tick rates
- * of change (in percent) that are less than or equal to the current one, the current one left out of the count.
+ * falls, and 0 when the price does not change. The percent rank is the share of the other one-tick rates of change in
+ * the last `rankPeriod` (in percent) that are strictly less than the current one, from 0 to 100; the current one is not
+ * counted, and ties count as not less.
  * Both RSIs are the free `RsiRTIndicator` with its default averages. The window of the rates of change costs a pass
  * over it on every tick. 0 on the first price, 0 as the percent rank while the window holds one rate. 3, 2 and 100
  * when no argument is given.
@@ -121,13 +122,14 @@ export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
     if (size <= 1) {
       return 0;
     }
-    let countLessOrEqual = 0;
+    // strictly less: the current value is not less than itself, so it is not counted
+    let countLess = 0;
     for (let i = 0; i < size; i++) {
-      if (this.rocWindow.getValue(i) <= currentRoc) {
-        countLessOrEqual++;
+      if (this.rocWindow.getValue(i) < currentRoc) {
+        countLess++;
       }
     }
-    // Exclude the current value itself from the count denominator
-    return ((countLessOrEqual - 1) / (size - 1)) * 100;
+    // the other values in the window are the ones compared
+    return (countLess / (size - 1)) * 100;
   }
 }

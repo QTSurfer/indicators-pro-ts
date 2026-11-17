@@ -324,6 +324,9 @@ export const subjects: Subject[] = [
   subject("knowSureThing3Weighted", "Know sure thing of three rates of change, with weights of 1.5, 2.5 and 0.5", false, 0, (p) =>
     series(new KnowSureThingRTIndicator([3, 5, 7], [2, 3, 4], [1.5, 2.5, 0.5], 4), p, { signal: (i) => i.getSignal(), ready }),
   ),
+  subject("knowSureThing3WeightedDiscrete", "Know sure thing of three rates of change, with the discrete averages", false, 0, (p) =>
+    series(new KnowSureThingRTIndicator([3, 5, 7], [2, 3, 4], [1.5, 2.5, 0.5], 4, true), p, { signal: (i) => i.getSignal(), ready }),
+  ),
   subject("trixDefault", "TRIX() with the default periods", false, 0, (p) => series(new TrixRTIndicator(), p, { ready })),
   subject("trix5", "TRIX(5)", false, 0, (p) => series(new TrixRTIndicator(5), p, { ready })),
   subject("trueStrengthIndexDefault", "True strength index() with the default periods", false, 0, (p) =>

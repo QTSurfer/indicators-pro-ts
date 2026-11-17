@@ -340,7 +340,7 @@ describe("what is left unguarded on purpose", () => {
   });
 
   it("KST drops a rate of change that overflows through the guard of the free average", () => {
-    const kst = new KnowSureThingRTIndicator([1], [2], [1], 2);
+    const kst = new KnowSureThingRTIndicator([1], [2], [1], 2, true);
     const out: number[] = [];
     const signal: number[] = [];
     for (const price of [1e-300, 1e10, 100, 101, 102]) {
