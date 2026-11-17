@@ -12,7 +12,8 @@ import { AbstractRTIndicator, RsiRTIndicator } from "@qtsurfer/indicators";
  * falls, and 0 when the price does not change. The percent rank is the share of the other one-tick rates of change in
  * the last `rankPeriod` (in percent) that are strictly less than the current one, from 0 to 100; the current one is not
  * counted, and ties count as not less.
- * Both RSIs are the free `RsiRTIndicator` with its default averages. The window of the rates of change costs a pass
+ * Both RSIs are the free `RsiRTIndicator` and smooth with Wilder's averages by default, as Connors RSI is usually
+ * defined; a final `true` (`sma`) takes Cutler's simple averages, which the class used before. The window of the rates of change costs a pass
  * over it on every tick. 0 on the first price, 0 as the percent rank while the window holds one rate. 3, 2 and 100
  * when no argument is given.
  * A value that is not finite (NaN or an infinity) is left out: nothing is updated and the last value is returned. The
@@ -36,7 +37,8 @@ export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
 
   constructor();
   constructor(rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number);
-  constructor(rsiPeriod = 3, streakRsiPeriod = 2, rankPeriod = 100) {
+  constructor(rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number, sma: boolean);
+  constructor(rsiPeriod = 3, streakRsiPeriod = 2, rankPeriod = 100, sma = false) {
     super();
     if (rsiPeriod < 1) {
       throw new RangeError(`RsiPeriod must be >= 1, got: ${rsiPeriod}`);
@@ -50,8 +52,8 @@ export class ConnorsRsiRTIndicator extends AbstractRTIndicator {
     this._rsiPeriod = rsiPeriod;
     this._streakRsiPeriod = streakRsiPeriod;
     this._rankPeriod = rankPeriod;
-    this.priceRsi = new RsiRTIndicator(rsiPeriod);
-    this.streakRsi = new RsiRTIndicator(streakRsiPeriod);
+    this.priceRsi = new RsiRTIndicator(rsiPeriod, sma);
+    this.streakRsi = new RsiRTIndicator(streakRsiPeriod, sma);
     this.rocWindow = new WindowSeriesStore(rankPeriod);
   }
 

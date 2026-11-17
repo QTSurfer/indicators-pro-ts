@@ -333,10 +333,11 @@ describe("what is left unguarded on purpose", () => {
 
   it("Connors RSI ranks an infinite rate of change with no hold and stays in 0 to 100", () => {
     // a last price of 1e-310 makes the one-tick rate of change Infinity; the rank only compares it
-    const out = run(new ConnorsRsiRTIndicator(3, 2, 5), 1e-310, 100, 101, 102, 103, 104, 105, 106, 107, 108);
+    // the closing drop moves the value, which a held reference could not do
+    const out = run(new ConnorsRsiRTIndicator(3, 2, 5), 1e-310, 100, 101, 102, 103, 104, 105, 106, 107, 108, 90);
     for (const v of out) expect(v >= 0 && v <= 100, `${v}`).toBe(true);
-    expect(out[9]).not.toBe(out[1]);
-    expect(out.slice(0, 3)).toEqual([0, 33.333333333333336, 66.66666666666667]);
+    expect(out[10]).toBeLessThan(out[9]);
+    expect(out.slice(0, 3)).toEqual([0, 66.66666666666667, 66.66666666666667]);
   });
 
   it("KST drops a rate of change that overflows through the guard of the free average", () => {

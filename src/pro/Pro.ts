@@ -1386,12 +1386,33 @@ export class Pro {
    * or as `crsi` + RSI period + `_` + streak RSI period + `_` + rank period. `rsiPeriod` is the period of
    * the RSI of the price, at least 1; `streakRsiPeriod` the period of the RSI of the streak of up and down
    * closes, at least 1; `rankPeriod` the window of the percent rank of the rate of change, at least 2.
+   * Both RSIs smooth with Wilder's averages; the form with a final `sma` set to `true` takes Cutler's simple
+   * averages instead (`false` is the default of the other forms).
    */
   connorsRsi(): this;
   connorsRsi(rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number): this;
   connorsRsi(name: string): this;
   connorsRsi(name: string, rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number): this;
-  connorsRsi(...args: [] | [string] | [number, number, number] | [string, number, number, number]): this {
+  connorsRsi(name: string, rsiPeriod: number, streakRsiPeriod: number, rankPeriod: number, sma: boolean): this;
+  connorsRsi(
+    ...args:
+      | []
+      | [string]
+      | [number, number, number]
+      | [string, number, number, number]
+      | [string, number, number, number, boolean]
+  ): this {
+    if (args.length === 5) {
+      const [name, rsiPeriod, streakRsiPeriod, rankPeriod, sma] = args;
+      this.target.add(
+        name,
+        new ConnorsRsiRTIndicator(rsiPeriod, streakRsiPeriod, rankPeriod, sma)
+          .withMeta("rsiPeriod", rsiPeriod)
+          .withMeta("streakRsiPeriod", streakRsiPeriod)
+          .withMeta("rankPeriod", rankPeriod),
+      );
+      return this;
+    }
     return this.shaped(
       args,
       [3, 2, 100],

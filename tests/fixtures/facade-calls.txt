@@ -155,6 +155,8 @@ connorsRsi
 connorsRsi 5 3 50
 connorsRsi "c"
 connorsRsi "c" 4 2 20
+connorsRsi "c" 4 2 20 true
+connorsRsi "c" 4 2 20 false
 coppockCurve
 coppockCurve 10 8 5
 coppockCurve "c"
