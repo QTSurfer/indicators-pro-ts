@@ -10,8 +10,7 @@ import { barOf } from "$core/Bar";
  * AO       = SMA(midpoint, fastPeriod) - SMA(midpoint, slowPeriod)
  * ```
  *
- * 5 and 34 periods by default. The averages are the block averages of the base module: each one changes once per
- * period, not on every bar. A bar whose midpoint is not finite is left out: nothing is updated and the last value is
+ * 5 and 34 periods by default. The averages are the moving averages of the usual definition, so each one changes on every bar. With `discreteSmas` set to true they are the block averages of the base module instead: each one changes once per period, not on every bar. A bar whose midpoint is not finite is left out: nothing is updated and the last value is
  * returned. That is a bar with a high or a low that is NaN or an infinity, and also one whose high and low are so
  * large that their sum overflows. The scalar `update` takes its argument as the midpoint itself. The class is ready
  * when both averages are, so a fast period above the slow one makes it ready when the fast average completes. The
@@ -25,7 +24,8 @@ export class AwesomeOscillatorRTIndicator extends AbstractRTIndicator implements
 
   constructor();
   constructor(fastPeriod: number, slowPeriod: number);
-  constructor(fastPeriod: number = 5, slowPeriod: number = 34) {
+  constructor(fastPeriod: number, slowPeriod: number, discreteSmas: boolean);
+  constructor(fastPeriod: number = 5, slowPeriod: number = 34, discreteSmas: boolean = false) {
     super();
     if (fastPeriod < 1) {
       throw new RangeError(`FastPeriod must be >= 1, got: ${fastPeriod}`);
@@ -33,8 +33,8 @@ export class AwesomeOscillatorRTIndicator extends AbstractRTIndicator implements
     if (slowPeriod < 1) {
       throw new RangeError(`SlowPeriod must be >= 1, got: ${slowPeriod}`);
     }
-    this.fastSma = new SmaRTIndicator(fastPeriod);
-    this.slowSma = new SmaRTIndicator(slowPeriod);
+    this.fastSma = new SmaRTIndicator(fastPeriod).withDiscreteMode(discreteSmas);
+    this.slowSma = new SmaRTIndicator(slowPeriod).withDiscreteMode(discreteSmas);
   }
 
   override isReady(): boolean {

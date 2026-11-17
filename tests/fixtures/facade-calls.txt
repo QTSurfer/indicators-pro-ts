@@ -409,3 +409,13 @@ exactVariance "var" 0
 exactVariance "var" -1
 exactVariance "var" 0 true
 exactVariance "var" -1 false
+acceleratorOscillator "a" true
+acceleratorOscillator "a" false
+awesomeOscillator "ao" 3 13 true
+awesomeOscillator "ao" 3 13 false
+relativeVigorIndex "rv" 7 true
+relativeVigorIndex "rv" 7 false
+stochasticOscillator "s" 9 4 4 true
+stochasticOscillator "s" 9 4 4 false
+knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9 true
+knowSureThing "k" [10,15,20,30] [10,10,10,15] [1.0,2.0,3.0,4.0] 9 false

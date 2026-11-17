@@ -11,7 +11,8 @@ import { barOf } from "$core/Bar";
  * ```
  *
  * 14, 3 and 3 by default (the slow stochastic). The value is %K; `getPercentK` and `getPercentD` give the two lines.
- * The averages are the block averages of the base module: each one changes once per period, not on every bar. The raw
+ * The averages are the moving averages of the usual definition by default; with `discreteSmas` set to true they are the
+ * block averages of the base module, each one changing once per period. The raw
  * %K is 50 when the window has no range. The class is ready when the window of high and low has `kPeriod` bars,
  * whatever the smoothing. A bar whose high, low or close is not finite (NaN or an infinity) is left out: nothing is
  * updated, the last value is returned and both lines keep their last values. So is a bar whose raw %K is not finite,
@@ -32,7 +33,8 @@ export class StochasticOscillatorRTIndicator extends AbstractRTIndicator impleme
 
   constructor();
   constructor(kPeriod: number, kSmooth: number, dSmooth: number);
-  constructor(kPeriod: number = 14, kSmooth: number = 3, dSmooth: number = 3) {
+  constructor(kPeriod: number, kSmooth: number, dSmooth: number, discreteSmas: boolean);
+  constructor(kPeriod: number = 14, kSmooth: number = 3, dSmooth: number = 3, discreteSmas: boolean = false) {
     super();
     if (kPeriod < 1) {
       throw new RangeError(`KPeriod must be >= 1, got: ${kPeriod}`);
@@ -46,8 +48,8 @@ export class StochasticOscillatorRTIndicator extends AbstractRTIndicator impleme
     this.kPeriod = kPeriod;
     this.highs = new Float64Array(kPeriod);
     this.lows = new Float64Array(kPeriod);
-    this.kSmoothing = new SmaRTIndicator(kSmooth);
-    this.dSmoothing = new SmaRTIndicator(dSmooth);
+    this.kSmoothing = new SmaRTIndicator(kSmooth).withDiscreteMode(discreteSmas);
+    this.dSmoothing = new SmaRTIndicator(dSmooth).withDiscreteMode(discreteSmas);
   }
 
   getKPeriod(): number {

@@ -216,6 +216,21 @@ export const barSubjects: BarSubject[] = [
   subject("awesomeOscillator8_3", "Awesome Oscillator(8, 3), a fast period above the slow one", true, 0, (b) =>
     barSeries(new AwesomeOscillatorRTIndicator(8, 3), b, { ready }),
   ),
+  subject("acceleratorOscillatorDiscrete", "Accelerator Oscillator() with the discrete averages", true, 0, (b) =>
+    barSeries(new AcceleratorOscillatorRTIndicator(true), b, { ao: (i) => i.getAO(), ready }),
+  ),
+  subject("awesomeOscillatorDiscrete", "Awesome Oscillator() with the discrete averages", true, 0, (b) =>
+    barSeries(new AwesomeOscillatorRTIndicator(5, 34, true), b, { ready }),
+  ),
+  subject("awesomeOscillator3_8Discrete", "Awesome Oscillator(3, 8) with the discrete averages", true, 0, (b) =>
+    barSeries(new AwesomeOscillatorRTIndicator(3, 8, true), b, { ready }),
+  ),
+  subject("relativeVigorIndexDiscrete", "Relative Vigor Index(10) with the discrete averages", true, 0, (b) =>
+    barSeries(new RelativeVigorIndexRTIndicator(10, true), b, { ready }),
+  ),
+  subject("stochasticOscillatorDiscrete", "Stochastic Oscillator(14, 3, 3) with the discrete averages", true, 0, (b) =>
+    barSeries(new StochasticOscillatorRTIndicator(14, 3, 3, true), b, { percentK: (i) => i.getPercentK(), percentD: (i) => i.getPercentD(), ready }),
+  ),
   subject("awesomeOscillator1_1", "Awesome Oscillator(1, 1)", false, 0, (b) => barSeries(new AwesomeOscillatorRTIndicator(1, 1), b, { ready })),
   subject("balanceOfPower", "Balance of Power", true, 0, (b) => barSeries(new BalanceOfPowerRTIndicator(), b, { ready })),
   subject("bullBearPowerDefault", "Bull Bear Power()", true, 0, (b) =>
