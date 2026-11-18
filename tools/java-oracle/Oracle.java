@@ -700,6 +700,10 @@ public class Oracle {
       var i = new ConnorsRsiRTIndicator(2, 4, 8);
       return run(p, i::update, ready(i));
     }));
+    list.add(new Subject("connorsRsiCutler", false, () -> {
+      var i = new ConnorsRsiRTIndicator(5, 3, 20, true);
+      return run(p, i::update, ready(i));
+    }));
     list.add(new Subject("coppockCurveDefault", false, () -> {
       var i = new CoppockCurveRTIndicator();
       return run(p, i::update, ready(i));

@@ -298,6 +298,7 @@ export const subjects: Subject[] = [
   subject("connorsRsiDefault", "Connors RSI() with the default periods", false, 0, (p) => series(new ConnorsRsiRTIndicator(), p, { ready })),
   subject("connorsRsi5_3_20", "Connors RSI(5, 3, 20)", false, 0, (p) => series(new ConnorsRsiRTIndicator(5, 3, 20), p, { ready })),
   subject("connorsRsi2_4_8", "Connors RSI(2, 4, 8)", false, 0, (p) => series(new ConnorsRsiRTIndicator(2, 4, 8), p, { ready })),
+  subject("connorsRsiCutler", "Connors RSI(5, 3, 20) with Cutler's simple averages", false, 0, (p) => series(new ConnorsRsiRTIndicator(5, 3, 20, true), p, { ready })),
   subject("coppockCurveDefault", "Coppock curve() with the default periods", false, 0, (p) => series(new CoppockCurveRTIndicator(), p, { ready })),
   subject("coppockCurve8_5_4", "Coppock curve(8, 5, 4)", false, 0, (p) => series(new CoppockCurveRTIndicator(8, 5, 4), p, { ready })),
   subject("fisherTransformDefault", "Fisher transform() with the default periods", false, LOG_TOLERANCE, (p) =>
