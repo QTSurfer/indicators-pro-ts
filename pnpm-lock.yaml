@@ -15,11 +15,11 @@ importers:
         specifier: ^2.31.0
         version: 2.31.1(@types/node@22.20.5)
       '@qtsurfer/core':
-        specifier: ^0.14.0
-        version: 0.14.0
+        specifier: ^0.15.0
+        version: 0.15.0
       '@qtsurfer/indicators':
-        specifier: ^0.14.0
-        version: 0.14.0
+        specifier: ^0.15.0
+        version: 0.15.0
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
@@ -306,12 +306,12 @@ packages:
   '@oxc-project/types@0.155.0':
     resolution: {integrity: sha512-SeE8JPwW1xs1tHeNycjUtUBdhorRa8o4jlvjwk49R7/Z291i+4DQa7JJIgOm/TaYQZx+QrPQbVJ/9c8dMIZN8Q==}
 
-  '@qtsurfer/core@0.14.0':
-    resolution: {integrity: sha512-t/qqaDEHe/kmLDZd5uzhAZZoOR7kjNlYc/QvmD5tPlUvckLlU0E68nOUxe1Olqo4PnIlDWU50C/OVIVJt415aw==}
+  '@qtsurfer/core@0.15.0':
+    resolution: {integrity: sha512-qH/VHIunCJNOJE2zVpNjELmvesyfqGoVM29mjgwHorBOWk9jIXuk0gFF0LJ7hGmtm3s2MOMJoFIrD+u7N+YfyA==}
     engines: {node: '>=20'}
 
-  '@qtsurfer/indicators@0.14.0':
-    resolution: {integrity: sha512-medcosqgarjXNI13w2m0k8+LPFZNzaLclRdFdbyz1dI5x0oSPROisihRsywnn9ZbxGXvSl4oy6jwDzcnGo/lSA==}
+  '@qtsurfer/indicators@0.15.0':
+    resolution: {integrity: sha512-50vDOI7R0E+zCw5am4xuol1A+oUb9k6Ma0np6XSBLyjXM0LqzdPg1ikA5tefLq3Dw7uU1DVHHYmt6LeUMeduRg==}
     engines: {node: '>=20'}
 
   '@rolldown/binding-android-arm-eabi@1.2.15':
@@ -1625,11 +1625,11 @@ snapshots:
 
   '@oxc-project/types@0.155.0': {}
 
-  '@qtsurfer/core@0.14.0': {}
+  '@qtsurfer/core@0.15.0': {}
 
-  '@qtsurfer/indicators@0.14.0':
+  '@qtsurfer/indicators@0.15.0':
     dependencies:
-      '@qtsurfer/core': 0.14.0
+      '@qtsurfer/core': 0.15.0
 
   '@rolldown/binding-android-arm-eabi@1.2.15':
     optional: true
