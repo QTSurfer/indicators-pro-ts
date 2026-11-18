@@ -1,5 +1,15 @@
 # @qtsurfer/indicators-pro
 
+## 0.6.0
+
+### Minor Changes
+
+- [#14](https://github.com/QTSurfer/indicators-pro-ts/pull/14) [`3a7b495`](https://github.com/QTSurfer/indicators-pro-ts/commit/3a7b495cd43010bd96154143cedb5476c67548a4) Thanks [@mrmx](https://github.com/mrmx)! - Connors RSI smooths both of its RSIs with Wilder's averages by default, as Connors RSI is usually defined, as the Java engine does. It used Cutler's simple averages before, so its values change from the second bar on. A final `true` (`sma`) keeps the old averages: `new ConnorsRsiRTIndicator(3, 2, 100, true)` and `connorsRsi("c", 3, 2, 100, true)`.
+
+### Patch Changes
+
+- [#15](https://github.com/QTSurfer/indicators-pro-ts/pull/15) [`d5080bd`](https://github.com/QTSurfer/indicators-pro-ts/commit/d5080bd3f87126bfbfad33fb9d43eee602f72d78) Thanks [@mrmx](https://github.com/mrmx)! - Requires `@qtsurfer/core` and `@qtsurfer/indicators` `^0.15.0`. The 0.14 range kept the package from installing next to the current engine release. No change in behaviour: the full suite passes against 0.15.0.
+
 ## 0.5.0
 
 ### Minor Changes
