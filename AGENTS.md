@@ -75,3 +75,8 @@ This needs a checkout of the Java engine (`QTS_JAVA_ENGINE=/path/to/java-engine`
    does not have yet is skipped, not passed.
 5. Add its row to `indicators.md` (class, call, id, outputs, bars; `—` in Call while it has no factory) and update the
    count in `README.md`.
+6. Add its row to `src/pro/ProVisualization.ts` (unit, placement, range, floor, zero line, and the style, side and
+   drawn flag of each output) with the row the Java engine's table has, and refresh `tests/viz/pro-visualization.tsv`
+   from the Java engine's copy of it as it is: `tests/proVisualization.test.ts` checks every output of every factory
+   against that table, and `tests/facade.test.ts` compares the keys with what the Java engine's `Pro` registered. The
+   engine is the source of truth: where they differ, review the row, do not copy it in either direction.

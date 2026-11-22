@@ -1,4 +1,4 @@
-import { DisplayHint, type AbstractRTIndicator, type InstrumentGroupRTIndicator, type RTIndicator } from "@qtsurfer/indicators";
+import { AbstractRTIndicator, DisplayHint, type InstrumentGroupRTIndicator, type RTIndicator } from "@qtsurfer/indicators";
 import { javaDouble } from "$core/JavaNumber";
 import { AlmaRTIndicator } from "$averages/AlmaRTIndicator";
 import { DemaRTIndicator } from "$averages/DemaRTIndicator";
@@ -77,6 +77,7 @@ import { ObvRTIndicator } from "$volume/ObvRTIndicator";
 import { PvtRTIndicator } from "$volume/PvtRTIndicator";
 import { VwapRTIndicator } from "$volume/VwapRTIndicator";
 import { ProOutput } from "./ProOutput";
+import { ProVisualization } from "./ProVisualization";
 
 /**
  * Fluent factories for the pro indicators, hung off an existing group, with the ids, overloads and
@@ -155,6 +156,7 @@ export class Pro {
     const adx = new AdxRTIndicator(periods!);
     adx.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT);
     return this.withOutputs(
+      "adx",
       nameOrPeriods,
       adx,
       output(Pro.SUFFIX_PLUS_DI, () => adx.getPlusDI(), adx, DisplayHint.PERCENT),
@@ -183,6 +185,7 @@ export class Pro {
     const superTrend = new SuperTrendRTIndicator(atrPeriod, multiplier);
     superTrend.withMeta("atrPeriod", atrPeriod).withMeta("multiplier", multiplier);
     return this.withOutputs(
+      "superTrend",
       name,
       superTrend,
       output(Pro.SUFFIX_UPPER, () => superTrend.getUpperBand(), superTrend, DisplayHint.ABSOLUTE),
@@ -211,6 +214,7 @@ export class Pro {
     ichimoku.withMeta("tenkanPeriod", tenkan).withMeta("kijunPeriod", kijun).withMeta("senkouPeriod", senkou);
     // The indicator itself is the Tenkan-sen; the other four lines are named beside it
     return this.withOutputs(
+      "ichimoku",
       name,
       ichimoku,
       output(Pro.SUFFIX_KIJUN, () => ichimoku.getKijunSen(), ichimoku, DisplayHint.ABSOLUTE),
@@ -238,6 +242,7 @@ export class Pro {
         const aroon = new AroonRTIndicator(periods);
         aroon.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT);
         this.withOutputs(
+          "aroon",
           name,
           aroon,
           output(Pro.SUFFIX_UP, () => aroon.getAroonUp(), aroon, DisplayHint.PERCENT),
@@ -272,7 +277,7 @@ export class Pro {
           .withMeta("stopPeriod", stopPeriod)
           .withMeta("finalPeriod", finalPeriod);
         // Both stops are price levels
-        this.withOutputs(name, stop, output(Pro.SUFFIX_STOP_SHORT, () => stop.getStopShort(), stop, DisplayHint.ABSOLUTE));
+        this.withOutputs("chandeKrollStop", name, stop, output(Pro.SUFFIX_STOP_SHORT, () => stop.getStopShort(), stop, DisplayHint.ABSOLUTE));
       },
     );
   }
@@ -296,7 +301,7 @@ export class Pro {
         const exit = new ChandelierExitRTIndicator(periods, multiplier);
         exit.withMeta("periods", periods).withMeta("multiplier", multiplier);
         // Both exits are price levels
-        this.withOutputs(name, exit, output(Pro.SUFFIX_SHORT_EXIT, () => exit.getShortExit(), exit, DisplayHint.ABSOLUTE));
+        this.withOutputs("chandelierExit", name, exit, output(Pro.SUFFIX_SHORT_EXIT, () => exit.getShortExit(), exit, DisplayHint.ABSOLUTE));
       },
     );
   }
@@ -320,6 +325,7 @@ export class Pro {
         donchian.withMeta("periods", periods);
         // The indicator itself is the middle line; the bands are price levels
         this.withOutputs(
+          "donchianChannel",
           name,
           donchian,
           output(Pro.SUFFIX_UPPER, () => donchian.getUpper(), donchian, DisplayHint.ABSOLUTE),
@@ -339,7 +345,7 @@ export class Pro {
   efficiencyRatio(name: string): this;
   efficiencyRatio(name: string, periods: number): this;
   efficiencyRatio(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "er", 10, (periods) => new EfficiencyRatioRTIndicator(periods));
+    return this.periodic("efficiencyRatio", args, "er", 10, (periods) => new EfficiencyRatioRTIndicator(periods));
   }
 
   /**
@@ -357,7 +363,7 @@ export class Pro {
       [0.02, 0.2],
       (afStep, afMax) => `psar${numberName(afStep)}_${numberName(afMax)}`,
       (name, afStep, afMax) => {
-        this.target.add(name, new ParabolicSarRTIndicator(afStep, afMax).withMeta("afStep", afStep).withMeta("afMax", afMax));
+        this.register("parabolicSar", name, new ParabolicSarRTIndicator(afStep, afMax).withMeta("afStep", afStep).withMeta("afMax", afMax));
       },
     );
   }
@@ -380,6 +386,7 @@ export class Pro {
         vortex.withMeta("periods", periods);
         // Ratios of the range, on no price axis and in no fixed band: no hint, which is ABSOLUTE
         this.withOutputs(
+          "vortex",
           name,
           vortex,
           output(Pro.SUFFIX_VI_PLUS, () => vortex.getVIPlus(), vortex, DisplayHint.ABSOLUTE),
@@ -393,13 +400,13 @@ export class Pro {
 
   /** On-Balance Volume, registered as `obv` or under the given name. It is volume-denominated. */
   obv(name = "obv"): this {
-    this.target.add(name, new ObvRTIndicator().withDisplayHint(DisplayHint.VOLUME));
+    this.register("obv", name, new ObvRTIndicator().withDisplayHint(DisplayHint.VOLUME));
     return this;
   }
 
   /** Volume-Weighted Average Price, registered as `vwap` or under the given name. */
   vwap(name = "vwap"): this {
-    this.target.add(name, new VwapRTIndicator());
+    this.register("vwap", name, new VwapRTIndicator());
     return this;
   }
 
@@ -414,7 +421,7 @@ export class Pro {
     }
     const mfi = new MfiRTIndicator(periods!);
     mfi.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT);
-    this.target.add(nameOrPeriods, mfi);
+    this.register("mfi", nameOrPeriods, mfi);
     return this;
   }
 
@@ -427,7 +434,7 @@ export class Pro {
       const p = nameOrPeriods ?? 20;
       return this.cmf(`cmf${p}`, p);
     }
-    this.target.add(nameOrPeriods, new CmfRTIndicator(periods!).withMeta("periods", periods));
+    this.register("cmf", nameOrPeriods, new CmfRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -436,7 +443,7 @@ export class Pro {
    * weighted by where the close sits in the range of the bar. It has no parameters. It is volume-denominated.
    */
   adl(name = "adl"): this {
-    this.target.add(name, new AdlRTIndicator().withDisplayHint(DisplayHint.VOLUME));
+    this.register("adl", name, new AdlRTIndicator().withDisplayHint(DisplayHint.VOLUME));
     return this;
   }
 
@@ -456,7 +463,8 @@ export class Pro {
       [3, 10],
       (fastPeriod, slowPeriod) => `chaikin${fastPeriod}_${slowPeriod}`,
       (name, fastPeriod, slowPeriod) => {
-        this.target.add(
+        this.register(
+          "chaikinOscillator",
           name,
           new ChaikinOscillatorRTIndicator(fastPeriod, slowPeriod)
             .withMeta("fastPeriod", fastPeriod)
@@ -476,7 +484,7 @@ export class Pro {
   easeOfMovement(name: string): this;
   easeOfMovement(name: string, periods: number): this;
   easeOfMovement(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "eom", 14, (periods) => new EaseOfMovementRTIndicator(periods));
+    return this.periodic("easeOfMovement", args, "eom", 14, (periods) => new EaseOfMovementRTIndicator(periods));
   }
 
   /**
@@ -488,7 +496,7 @@ export class Pro {
   elderForceIndex(name: string): this;
   elderForceIndex(name: string, periods: number): this;
   elderForceIndex(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "efi", 13, (periods) => new ElderForceIndexRTIndicator(periods).withDisplayHint(DisplayHint.VOLUME));
+    return this.periodic("elderForceIndex", args, "efi", 13, (periods) => new ElderForceIndexRTIndicator(periods).withDisplayHint(DisplayHint.VOLUME));
   }
 
   /**
@@ -500,7 +508,7 @@ export class Pro {
     const klinger = new KlingerOscillatorRTIndicator();
     klinger.withDisplayHint(DisplayHint.VOLUME);
     // Nothing to record as meta: the class has no parameter. The signal line is on the same scale
-    return this.withOutputs(name, klinger, output(Pro.SUFFIX_SIGNAL, () => klinger.getSignal(), klinger, DisplayHint.VOLUME));
+    return this.withOutputs("klingerOscillator", name, klinger, output(Pro.SUFFIX_SIGNAL, () => klinger.getSignal(), klinger, DisplayHint.VOLUME));
   }
 
   /**
@@ -508,7 +516,7 @@ export class Pro {
    * on the bars whose volume fell. It has no parameters, and it is an index level, so it has no display hint.
    */
   negativeVolumeIndex(name = "nvi"): this {
-    this.target.add(name, new NegativeVolumeIndexRTIndicator());
+    this.register("negativeVolumeIndex", name, new NegativeVolumeIndexRTIndicator());
     return this;
   }
 
@@ -517,7 +525,7 @@ export class Pro {
    * relative change of the close. It has no parameters. It is volume-denominated.
    */
   pvt(name = "pvt"): this {
-    this.target.add(name, new PvtRTIndicator().withDisplayHint(DisplayHint.VOLUME));
+    this.register("pvt", name, new PvtRTIndicator().withDisplayHint(DisplayHint.VOLUME));
     return this;
   }
 
@@ -530,7 +538,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.kurtosis(`kurt${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new KurtosisRTIndicator(periods!).withMeta("periods", periods));
+    this.register("kurtosis", nameOrPeriods, new KurtosisRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -541,7 +549,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.autocorrelation(`acf${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new AutocorrelationRTIndicator(periods!).withMeta("periods", periods));
+    this.register("autocorrelation", nameOrPeriods, new AutocorrelationRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -552,7 +560,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.hurstExponent(`hurst${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new HurstExponentRTIndicator(periods!).withMeta("periods", periods));
+    this.register("hurstExponent", nameOrPeriods, new HurstExponentRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -570,6 +578,7 @@ export class Pro {
     slope.withMeta("periods", periods);
     // The indicator itself is the slope; the intercept is a price level, so it goes on the price axis
     return this.withOutputs(
+      "linearRegressionSlope",
       nameOrPeriods,
       slope,
       output(Pro.SUFFIX_INTERCEPT, () => slope.getIntercept(), slope, DisplayHint.ABSOLUTE),
@@ -594,6 +603,7 @@ export class Pro {
     // The indicator itself is the percentile; the window's median, minimum and maximum are named beside
     // it, all price levels
     return this.withOutputs(
+      "rollingPercentile",
       name,
       rolling,
       output(Pro.SUFFIX_MEDIAN, () => rolling.getMedian(), rolling, DisplayHint.ABSOLUTE),
@@ -618,6 +628,7 @@ export class Pro {
     // The R squared is a [0, 1] ratio and the standard error is no price level either: neither takes a
     // hint, which is ABSOLUTE, the default, expressed by absence
     return this.withOutputs(
+      "simpleLinearRegression",
       nameOrPeriods,
       regression,
       output(Pro.SUFFIX_INTERCEPT, () => regression.getIntercept(), regression, DisplayHint.ABSOLUTE),
@@ -633,7 +644,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.skewness(`skew${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new SkewnessRTIndicator(periods!).withMeta("periods", periods));
+    this.register("skewness", nameOrPeriods, new SkewnessRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -666,7 +677,7 @@ export class Pro {
         .withMeta("periods", periods)
         .withMeta("confidence", confidence);
     }
-    this.target.add(nameOrPeriods, valueAtRisk);
+    this.register("valueAtRisk", nameOrPeriods, valueAtRisk);
     return this;
   }
 
@@ -677,7 +688,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.zScore(`zscore${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new ZScoreRTIndicator(periods!).withMeta("periods", periods));
+    this.register("zScore", nameOrPeriods, new ZScoreRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -699,9 +710,9 @@ export class Pro {
     const stdDev = new StandardDeviationRTIndicator(periods!);
     if (sample === undefined) {
       // The class default (population variance), left as it is
-      this.target.add(nameOrPeriods, stdDev.withMeta("periods", periods).withMeta("sample", false));
+      this.register("exactStdDev", nameOrPeriods, stdDev.withMeta("periods", periods).withMeta("sample", false));
     } else {
-      this.target.add(nameOrPeriods, stdDev.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+      this.register("exactStdDev", nameOrPeriods, stdDev.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
     }
     return this;
   }
@@ -724,9 +735,9 @@ export class Pro {
     const variance = new VarianceRTIndicator(periods!);
     if (sample === undefined) {
       // The class default (population variance), left as it is
-      this.target.add(nameOrPeriods, variance.withMeta("periods", periods).withMeta("sample", false));
+      this.register("exactVariance", nameOrPeriods, variance.withMeta("periods", periods).withMeta("sample", false));
     } else {
-      this.target.add(nameOrPeriods, variance.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
+      this.register("exactVariance", nameOrPeriods, variance.withSampleVariance(sample).withMeta("periods", periods).withMeta("sample", sample));
     }
     return this;
   }
@@ -748,7 +759,7 @@ export class Pro {
     if (annualizationFactor !== undefined) {
       calmar.withAnnualizationFactor(annualizationFactor);
     }
-    this.target.add(nameOrPeriods, calmar.withMeta("periods", periods));
+    this.register("calmarRatio", nameOrPeriods, calmar.withMeta("periods", periods));
     return this;
   }
 
@@ -759,6 +770,7 @@ export class Pro {
   maxDrawdown(name = "maxDd"): this {
     const drawdown = new MaxDrawdownRTIndicator();
     return this.withOutputs(
+      "maxDrawdown",
       name,
       drawdown,
       output(Pro.SUFFIX_CURRENT, () => drawdown.getCurrentDrawdown(), drawdown, DisplayHint.ABSOLUTE),
@@ -776,7 +788,7 @@ export class Pro {
       return this.omegaRatio(`omega${nameOrPeriods}`, nameOrPeriods);
     }
     const omega = new OmegaRatioRTIndicator(periods!).withThreshold(threshold);
-    this.target.add(nameOrPeriods, omega.withMeta("periods", periods).withMeta("threshold", threshold));
+    this.register("omegaRatio", nameOrPeriods, omega.withMeta("periods", periods).withMeta("threshold", threshold));
     return this;
   }
 
@@ -794,7 +806,7 @@ export class Pro {
     const sharpe = new SharpeRatioRTIndicator(periods!)
       .withRiskFreeRate(riskFreeRate)
       .withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, sharpe.withMeta("periods", periods).withMeta("riskFreeRate", riskFreeRate));
+    this.register("sharpeRatio", nameOrPeriods, sharpe.withMeta("periods", periods).withMeta("riskFreeRate", riskFreeRate));
     return this;
   }
 
@@ -809,7 +821,7 @@ export class Pro {
       return this.sortinoRatio(`sortino${nameOrPeriods}`, nameOrPeriods);
     }
     const sortino = new SortinoRatioRTIndicator(periods!).withMAR(mar).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, sortino.withMeta("periods", periods).withMeta("mar", mar));
+    this.register("sortinoRatio", nameOrPeriods, sortino.withMeta("periods", periods).withMeta("mar", mar));
     return this;
   }
 
@@ -826,7 +838,7 @@ export class Pro {
       return this.tailRatio(`tail${nameOrPeriods}`, nameOrPeriods);
     }
     const tail = new TailRatioRTIndicator(periods!).withPercentiles(upper, lower);
-    this.target.add(nameOrPeriods, tail.withMeta("periods", periods).withMeta("upper", upper).withMeta("lower", lower));
+    this.register("tailRatio", nameOrPeriods, tail.withMeta("periods", periods).withMeta("upper", upper).withMeta("lower", lower));
     return this;
   }
 
@@ -838,7 +850,7 @@ export class Pro {
       return this.ulcerIndex(`ulcer${nameOrPeriods}`, nameOrPeriods);
     }
     const ulcer = new UlcerIndexRTIndicator(periods!);
-    this.target.add(nameOrPeriods, ulcer.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT));
+    this.register("ulcerIndex", nameOrPeriods, ulcer.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT));
     return this;
   }
 
@@ -858,7 +870,7 @@ export class Pro {
       return this.ewmaVolatility(`ewma${numberName(nameOrLambda)}`, nameOrLambda);
     }
     const ewma = new EwmaVolatilityRTIndicator(lambda).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrLambda, ewma.withMeta("lambda", lambda));
+    this.register("ewmaVolatility", nameOrLambda, ewma.withMeta("lambda", lambda));
     return this;
   }
 
@@ -873,7 +885,7 @@ export class Pro {
       return this.realizedVolatility(`rvol${nameOrPeriods}`, nameOrPeriods);
     }
     const realized = new RealizedVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, realized.withMeta("periods", periods));
+    this.register("realizedVolatility", nameOrPeriods, realized.withMeta("periods", periods));
     return this;
   }
 
@@ -888,7 +900,7 @@ export class Pro {
       return this.yangZhang(`yz${nameOrPeriods}`, nameOrPeriods);
     }
     const yangZhang = new YangZhangVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, yangZhang.withMeta("periods", periods));
+    this.register("yangZhang", nameOrPeriods, yangZhang.withMeta("periods", periods));
     return this;
   }
 
@@ -900,7 +912,7 @@ export class Pro {
       return this.parkinson(`park${nameOrPeriods}`, nameOrPeriods);
     }
     const parkinson = new ParkinsonVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, parkinson.withMeta("periods", periods));
+    this.register("parkinson", nameOrPeriods, parkinson.withMeta("periods", periods));
     return this;
   }
 
@@ -912,7 +924,7 @@ export class Pro {
       return this.garmanKlass(`gk${nameOrPeriods}`, nameOrPeriods);
     }
     const garmanKlass = new GarmanKlassVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, garmanKlass.withMeta("periods", periods));
+    this.register("garmanKlass", nameOrPeriods, garmanKlass.withMeta("periods", periods));
     return this;
   }
 
@@ -924,7 +936,7 @@ export class Pro {
       return this.rogersSatchell(`rs${nameOrPeriods}`, nameOrPeriods);
     }
     const rogersSatchell = new RogersSatchellVolatilityRTIndicator(periods!).withAnnualizationFactor(annualizationFactor);
-    this.target.add(nameOrPeriods, rogersSatchell.withMeta("periods", periods));
+    this.register("rogersSatchell", nameOrPeriods, rogersSatchell.withMeta("periods", periods));
     return this;
   }
 
@@ -939,7 +951,7 @@ export class Pro {
   choppinessIndex(name: string): this;
   choppinessIndex(name: string, periods: number): this;
   choppinessIndex(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "chop", 14, (periods) => new ChoppinessIndexRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
+    return this.periodic("choppinessIndex", args, "chop", 14, (periods) => new ChoppinessIndexRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
   }
 
   /**
@@ -963,6 +975,7 @@ export class Pro {
         keltner.withMeta("emaPeriod", emaPeriod).withMeta("atrPeriod", atrPeriod).withMeta("multiplier", multiplier);
         // The indicator itself is the middle line; the bands are price levels
         this.withOutputs(
+          "keltnerChannel",
           name,
           keltner,
           output(Pro.SUFFIX_UPPER, () => keltner.getUpper(), keltner, DisplayHint.ABSOLUTE),
@@ -987,7 +1000,8 @@ export class Pro {
       [25, 9],
       (sumPeriod, emaPeriod) => `mass${sumPeriod}_${emaPeriod}`,
       (name, sumPeriod, emaPeriod) => {
-        this.target.add(
+        this.register(
+          "massIndex",
           name,
           new MassIndexRTIndicator(sumPeriod, emaPeriod).withMeta("sumPeriod", sumPeriod).withMeta("emaPeriod", emaPeriod),
         );
@@ -1006,7 +1020,7 @@ export class Pro {
       return this.natr(`natr${nameOrPeriods}`, nameOrPeriods);
     }
     const natr = new NatrRTIndicator(periods!);
-    this.target.add(nameOrPeriods, natr.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT));
+    this.register("natr", nameOrPeriods, natr.withMeta("periods", periods).withDisplayHint(DisplayHint.PERCENT));
     return this;
   }
 
@@ -1026,7 +1040,8 @@ export class Pro {
       [10, 14],
       (stdPeriod, rsiPeriod) => `rvi${stdPeriod}_${rsiPeriod}`,
       (name, stdPeriod, rsiPeriod) => {
-        this.target.add(
+        this.register(
+          "relativeVolatilityIndex",
           name,
           new RelativeVolatilityIndexRTIndicator(stdPeriod, rsiPeriod)
             .withMeta("stdPeriod", stdPeriod)
@@ -1047,7 +1062,7 @@ export class Pro {
   acceleratorOscillator(name?: string): this;
   acceleratorOscillator(name: string, discreteSmas: boolean): this;
   acceleratorOscillator(name = "acc", discreteSmas = false): this {
-    this.target.add(name, new AcceleratorOscillatorRTIndicator(discreteSmas));
+    this.register("acceleratorOscillator", name, new AcceleratorOscillatorRTIndicator(discreteSmas));
     return this;
   }
 
@@ -1071,7 +1086,8 @@ export class Pro {
       [5, 34],
       (fastPeriod, slowPeriod) => `ao${fastPeriod}_${slowPeriod}`,
       (name, fastPeriod, slowPeriod) => {
-        this.target.add(
+        this.register(
+          "awesomeOscillator",
           name,
           new AwesomeOscillatorRTIndicator(fastPeriod, slowPeriod, discreteSmas)
             .withMeta("fastPeriod", fastPeriod)
@@ -1086,7 +1102,7 @@ export class Pro {
    * in [-1, 1]. It has no parameters, and it is a ratio and not a 0-100 percentage, so it has no display hint.
    */
   balanceOfPower(name = "bop"): this {
-    this.target.add(name, new BalanceOfPowerRTIndicator());
+    this.register("balanceOfPower", name, new BalanceOfPowerRTIndicator());
     return this;
   }
 
@@ -1109,6 +1125,7 @@ export class Pro {
         power.withMeta("period", period);
         // The total and both powers are distances from the EMA, in price units
         this.withOutputs(
+          "bullBearPower",
           name,
           power,
           output(Pro.SUFFIX_BULL, () => power.getBullPower(), power, DisplayHint.ABSOLUTE),
@@ -1135,7 +1152,7 @@ export class Pro {
       [10],
       (period) => `rvgi${period}`,
       (name, period) => {
-        this.target.add(name, new RelativeVigorIndexRTIndicator(period, discreteSmas).withMeta("period", period));
+        this.register("relativeVigorIndex", name, new RelativeVigorIndexRTIndicator(period, discreteSmas).withMeta("period", period));
       },
     );
   }
@@ -1171,6 +1188,7 @@ export class Pro {
           .withMeta("dSmooth", dSmooth)
           .withDisplayHint(DisplayHint.PERCENT);
         this.withOutputs(
+          "stochasticOscillator",
           name,
           stochastic,
           output(Pro.SUFFIX_D, () => stochastic.getPercentD(), stochastic, DisplayHint.PERCENT),
@@ -1184,7 +1202,7 @@ export class Pro {
    * 14 and 28 bars, in [0, 100]. The periods are fixed by the class, so there are none to pass.
    */
   ultimateOscillator(name = "uo"): this {
-    this.target.add(name, new UltimateOscillatorRTIndicator().withDisplayHint(DisplayHint.PERCENT));
+    this.register("ultimateOscillator", name, new UltimateOscillatorRTIndicator().withDisplayHint(DisplayHint.PERCENT));
     return this;
   }
 
@@ -1197,7 +1215,7 @@ export class Pro {
   williamsR(name: string): this;
   williamsR(name: string, periods: number): this;
   williamsR(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "willr", 14, (periods) => new WilliamsRRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
+    return this.periodic("williamsR", args, "willr", 14, (periods) => new WilliamsRRTIndicator(periods).withDisplayHint(DisplayHint.PERCENT));
   }
 
   // --- Averages and oscillators: they read the group's price ---
@@ -1221,14 +1239,16 @@ export class Pro {
     if (args.length === 2) {
       const [name, periods] = args;
       // The class defaults (offset factor 0.85, sigma factor 6), left as they are
-      this.target.add(
+      this.register(
+        "alma",
         name,
         new AlmaRTIndicator(periods).withMeta("periods", periods).withMeta("offsetFactor", 0.85).withMeta("sigmaFactor", 6.0),
       );
       return this;
     }
     const [name, periods, offsetFactor, sigmaFactor] = args;
-    this.target.add(
+    this.register(
+      "alma",
       name,
       new AlmaRTIndicator(periods, offsetFactor, sigmaFactor)
         .withMeta("periods", periods)
@@ -1245,7 +1265,7 @@ export class Pro {
     if (typeof nameOrPeriods === "number") {
       return this.dema(`dema${nameOrPeriods}`, nameOrPeriods);
     }
-    this.target.add(nameOrPeriods, new DemaRTIndicator(periods!).withMeta("periods", periods));
+    this.register("dema", nameOrPeriods, new DemaRTIndicator(periods!).withMeta("periods", periods));
     return this;
   }
 
@@ -1270,6 +1290,7 @@ export class Pro {
         envelopes.withMeta("periods", periods).withMeta("percentage", percentage);
         // The indicator itself is the middle line; the bands are price levels
         this.withOutputs(
+          "envelopes",
           name,
           envelopes,
           output(Pro.SUFFIX_UPPER, () => envelopes.getUpper(), envelopes, DisplayHint.ABSOLUTE),
@@ -1290,7 +1311,7 @@ export class Pro {
   frama(name: string): this;
   frama(name: string, periods: number): this;
   frama(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "frama", 20, (periods) => new FramaRTIndicator(periods));
+    return this.periodic("frama", args, "frama", 20, (periods) => new FramaRTIndicator(periods));
   }
 
   /**
@@ -1302,7 +1323,7 @@ export class Pro {
   leastSquaresMovingAverage(name: string): this;
   leastSquaresMovingAverage(name: string, periods: number): this;
   leastSquaresMovingAverage(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "lsma", 25, (periods) => new LeastSquaresMovingAverageRTIndicator(periods));
+    return this.periodic("leastSquaresMovingAverage", args, "lsma", 25, (periods) => new LeastSquaresMovingAverageRTIndicator(periods));
   }
 
   /** McGinley Dynamic of the group's price over 14 periods, registered as `mcg14`. */
@@ -1311,7 +1332,7 @@ export class Pro {
   mcGinleyDynamic(name: string): this;
   mcGinleyDynamic(name: string, periods: number): this;
   mcGinleyDynamic(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "mcg", 14, (periods) => new McGinleyDynamicRTIndicator(periods));
+    return this.periodic("mcGinleyDynamic", args, "mcg", 14, (periods) => new McGinleyDynamicRTIndicator(periods));
   }
 
   /** Momentum of the group's price over 10 periods, registered as `mom10`: the price minus the price 10 periods ago. */
@@ -1320,7 +1341,7 @@ export class Pro {
   momentum(name: string): this;
   momentum(name: string, periods: number): this;
   momentum(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "mom", 10, (periods) => new MomentumRTIndicator(periods));
+    return this.periodic("momentum", args, "mom", 10, (periods) => new MomentumRTIndicator(periods));
   }
 
   /** Rate of change of the group's price over 12 periods, in percent, registered as `roc12`. */
@@ -1329,7 +1350,7 @@ export class Pro {
   roc(name: string): this;
   roc(name: string, periods: number): this;
   roc(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "roc", 12, (periods) => new RocRTIndicator(periods));
+    return this.periodic("roc", args, "roc", 12, (periods) => new RocRTIndicator(periods));
   }
 
   /** Chande momentum oscillator of the group's price over 14 periods, in [-100, 100], registered as `cmo14`. */
@@ -1338,7 +1359,7 @@ export class Pro {
   cmo(name: string): this;
   cmo(name: string, periods: number): this;
   cmo(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "cmo", 14, (periods) => new CmoRTIndicator(periods));
+    return this.periodic("cmo", args, "cmo", 14, (periods) => new CmoRTIndicator(periods));
   }
 
   /** Detrended price oscillator of the group's price over 20 periods, registered as `dpo20`. `periods` is at least 3. */
@@ -1347,7 +1368,7 @@ export class Pro {
   detrendedPriceOscillator(name: string): this;
   detrendedPriceOscillator(name: string, periods: number): this;
   detrendedPriceOscillator(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "dpo", 20, (periods) => new DetrendedPriceOscillatorRTIndicator(periods));
+    return this.periodic("detrendedPriceOscillator", args, "dpo", 20, (periods) => new DetrendedPriceOscillatorRTIndicator(periods));
   }
 
   /**
@@ -1360,7 +1381,7 @@ export class Pro {
   chandeForecastOscillator(name: string): this;
   chandeForecastOscillator(name: string, periods: number): this;
   chandeForecastOscillator(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "cfo", 14, (periods) => new ChandeForecastOscillatorRTIndicator(periods));
+    return this.periodic("chandeForecastOscillator", args, "cfo", 14, (periods) => new ChandeForecastOscillatorRTIndicator(periods));
   }
 
   /** Fisher transform of the group's price over 10 periods, registered as `fisher10`. `periods` is at least 2. */
@@ -1369,7 +1390,7 @@ export class Pro {
   fisherTransform(name: string): this;
   fisherTransform(name: string, periods: number): this;
   fisherTransform(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "fisher", 10, (periods) => new FisherTransformRTIndicator(periods));
+    return this.periodic("fisherTransform", args, "fisher", 10, (periods) => new FisherTransformRTIndicator(periods));
   }
 
   /** TRIX of the group's price over 15 periods, registered as `trix15`. */
@@ -1378,7 +1399,7 @@ export class Pro {
   trix(name: string): this;
   trix(name: string, periods: number): this;
   trix(...args: [] | [number] | [string] | [string, number]): this {
-    return this.periodic(args, "trix", 15, (periods) => new TrixRTIndicator(periods));
+    return this.periodic("trix", args, "trix", 15, (periods) => new TrixRTIndicator(periods));
   }
 
   /**
@@ -1404,7 +1425,8 @@ export class Pro {
   ): this {
     if (args.length === 5) {
       const [name, rsiPeriod, streakRsiPeriod, rankPeriod, sma] = args;
-      this.target.add(
+      this.register(
+        "connorsRsi",
         name,
         new ConnorsRsiRTIndicator(rsiPeriod, streakRsiPeriod, rankPeriod, sma)
           .withMeta("rsiPeriod", rsiPeriod)
@@ -1418,7 +1440,8 @@ export class Pro {
       [3, 2, 100],
       (rsiPeriod, streakRsiPeriod, rankPeriod) => `crsi${rsiPeriod}_${streakRsiPeriod}_${rankPeriod}`,
       (name, rsiPeriod, streakRsiPeriod, rankPeriod) => {
-        this.target.add(
+        this.register(
+          "connorsRsi",
           name,
           new ConnorsRsiRTIndicator(rsiPeriod, streakRsiPeriod, rankPeriod)
             .withMeta("rsiPeriod", rsiPeriod)
@@ -1445,7 +1468,8 @@ export class Pro {
       [14, 11, 10],
       (longRoc, shortRoc, wmaPeriod) => `coppock${longRoc}_${shortRoc}_${wmaPeriod}`,
       (name, longRoc, shortRoc, wmaPeriod) => {
-        this.target.add(
+        this.register(
+          "coppockCurve",
           name,
           new CoppockCurveRTIndicator(longRoc, shortRoc, wmaPeriod)
             .withMeta("longRoc", longRoc)
@@ -1474,7 +1498,8 @@ export class Pro {
       [10, 5, 20],
       (erPeriod, minPeriod, maxPeriod) => `afisher${erPeriod}_${minPeriod}_${maxPeriod}`,
       (name, erPeriod, minPeriod, maxPeriod) => {
-        this.target.add(
+        this.register(
+          "adaptiveFisherTransform",
           name,
           new AdaptiveFisherTransformRTIndicator(erPeriod, minPeriod, maxPeriod)
             .withMeta("erPeriod", erPeriod)
@@ -1500,7 +1525,8 @@ export class Pro {
       [25, 13],
       (longPeriod, shortPeriod) => `tsi${longPeriod}_${shortPeriod}`,
       (name, longPeriod, shortPeriod) => {
-        this.target.add(
+        this.register(
+          "trueStrengthIndex",
           name,
           new TrueStrengthIndexRTIndicator(longPeriod, shortPeriod)
             .withMeta("longPeriod", longPeriod)
@@ -1554,7 +1580,7 @@ export class Pro {
       ? new KnowSureThingRTIndicator(args[1] as readonly number[], args[2] as readonly number[], args[3] as readonly number[], args[4] as number, discreteSmas)
       : new KnowSureThingRTIndicator();
     kst.withMeta("signalPeriod", long ? (args[4] as number) : 9);
-    return this.withOutputs(name, kst, output(Pro.SUFFIX_SIGNAL, () => kst.getSignal(), kst, DisplayHint.ABSOLUTE));
+    return this.withOutputs("knowSureThing", name, kst, output(Pro.SUFFIX_SIGNAL, () => kst.getSignal(), kst, DisplayHint.ABSOLUTE));
   }
 
   /**
@@ -1577,6 +1603,7 @@ export class Pro {
 
   /** The four shapes of a factory with a single period: `()`, `(periods)`, `(name)` and `(name, periods)`. */
   private periodic(
+    id: string,
     args: [] | [number] | [string] | [string, number],
     prefix: string,
     defaultPeriods: number,
@@ -1587,16 +1614,29 @@ export class Pro {
       [defaultPeriods],
       (periods) => `${prefix}${periods}`,
       (name, periods) => {
-        this.target.add(name, create(periods).withMeta("periods", periods));
+        this.register(id, name, create(periods).withMeta("periods", periods));
       },
     );
   }
 
-  private withOutputs(name: string, main: RTIndicator, ...outputs: Output[]): this {
+  /** Registers an indicator and its other outputs beside it, each described for the charts from the row of the factory `id`. */
+  private withOutputs(id: string, name: string, main: RTIndicator, ...outputs: Output[]): this {
+    describe(id, main);
     this.target.add(name, main);
     for (const { suffix, view } of outputs) {
+      ProVisualization.applyOutput(id, suffix, view);
       this.target.add(name + suffix, view);
     }
+    return this;
+  }
+
+  /**
+   * Registers an indicator in the group after describing it for the charts: where it goes, on what scale and
+   * with what unit, from the row of the factory `id` in `ProVisualization`.
+   */
+  private register(id: string, name: string, indicator: RTIndicator): this {
+    describe(id, indicator);
+    this.target.add(name, indicator);
     return this;
   }
 }
@@ -1619,6 +1659,12 @@ function numberName(value: number): string {
     return String(whole > LONG_MAX ? LONG_MAX : whole < LONG_MIN ? LONG_MIN : whole);
   }
   return javaDouble(value);
+}
+
+function describe(id: string, indicator: RTIndicator): void {
+  if (indicator instanceof AbstractRTIndicator) {
+    ProVisualization.applyMain(id, indicator);
+  }
 }
 
 function output(suffix: string, read: () => number, owner: RTIndicator, hint: DisplayHint): Output {
