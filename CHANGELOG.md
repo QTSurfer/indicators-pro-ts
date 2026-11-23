@@ -1,5 +1,25 @@
 # @qtsurfer/indicators-pro
 
+## 0.7.0
+
+### Minor Changes
+
+- [#17](https://github.com/QTSurfer/indicators-pro-ts/pull/17) [`c6e3db5`](https://github.com/QTSurfer/indicators-pro-ts/commit/c6e3db5433cad2490c6e3661f1fcd94d75e5b71a) Thanks [@mrmx](https://github.com/mrmx)! - Every factory of `Pro` describes how a chart should draw its indicator and each of its outputs, with the same keys and rows as the Java engine's `Pro`: unit (`dsp`), placement (`plc`, drawn over the price), range (`rng`), floor (`flo`), zero line (`lvl`), and per output plot style (`sty`), side (`sde`), drawn by default (`drw`) and band edge (`band`). Averages, bands, the Ichimoku lines, Parabolic SAR, VWAP and the rolling percentile are drawn over the price; Accelerator and Awesome oscillators are histograms; Parabolic SAR is drawn as dots; the oscillators carry their scale and zero line. Outputs that are on another scale or derived are registered but not drawn by default: the main output of Bull and Bear power and of Vortex (their two lines are drawn), SuperTrend's two bands, the Ichimoku lagging span and the intercept, R squared and standard error of the regressions.
+
+  The indicators that had no display hint now carry the unit of the table (`F` fraction for the volatilities, `R` ratio, `I` index, `N` pure number), so a consumer that formats by unit formats them. The eight oscillators that have always been percentages (`adx`, `aroon`, `choppinessIndex`, `mfi`, `relativeVolatilityIndex`, `stochasticOscillator`, `ultimateOscillator`, `williamsR`) keep that unit. No value changes.
+
+  Requires `@qtsurfer/core` and `@qtsurfer/indicators` `^0.16.0`, which carry the keys.
+
+- [#18](https://github.com/QTSurfer/indicators-pro-ts/pull/18) [`f8f3c9d`](https://github.com/QTSurfer/indicators-pro-ts/commit/f8f3c9d2c2498479c1903aef3c3ada2ca58c8183) Thanks [@mrmx](https://github.com/mrmx)! - The Accelerator Oscillator, the Know Sure Thing and the Stochastic Oscillator feed their averages only with values that are valid, as the Java engine does, so for their first updates the line no longer carries the warm-up of the averages behind it, and `isReady()` is true only once the line is exact. Values from the ready update on do not change.
+
+  - Accelerator Oscillator: the average of the AO is fed once the slow average is ready. With the default periods it is ready from the 38th update (it was the 34th).
+  - Know Sure Thing: an average is fed once its rate of change is ready, and the signal once the KST is valid. With the default periods the KST is valid from the 45th update and the indicator, which includes the signal, is ready from the 53rd (it was the 31st).
+  - Stochastic Oscillator: until the first full window `%K` reads the raw `%K`, then `%K` is smoothed, and `%D` is fed once `%K` is. It is ready when both lines are valid: from the 18th update with `(14, 3, 3)` (it was the 14th), `%K` alone being the definition from the 16th.
+
+### Patch Changes
+
+- [#20](https://github.com/QTSurfer/indicators-pro-ts/pull/20) [`267c087`](https://github.com/QTSurfer/indicators-pro-ts/commit/267c0871b9a6f76026795d11ea0c3792c4c12a2a) Thanks [@mrmx](https://github.com/mrmx)! - Works with `@qtsurfer/core` and `@qtsurfer/indicators` `0.17.0` as well as `0.16.x`: the peer range is now `^0.16.0 || ^0.17.0`. Nothing else changes; the tests pass on both.
+
 ## 0.6.0
 
 ### Minor Changes
