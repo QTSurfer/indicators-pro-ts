@@ -348,8 +348,10 @@ describe("what is left unguarded on purpose", () => {
       out.push(kst.update(price));
       signal.push(kst.getSignal());
     }
-    expect(out).toEqual([0, 0, -49.999999499999994, -49.999999499999994, 0.995049504950495]);
-    expect(signal).toEqual([0, 0, 0, -49.999999499999994, -49.999999499999994]);
+    // the rate of change of the second price is Infinity, and the average that reads it drops it: the first average
+    // value is the rate of the third price alone, then the average of the two valid rates
+    expect(out).toEqual([0, 0, -99.99999899999999, -49.499999499999994, -49.499999499999994]);
+    expect(signal).toEqual([0, 0, 0, -49.499999499999994, -49.499999499999994]);
     assertAllFinite(out);
   });
 

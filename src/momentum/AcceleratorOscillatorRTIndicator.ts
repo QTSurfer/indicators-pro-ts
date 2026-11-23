@@ -16,7 +16,8 @@ import { barOf } from "$core/Bar";
  * one changing once per period. A bar whose high or low is not finite (NaN or an
  * infinity) is left out: nothing is updated, the last value is returned and `getAO` keeps its last value. So is a bar
  * whose midpoint overflows, which takes a high and a low near the largest double. The class is ready when the slow
- * average and the average of the AO are.
+ * average and the average of the AO are: with the default periods it is ready, and equal to the definition, from the
+ * 38th update, the slow average needing 34 and the average of the AO 5 values of an AO that is already valid.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.AcceleratorOscillatorRTIndicator
  */
 export class AcceleratorOscillatorRTIndicator extends AbstractRTIndicator implements RTIndicatorSource<Kline | Ticker> {
@@ -72,7 +73,10 @@ export class AcceleratorOscillatorRTIndicator extends AbstractRTIndicator implem
     const fast = this.fastSma.update(midPrice);
     const slow = this.slowSma.update(midPrice);
     this.ao = fast - slow;
-    const aoSmoothed = this.aoSma.update(this.ao);
+    // The average of the AO is fed once the AO is valid, which is when the slow average is ready: before that the AO is
+    // the difference with an average still warming up, and the five values the smoothing holds would carry that into
+    // the line for its first updates.
+    const aoSmoothed = this.slowSma.isReady() ? this.aoSma.update(this.ao) : this.aoSma.getValue();
     return this.setValue(this.ao - aoSmoothed);
   }
 

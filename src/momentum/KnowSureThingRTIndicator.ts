@@ -18,7 +18,9 @@ const DEFAULT_SIGNAL_PERIOD = 9;
  *
  * The rates of change are the `RocRTIndicator` of this package; the averages are the free `SmaRTIndicator`, moving by
  * default. With `discreteSmas` set to true they are its block averages, which refresh once every `periods` ticks and
- * hold in between. `getSignal` gives the signal line of the last update. The four defaults above are the ones used when
+ * hold in between. An average is fed once its rate of change is ready, and the signal once the KST is valid, so with
+ * the default periods the KST is valid from the 45th update and the indicator, which includes the signal, is ready from
+ * the 53rd. `getSignal` gives the signal line of the last update. The four defaults above are the ones used when
  * no argument is given; the long form takes the periods of the rates of change, the periods of their averages, the
  * weights (one of each per rate of change), the period of the signal and, last, `discreteSmas`. The weights are copied, so the array given is neither kept nor changed.
  * A value that is not finite (NaN or an infinity) is left out: nothing is updated, the last value is returned and
@@ -121,12 +123,20 @@ export class KnowSureThingRTIndicator extends AbstractRTIndicator {
       return this.getValue();
     }
     let kst = 0;
+    let valid = true;
     for (let i = 0; i < this.rocs.length; i++) {
       const roc = this.rocs[i].update(newValue);
-      const smoothed = this.smas[i].update(roc);
-      kst += smoothed * this.weights[i];
+      // A rate of change that is not ready yet is 0 and not a rate: it is not fed to its average.
+      if (this.rocs[i].isReady()) {
+        this.smas[i].update(roc);
+      }
+      kst += this.smas[i].getValue() * this.weights[i];
+      valid = valid && this.smas[i].isReady();
     }
-    this.signal = this.signalSma.update(kst);
+    // The signal averages the KST once it is valid, which is when every one of its averages is.
+    if (valid) {
+      this.signal = this.signalSma.update(kst);
+    }
     return this.setValue(kst);
   }
 }
