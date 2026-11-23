@@ -1,0 +1,80 @@
+# Source: the table the web team keeps for the charts (indicator-metadata.json, projected to the visualization keys), pro rows.
+# Columns (tab-separated): id, default name, dsp, plc, rng, flo, lvl, outputs.
+# dsp: - absent (price), P percent, V volume, F fraction, R ratio, I index, N pure number.
+# outputs separated by " | ": "_" is the main output, otherwise the suffix; then sty=h|d, sde=u|d, drw=0, bnd.
+alma	alma20	-	o	-	-	-	_
+dema	dema20	-	o	-	-	-	_
+frama	frama20	-	o	-	-	-	_
+leastSquaresMovingAverage	lsma25	-	o	-	-	-	_
+mcGinleyDynamic	mcg14	-	o	-	-	-	_
+acceleratorOscillator	acc	-	-	-	-	0	_ sty=h
+adaptiveFisherTransform	afisher10_5_20	N	-	-	-	0	_
+awesomeOscillator	ao5_34	-	-	-	-	0	_ sty=h
+balanceOfPower	bop	R	-	-1:1	-	0	_
+bullBearPower	bbp13	-	-	-	-	0	_ drw=0 | Bull sde=u | Bear sde=d
+chandeForecastOscillator	cfo14	P	-	-	-	0	_
+cmo	cmo14	I	-	-100:100	-	0	_
+connorsRsi	crsi3_2_100	I	-	0:100	-	-	_
+coppockCurve	coppock14_11_10	N	-	-	-	0	_
+detrendedPriceOscillator	dpo20	-	-	-	-	0	_
+fisherTransform	fisher10	N	-	-	-	0	_
+knowSureThing	kst	N	-	-	-	0	_ | Signal
+momentum	mom10	-	-	-	-	0	_
+relativeVigorIndex	rvgi10	R	-	-1:1	-	0	_
+roc	roc12	P	-	-	-	0	_
+stochasticOscillator	stoch14_3_3	I	-	0:100	-	-	_ | D
+trix	trix15	P	-	-	-	0	_
+trueStrengthIndex	tsi25_13	I	-	-100:100	-	0	_
+ultimateOscillator	uo	I	-	0:100	-	-	_
+williamsR	willr14	I	-	-100:0	-	-	_
+donchianChannel	donch20	-	o	-	-	-	_ | Upper bnd | Lower bnd
+envelopes	env20_2.5	-	o	-	-	-	_ | Upper bnd | Lower bnd
+keltnerChannel	kc20_10_1.5	-	o	-	-	-	_ | Upper bnd | Lower bnd
+choppinessIndex	chop14	I	-	0:100	-	-	_
+ewmaVolatility	ewma0.94	F	-	-	0	-	_
+garmanKlass	gk20	F	-	-	-	-	_
+massIndex	mass25_9	I	-	-	0	-	_
+natr	natr20	P	-	-	0	-	_
+parkinson	park20	F	-	-	-	-	_
+realizedVolatility	rvol20	F	-	-	0	-	_
+relativeVolatilityIndex	rvi10_14	I	-	0:100	-	-	_
+rogersSatchell	rs20	F	-	-	-	-	_
+yangZhang	yz20	F	-	-	-	-	_
+adx	adx14	I	-	0:100	-	-	_ | PlusDI sde=u | MinusDI sde=d
+aroon	aroon25	I	-	-100:100	-	0	_ | Up sde=u | Down sde=d
+chandeKrollStop	cks10_1_9_9	-	o	-	-	-	_ | StopShort sde=d
+chandelierExit	chand22_3	-	o	-	-	-	_ | ShortExit sde=d
+efficiencyRatio	er10	R	-	0:1	-	-	_
+ichimoku	ichi9_26_52	-	o	-	-	-	_ | Kijun | SenkouA sde=u | SenkouB sde=d | Chikou drw=0
+parabolicSar	psar0.02_0.2	-	o	-	-	-	_ sty=d
+superTrend	st10_3	-	o	-	-	-	_ | Upper drw=0 bnd | Lower drw=0 bnd
+vortex	vortex14	R	-	-	-	-	_ drw=0 | ViPlus sde=u | ViMinus sde=d
+adl	adl	V	-	-	-	-	_
+chaikinOscillator	chaikin3_10	V	-	-	-	0	_
+cmf	cmf20	R	-	-1:1	-	0	_
+easeOfMovement	eom14	N	-	-	-	0	_
+elderForceIndex	efi13	V	-	-	-	0	_
+klingerOscillator	klinger	V	-	-	-	0	_ | Signal
+mfi	mfi14	I	-	0:100	-	-	_
+negativeVolumeIndex	nvi	I	-	-	-	-	_
+obv	obv	V	-	-	-	-	_
+pvt	pvt	V	-	-	-	-	_
+vwap	vwap	-	o	-	-	-	_
+autocorrelation	acf20	R	-	-1:1	-	0	_
+exactStdDev	xstd20	-	-	-	0	-	_
+exactVariance	xvar20	N	-	-	0	-	_
+hurstExponent	hurst20	N	-	-	-	-	_
+kurtosis	kurt20	N	-	-	-	0	_
+linearRegressionSlope	lrs20	-	-	-	-	0	_ | Intercept drw=0
+rollingPercentile	pctl20_0.95	-	o	-	-	-	_ | Median | Min | Max
+simpleLinearRegression	slr20	-	-	-	-	0	_ | Intercept drw=0 | RSquared drw=0 | StandardError drw=0
+skewness	skew20	N	-	-	-	0	_
+valueAtRisk	valRisk20	F	-	-	-	-	_
+zScore	zscore20	N	-	-	-	0	_
+calmarRatio	calmar20	R	-	-	-	0	_
+maxDrawdown	maxDd	F	-	0:1	-	-	_ sde=d | Current
+omegaRatio	omega20	R	-	-	0	-	_
+sharpeRatio	sharpe20	R	-	-	-	0	_
+sortinoRatio	sortino20	R	-	-	-	0	_
+tailRatio	tail20	R	-	-	-	-	_
+ulcerIndex	ulcer20	P	-	-	0	-	_

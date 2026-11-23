@@ -93,8 +93,14 @@ const tickerOf = (last: number, timestamp: number, high: number | null = null, l
 });
 
 // the metadata without the display hint, which is tested on its own (a percentage is the `dsp` entry)
+// The keys that tell a chart how to draw an output: the table of the visualization conformance test pins them, so the
+// tests of the parameters leave them out
+const VISUALIZATION_KEYS = new Set(["dsp", "plc", "rng", "flo", "lvl", "sty", "sde", "drw"]);
+
 const meta = (group: InstrumentGroupRTIndicator, name: string) =>
-  Object.fromEntries([...group.getExisting(name).getMeta!().asMap()].filter(([key]) => key !== "dsp"));
+  Object.fromEntries([...group.getExisting(name).getMeta!().asMap()].filter(([key]) => !VISUALIZATION_KEYS.has(key)));
+
+const parametersOf = (group: InstrumentGroupRTIndicator, name: string) => meta(group, name);
 
 const registeredNames = (group: InstrumentGroupRTIndicator): string[] => {
   const names: string[] = [];
@@ -127,7 +133,7 @@ describe("every factory of the Java engine's Pro is here", () => {
     Pro.on(group).obv().mfi().cmf();
     expect(group.getExisting("obv").getDisplayHint!()).toBe(DisplayHint.VOLUME);
     expect(group.getExisting("mfi14").getDisplayHint!()).toBe(DisplayHint.PERCENT);
-    expect(group.getExisting("cmf20").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
+    expect(group.getExisting("cmf20").getDisplayHint!()).toBe(DisplayHint.RATIO);
   });
 });
 
@@ -486,7 +492,7 @@ describe("the averages and momentum factories, as the Java engine's Pro gives th
     }
     expect(group.getExisting("env20_2.5Upper").getMeta!().get("output")).toBe("upper");
     expect(group.getExisting("kstSignal").getMeta!().get("output")).toBe("signal");
-    expect(group.getExisting("kstSignal").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
+    expect(group.getExisting("kstSignal").getDisplayHint!()).toBe(DisplayHint.NUMBER);
     expect(group.getExisting("env20_2.5Lower").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
     expect(Pro.SUFFIX_SIGNAL).toBe("Signal");
   });
@@ -579,7 +585,7 @@ describe("the averages and momentum factories, as the Java engine's Pro gives th
       .coppockCurve(10, 8, 5).coppockCurve("k", 12, 9, 6).coppockCurve("k0")
       .adaptiveFisherTransform(8, 4, 16).adaptiveFisherTransform("a", 6, 3, 12).adaptiveFisherTransform("a0")
       .trueStrengthIndex(20, 10).trueStrengthIndex("t", 30, 15).trueStrengthIndex("t0");
-    const meta = (name: string) => Object.fromEntries(group.getExisting(name).getMeta!().asMap());
+    const meta = (name: string) => parametersOf(group, name);
     expect(meta("crsi5_3_50")).toEqual({ rsiPeriod: "5", streakRsiPeriod: "3", rankPeriod: "50" });
     expect(meta("c")).toEqual({ rsiPeriod: "4", streakRsiPeriod: "2", rankPeriod: "20" });
     expect(meta("c0")).toEqual({ rsiPeriod: "3", streakRsiPeriod: "2", rankPeriod: "100" });
@@ -598,7 +604,7 @@ describe("the averages and momentum factories, as the Java engine's Pro gives th
     const { group } = klineGroup();
     const weights = [1, 2];
     Pro.on(group).knowSureThing().knowSureThing("k").knowSureThing("short", [5, 10], [5, 5], weights, 5);
-    const meta = (name: string) => Object.fromEntries(group.getExisting(name).getMeta!().asMap());
+    const meta = (name: string) => parametersOf(group, name);
     expect(meta("kst")).toEqual({ signalPeriod: "9" });
     expect(meta("k")).toEqual({ signalPeriod: "9" });
     expect(meta("short")).toEqual({ signalPeriod: "5" });
@@ -779,12 +785,11 @@ describe("the trend and volatility factories, as the Java engine's Pro gives the
     }
   });
 
-  it("the display hints: a percentage where Java says so, the default everywhere else", () => {
+  // The unit of every other output is the table's, which the visualization conformance test pins
+  it("the display hints the engine has always told: a percentage where Java says so", () => {
     const group = allWithDefaults();
-    const percent = ["aroon25", "aroon25Up", "aroon25Down", "chop14", "natr14", "rvi10_14"];
-    for (const name of registeredNames(group)) {
-      const hint = group.getExisting(name).getDisplayHint!();
-      expect(hint, name).toBe(percent.includes(name) ? DisplayHint.PERCENT : DisplayHint.ABSOLUTE);
+    for (const name of ["aroon25", "aroon25Up", "aroon25Down", "chop14", "natr14", "rvi10_14"]) {
+      expect(group.getExisting(name).getDisplayHint!(), name).toBe(DisplayHint.PERCENT);
     }
   });
 
@@ -1054,14 +1059,15 @@ describe("the momentum and volume factories that read whole bars, as the Java en
     }
   });
 
-  it("the display hints: a percentage or a volume where Java says so, the default everywhere else", () => {
+  // The unit of every other output is the table's, which the visualization conformance test pins
+  it("the display hints the engine has always told: a percentage or a volume where Java says so", () => {
     const { group } = klineGroup();
     allWithDefaults(group);
-    const percent = ["stoch14_3_3", "stoch14_3_3D", "uo", "willr14"];
-    const volume = ["adl", "chaikin3_10", "efi13", "klinger", "klingerSignal", "pvt"];
-    for (const name of registeredNames(group)) {
-      const expected = percent.includes(name) ? DisplayHint.PERCENT : volume.includes(name) ? DisplayHint.VOLUME : DisplayHint.ABSOLUTE;
-      expect(group.getExisting(name).getDisplayHint!(), name).toBe(expected);
+    for (const name of ["stoch14_3_3", "stoch14_3_3D", "uo", "willr14"]) {
+      expect(group.getExisting(name).getDisplayHint!(), name).toBe(DisplayHint.PERCENT);
+    }
+    for (const name of ["adl", "chaikin3_10", "efi13", "klinger", "klingerSignal", "pvt"]) {
+      expect(group.getExisting(name).getDisplayHint!(), name).toBe(DisplayHint.VOLUME);
     }
   });
 
@@ -1260,7 +1266,7 @@ describe("the exact statistics factories, as the Java engine's Pro gives them", 
     expect(group.getExisting("xstd20")).toBeInstanceOf(StandardDeviationRTIndicator);
     expect(group.getExisting("xvar20")).toBeInstanceOf(VarianceRTIndicator);
     expect(group.getExisting("xstd20").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
-    expect(group.getExisting("xvar20").getDisplayHint!()).toBe(DisplayHint.ABSOLUTE);
+    expect(group.getExisting("xvar20").getDisplayHint!()).toBe(DisplayHint.NUMBER);
   });
 
   it("the three shapes of each: a period, a name and a period, a name with the period and the form", () => {
