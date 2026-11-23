@@ -27,7 +27,7 @@ type BarIndicator = AbstractRTIndicator & { updateFrom(bar: Kline): void };
 
 /** [label, make, the number of the bar (1 is the first) after which it is ready]. */
 const cases: [string, () => BarIndicator, number][] = [
-  ["Accelerator Oscillator", () => new AcceleratorOscillatorRTIndicator(), 34],
+  ["Accelerator Oscillator", () => new AcceleratorOscillatorRTIndicator(), 38],
   ["Awesome Oscillator()", () => new AwesomeOscillatorRTIndicator(), 34],
   ["Awesome Oscillator(3, 8)", () => new AwesomeOscillatorRTIndicator(3, 8), 8],
   ["Awesome Oscillator(8, 3), the fast period above the slow one", () => new AwesomeOscillatorRTIndicator(8, 3), 8],
@@ -38,8 +38,8 @@ const cases: [string, () => BarIndicator, number][] = [
   ["Relative Vigor Index()", () => new RelativeVigorIndexRTIndicator(), 13],
   ["Relative Vigor Index(5)", () => new RelativeVigorIndexRTIndicator(5), 8],
   ["Relative Vigor Index(1)", () => new RelativeVigorIndexRTIndicator(1), 4],
-  ["Stochastic Oscillator()", () => new StochasticOscillatorRTIndicator(), 14],
-  ["Stochastic Oscillator(3, 5, 2), a smoothing longer than the window", () => new StochasticOscillatorRTIndicator(3, 5, 2), 3],
+  ["Stochastic Oscillator()", () => new StochasticOscillatorRTIndicator(), 18],
+  ["Stochastic Oscillator(3, 5, 2), a smoothing longer than the window", () => new StochasticOscillatorRTIndicator(3, 5, 2), 8],
   ["Stochastic Oscillator(1, 1, 1)", () => new StochasticOscillatorRTIndicator(1, 1, 1), 1],
   ["Ultimate Oscillator", () => new UltimateOscillatorRTIndicator(), 29],
   ["Williams %R()", () => new WilliamsRRTIndicator(), 14],

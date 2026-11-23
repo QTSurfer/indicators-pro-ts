@@ -83,14 +83,14 @@ const acceleratorMidpointOverflow: Scenario = {
     [0, 0, 0],
     [0, 0, 0],
     [0, 0, 0],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [3.9200000000000004, 0, 6.5],
-    [3.9200000000000004, 0, 6.5],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [6.5, 0, 6.5],
+    [6.5, 0, 6.5],
   ],
 };
 
@@ -102,13 +102,13 @@ const acceleratorMidpointOverflowAbsent: Scenario = {
     [0, 0, 0],
     [0, 0, 0],
     [0, 0, 0],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [1.2799999999999998, 0, 1.5999999999999996],
-    [3.9200000000000004, 0, 6.5],
-    [3.9200000000000004, 0, 6.5],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [1.5999999999999996, 0, 1.5999999999999996],
+    [6.5, 0, 6.5],
+    [6.5, 0, 6.5],
   ],
 };
 
@@ -121,7 +121,7 @@ const acceleratorScalar: Scenario = {
     [0, 0, 0],
     [0, 0, 0],
     [0, 0, 0],
-    [1.4381545078898525e307, 0, 1.7976931348623158e307],
+    [1.7976931348623158e307, 0, 1.7976931348623158e307],
   ],
 };
 
@@ -219,7 +219,7 @@ const stochasticRawKFirstBar: Scenario = {
   fields: "hlc",
   bars: [[1, 0, MAX], [12, 10, 11], [13, 11, 12]],
   rows: [
-    [0, 1, 0, 0],
+    [0, 0, 0, 0],
     [50, 1, 50, 50],
     [50, 1, 50, 50],
   ],
@@ -229,14 +229,14 @@ const stochasticDistanceOverflow: Scenario = {
   fields: "hlc",
   bars: [[12, 10, 11], [13, 10, 12], [1, -MAX, MAX], [14, 11, 13], [15, 12, 14], [16, 13, 15], [17, 14, 16], [18, 15, 17]],
   rows: [
-    [50, 0, 50, 50],
-    [58.33333333333333, 0, 58.33333333333333, 54.166666666666664],
-    [58.33333333333333, 1, 58.33333333333333, 54.166666666666664],
-    [58.33333333333333, 1, 58.33333333333333, 54.166666666666664],
-    [100, 1, 100, 79.16666666666666],
-    [100, 1, 100, 79.16666666666666],
-    [80, 1, 80, 90],
-    [80, 1, 80, 90],
+    [50, 0, 50, 0],
+    [66.66666666666666, 0, 66.66666666666666, 0],
+    [66.66666666666666, 0, 66.66666666666666, 0],
+    [100, 0, 100, 0],
+    [100, 0, 100, 100],
+    [100, 1, 100, 100],
+    [80, 1, 80, 100],
+    [80, 1, 80, 80],
   ],
 };
 
@@ -244,12 +244,12 @@ const stochasticRangeOverflow: Scenario = {
   fields: "hlc",
   bars: [[12, 10, 11], [MAX, -MAX, 0], [13, 11, 12], [14, 12, 13], [15, 13, 14], [16, 14, 15]],
   rows: [
-    [50, 0, 50, 50],
-    [25, 0, 25, 37.5],
-    [25, 1, 25, 37.5],
-    [0, 1, 0, 12.5],
-    [0, 1, 0, 12.5],
-    [75, 1, 75, 37.5],
+    [50, 0, 50, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 1, 0, 0],
+    [75, 1, 75, 0],
   ],
 };
 
@@ -625,17 +625,18 @@ describe("a value worked out from finite fields that overflows, in the momentum 
     assertAllFinite(rows, "Relative Vigor weighted sum overflow");
   });
 
-  it("Stochastic Oscillator holds when the raw %K overflows, though the bar is in the windows: it can be ready with nothing computed", () => {
+  it("Stochastic Oscillator holds when the raw %K overflows, though the bar is in the windows: it is not ready, with nothing computed", () => {
     const parts = [(i: StochasticOscillatorRTIndicator) => i.getPercentK(), (i: StochasticOscillatorRTIndicator) => i.getPercentD()];
     const first = play(new StochasticOscillatorRTIndicator(1, 1, 1, true), stochasticRawKFirstBar, parts);
     expectRows(first, stochasticRawKFirstBar.rows, "Stochastic raw %K overflow on the first bar");
-    expect(first[0]).toEqual([0, 1, 0, 0]); // ready, and both lines still 0
+    expect(first[0]).toEqual([0, 0, 0, 0]); // the window is full but nothing was fed to the smoothing: not ready, both lines still 0
     const rows = play(new StochasticOscillatorRTIndicator(3, 2, 2, true), stochasticDistanceOverflow, parts);
     expectRows(rows, stochasticDistanceOverflow.rows, "Stochastic distance overflow");
     const lines = (row: readonly number[]): number[] => [row[0], ...row.slice(2)];
     expect(lines(rows[2])).toEqual(lines(rows[1])); // the value and both lines are those of the bar before
     expect(rows[1][1]).toBe(0);
-    expect(rows[2][1]).toBe(1); // the third bar made the window full
+    expect(rows[2][1]).toBe(0); // the third bar made the window full, but its raw %K overflowed: nothing was fed
+    expect(rows[5][1]).toBe(1); // %K is smoothed over two valid values from the fifth bar, and %D over two of its own from the sixth
   });
 
   it("Stochastic Oscillator: a range that overflows gives a raw %K of 0 and not a hold", () => {

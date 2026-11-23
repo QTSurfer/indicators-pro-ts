@@ -13,8 +13,11 @@ import { barOf } from "$core/Bar";
  * 14, 3 and 3 by default (the slow stochastic). The value is %K; `getPercentK` and `getPercentD` give the two lines.
  * The averages are the moving averages of the usual definition by default; with `discreteSmas` set to true they are the
  * block averages of the base module, each one changing once per period. The raw
- * %K is 50 when the window has no range. The class is ready when the window of high and low has `kPeriod` bars,
- * whatever the smoothing. A bar whose high, low or close is not finite (NaN or an infinity) is left out: nothing is
+ * %K is 50 when the window has no range. The raw %K of a window shorter than `kPeriod` is not a %K: the smoothing is fed
+ * from the first full window, and %D from the first %K that is smoothed over valid values, and until the first full
+ * window %K reads the raw %K. The class is ready when %K and %D are both valid: a full window, then `kSmooth` values of
+ * %K, then `dSmooth` values of the smoothed %K. With the default `(14, 3, 3)`, from the 18th update; %K alone is the
+ * definition from the 16th. A bar whose high, low or close is not finite (NaN or an infinity) is left out: nothing is
  * updated, the last value is returned and both lines keep their last values. So is a bar whose raw %K is not finite,
  * which takes a range or a distance near the largest double; that bar has already entered the window of highs and
  * lows. The constructor throws a `RangeError` for a `kPeriod`, a `kSmooth` or a `dSmooth` below 1.
@@ -67,7 +70,7 @@ export class StochasticOscillatorRTIndicator extends AbstractRTIndicator impleme
   }
 
   override isReady(): boolean {
-    return this.count >= this.kPeriod;
+    return this.count >= this.kPeriod && this.kSmoothing.isReady() && this.dSmoothing.isReady();
   }
 
   override reset(): void {
@@ -115,8 +118,16 @@ export class StochasticOscillatorRTIndicator extends AbstractRTIndicator impleme
     if (AbstractRTIndicator.isPoison(rawK)) {
       return this.getValue();
     }
-    this.percentK = this.kSmoothing.update(rawK);
-    this.percentD = this.dSmoothing.update(this.percentK);
+    // The raw %K of a window shorter than kPeriod is not a %K: the smoothing is fed from the first full window, and %D
+    // from the first %K that is smoothed over valid values.
+    if (this.count >= kPeriod) {
+      this.percentK = this.kSmoothing.update(rawK);
+      if (this.kSmoothing.isReady()) {
+        this.percentD = this.dSmoothing.update(this.percentK);
+      }
+    } else {
+      this.percentK = rawK;
+    }
     return this.setValue(this.percentK);
   }
 
