@@ -9,7 +9,10 @@ import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
  * ```
  *
  * Four EMAs keep the state, so a tick costs the same whatever the history. 0 on the first price, and 0 while the
- * smoothed absolute change is 0. The indicator is ready once the two short EMAs are; the long ones are not looked at.
+ * smoothed absolute change is 0. The short average needs `shortPeriod` values of the long one, and the long one needs
+ * `longPeriod` changes, which start at the second price, so the indicator is ready at update `longPeriod + shortPeriod`
+ * (38 by default). The first update only gives the price the first change is taken from, and it counts as update 1; a
+ * price that is not finite does not count.
  * 25 and 13 when no argument is given (`longPeriod`, `shortPeriod`).
  * A value that is not finite (NaN or an infinity) is left out: no average is updated and the last value is returned.
  * So is a price whose change from the last one overflows (prices near `Number.MAX_VALUE`), and the last price stays the
@@ -21,6 +24,8 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
   private readonly pcShortEma: EmaRTIndicator;
   private readonly absPcLongEma: EmaRTIndicator;
   private readonly absPcShortEma: EmaRTIndicator;
+  private readonly warmUp: number;
+  private updates = 0;
   private prevClose = 0;
   private hasPrev = false;
 
@@ -38,10 +43,11 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
     this.pcShortEma = new EmaRTIndicator(shortPeriod);
     this.absPcLongEma = new EmaRTIndicator(longPeriod);
     this.absPcShortEma = new EmaRTIndicator(shortPeriod);
+    this.warmUp = longPeriod + shortPeriod;
   }
 
   override isReady(): boolean {
-    return this.pcShortEma.isReady() && this.absPcShortEma.isReady();
+    return this.updates >= this.warmUp;
   }
 
   override reset(): void {
@@ -50,6 +56,7 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
     this.pcShortEma.reset();
     this.absPcLongEma.reset();
     this.absPcShortEma.reset();
+    this.updates = 0;
     this.prevClose = 0;
     this.hasPrev = false;
   }
@@ -61,6 +68,7 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
     if (!this.hasPrev) {
       this.hasPrev = true;
       this.prevClose = newValue;
+      this.updates++;
       return this.setValue(0);
     }
     const pc = newValue - this.prevClose;
@@ -68,6 +76,9 @@ export class TrueStrengthIndexRTIndicator extends AbstractRTIndicator {
       // Only reachable when the difference overflows (|price| near Number.MAX_VALUE): hold, and keep the previous price
       // as the reference.
       return this.getValue();
+    }
+    if (this.updates < this.warmUp) {
+      this.updates++;
     }
     const absPc = Math.abs(pc);
     this.prevClose = newValue;
