@@ -14,12 +14,18 @@ import { AbstractRTIndicator, EmaRTIndicator } from "@qtsurfer/indicators";
  * keep the state, so a tick costs the same whatever the history. 0 on the first price, and 0 while the previous EMA3
  * is 0. 15 periods when no argument is given. A value that is not finite (NaN or an infinity) is left out: no
  * average is updated and the last value is returned. The constructor throws a `RangeError` for `periods` below 1.
+ *
+ * Each of the three averages needs `periods` values of the one before it, and the rate of change needs the third one a
+ * step back, so the indicator is ready at update `3 * (periods - 1) + 2`. The first update gives 0, as there is no
+ * previous value yet. The updates that count are the finite ones.
  * Port of com.wualabs.qtsurfer.engine.indicators.momentum.pro.TrixRTIndicator
  */
 export class TrixRTIndicator extends AbstractRTIndicator {
   private readonly ema1: EmaRTIndicator;
   private readonly ema2: EmaRTIndicator;
   private readonly ema3: EmaRTIndicator;
+  private readonly warmUp: number;
+  private updates = 0;
   private prevEma3 = 0;
   private hasPrev = false;
 
@@ -31,10 +37,11 @@ export class TrixRTIndicator extends AbstractRTIndicator {
     this.ema1 = new EmaRTIndicator(periods);
     this.ema2 = new EmaRTIndicator(periods);
     this.ema3 = new EmaRTIndicator(periods);
+    this.warmUp = 3 * (periods - 1) + 2;
   }
 
   override isReady(): boolean {
-    return this.ema3.isReady() && this.hasPrev;
+    return this.updates >= this.warmUp;
   }
 
   override reset(): void {
@@ -42,6 +49,7 @@ export class TrixRTIndicator extends AbstractRTIndicator {
     this.ema1.reset();
     this.ema2.reset();
     this.ema3.reset();
+    this.updates = 0;
     this.prevEma3 = 0;
     this.hasPrev = false;
   }
@@ -49,6 +57,9 @@ export class TrixRTIndicator extends AbstractRTIndicator {
   override update(newValue: number): number {
     if (AbstractRTIndicator.isPoison(newValue)) {
       return this.getValue();
+    }
+    if (this.updates < this.warmUp) {
+      this.updates++;
     }
     const e1 = this.ema1.update(newValue);
     const e2 = this.ema2.update(e1);

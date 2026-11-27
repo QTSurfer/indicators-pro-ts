@@ -135,7 +135,7 @@ from them. NATR has no default period, so it takes one: `natr(14)` or `natr("n",
 |---|---|---|---|---|---|---|
 | Choppiness index | `ChoppinessIndexRTIndicator` | `choppinessIndex()` | `chop14` | | yes | whether the market trends or ranges, from 0 to 100: 100 times the base 10 logarithm of the sum of the true ranges over the range of the window, over the logarithm of the periods; 14 periods by default |
 | Keltner channel | `KeltnerChannelRTIndicator` | `keltnerChannel()` | `kc20_10_1.5` | `Upper`, `Lower` | yes | an EMA of the close, the main output, with a band above and below at an ATR multiple, the `Upper` and `Lower` outputs; 20 EMA periods, 10 ATR periods and a multiplier of 1.5 by default; a whole multiplier has no decimal part in the id |
-| Mass index | `MassIndexRTIndicator` | `massIndex()` | `mass25_9` | | yes | sum of the ratio of an EMA of the high-low range to the EMA of that EMA; 25 and 9 periods by default |
+| Mass index | `MassIndexRTIndicator` | `massIndex()` | `mass25_9` | | yes | sum of the ratio of an EMA of the high-low range to the EMA of that EMA; 25 and 9 periods by default; ready at update `2 * (emaPeriod - 1) + sumPeriod` (41 by default) |
 | NATR | `NatrRTIndicator` | `natr(20)` | `natr20` | | yes | the ATR as a percentage of the close, to compare instruments |
 | Relative volatility index | `RelativeVolatilityIndexRTIndicator` | `relativeVolatilityIndex()` | `rvi10_14` | | | the RSI applied to the standard deviation of the group's price, from 0 to 100; 10 and 14 periods by default |
 
@@ -148,7 +148,7 @@ no default period, so they take one.
 | Indicator | Class | Call | Id | Outputs | Bars | Notes |
 |---|---|---|---|---|---|---|
 | Arnaud Legoux moving average | `AlmaRTIndicator` | `alma(20)` | `alma20` |  | | Gaussian-weighted average of the window; offset factor 0.85 and sigma factor 6 by default |
-| Double exponential moving average | `DemaRTIndicator` | `dema(20)` | `dema20` |  | | twice an EMA less the EMA of that EMA, for less lag |
+| Double exponential moving average | `DemaRTIndicator` | `dema(20)` | `dema20` |  | | twice an EMA less the EMA of that EMA, for less lag; ready at update `2 * (periods - 1) + 1` (`dema(20)` at 39) |
 | Envelopes | `EnvelopesRTIndicator` | `envelopes()` | `env20_2.5` | `Upper`, `Lower` | | an EMA, the main output, with a band above and below it at a fixed percentage; 20 periods and 2.5% by default; a whole percentage has no decimal part in the id |
 | Fractal adaptive moving average | `FramaRTIndicator` | `frama()` | `frama20` |  | | EMA whose smoothing follows the fractal dimension of the window; the class also gives the dimension and the alpha, which are not outputs; an odd number of periods is made even, and the id keeps the number given |
 | Least squares moving average | `LeastSquaresMovingAverageRTIndicator` | `leastSquaresMovingAverage()` | `lsma25` |  | | end point of the least-squares line through the window; 25 periods by default |
@@ -184,8 +184,8 @@ Know sure thing, Relative Vigor Index and Stochastic Oscillator are moving avera
 | Rate of change | `RocRTIndicator` | `roc()` | `roc12` |  | | change of the price over n ticks, in percent; 12 periods by default |
 | Relative Vigor Index | `RelativeVigorIndexRTIndicator` | `relativeVigorIndex()` | `rvgi10` | | yes | how firmly the close follows the open compared with the range of the bar, over the last four bars and then smoothed; 10 periods by default, moving averages by default (a last `true` in the named form: discrete) |
 | Stochastic Oscillator | `StochasticOscillatorRTIndicator` | `stochasticOscillator()` | `stoch14_3_3` | `D` | yes | where the close is between the lowest low and the highest high of the window; the main output is %K, `D` is %D; 14, 3 and 3 periods by default (window, %K smoothing, %D smoothing), moving averages by default (a last `true` in the named form: discrete); ready when %K and %D are both valid, from the 18th update with the defaults |
-| TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default |
-| True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default |
+| TRIX | `TrixRTIndicator` | `trix()` | `trix15` |  | | rate of change of a triple EMA, in percent; 15 periods by default; ready at update `3 * (periods - 1) + 2` (44 by default) |
+| True strength index | `TrueStrengthIndexRTIndicator` | `trueStrengthIndex()` | `tsi25_13` |  | | double-smoothed momentum over double-smoothed absolute momentum, in percent; 25 and 13 periods by default; ready at update `longPeriod + shortPeriod` (38 by default) |
 | Ultimate Oscillator | `UltimateOscillatorRTIndicator` | `ultimateOscillator()` | `uo` | | yes | buying pressure over the true range, over windows of 7, 14 and 28 bars, from 0 to 100 |
 | Williams %R | `WilliamsRRTIndicator` | `williamsR()` | `willr14` | | yes | how far the close is below the highest high of the window, from 0 to -100; 14 periods by default |
 

@@ -18,6 +18,10 @@ import { barOf } from "$core/Bar";
  * whose range is not finite, which takes a high and a low near the largest double apart: the averages would drop it,
  * and the second would be fed the held value of the first as a new tick. The scalar `update` takes its argument as the
  * range itself. The constructor throws a `RangeError` for a `sumPeriod` or an `emaPeriod` below 1.
+ *
+ * The first ratio that is made of two valid averages is the one of update `2 * (emaPeriod - 1) + 1`, and the sum needs
+ * `sumPeriod` of them, so the indicator is ready at update `2 * (emaPeriod - 1) + sumPeriod` (41 by default). The
+ * updates that count are those that are not left out.
  * Port of com.wualabs.qtsurfer.engine.indicators.volatility.pro.MassIndexRTIndicator
  */
 export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndicatorSource<Kline | Ticker> {
@@ -26,6 +30,8 @@ export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndic
   private readonly singleEma: EmaRTIndicator;
   private readonly doubleEma: EmaRTIndicator;
   private readonly ratioWindow: WindowSeriesStore;
+  private readonly warmUp: number;
+  private updates = 0;
   private ratioSum = 0;
 
   constructor();
@@ -43,6 +49,7 @@ export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndic
     this.singleEma = new EmaRTIndicator(emaPeriod);
     this.doubleEma = new EmaRTIndicator(emaPeriod);
     this.ratioWindow = new WindowSeriesStore(sumPeriod);
+    this.warmUp = 2 * (emaPeriod - 1) + sumPeriod;
   }
 
   getSumPeriod(): number {
@@ -54,7 +61,7 @@ export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndic
   }
 
   override isReady(): boolean {
-    return this.ratioWindow.size === this._sumPeriod;
+    return this.updates >= this.warmUp;
   }
 
   override reset(): void {
@@ -62,6 +69,7 @@ export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndic
     this.singleEma.reset();
     this.doubleEma.reset();
     this.ratioWindow.clear();
+    this.updates = 0;
     this.ratioSum = 0;
   }
 
@@ -84,6 +92,9 @@ export class MassIndexRTIndicator extends AbstractRTIndicator implements RTIndic
       // Only reachable when the range overflows (a high and a low near the largest double apart): hold. The averages
       // would drop it, and the second one would be fed the held value of the first one as a new tick.
       return this.getValue();
+    }
+    if (this.updates < this.warmUp) {
+      this.updates++;
     }
     const single = this.singleEma.update(range);
     const doubleVal = this.doubleEma.update(single);
