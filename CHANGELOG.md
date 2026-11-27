@@ -1,5 +1,11 @@
 # @qtsurfer/indicators-pro
 
+## 0.8.1
+
+### Patch Changes
+
+- [#25](https://github.com/QTSurfer/indicators-pro-ts/pull/25) [`0eb8695`](https://github.com/QTSurfer/indicators-pro-ts/commit/0eb8695eecc1f9b5ef4ffbe021354bbca79af8ee) Thanks [@mrmx](https://github.com/mrmx)! - Works with `@qtsurfer/core` and `@qtsurfer/indicators` `0.19.0` as well as `0.16.x` to `0.18.x`: the peer range is now `^0.16.0 || ^0.17.0 || ^0.18.0 || ^0.19.0`. Nothing else changes; the tests pass on 0.19.0.
+
 ## 0.8.0
 
 ### Minor Changes
